@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Travel World Online — Design System v1.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   THEME TOKENS
+   ============================================ */
+:root[data-theme="light"] {
+  --surface-primary: #FAF8F3;
+  --surface-card: #FFFFFF;
+  --surface-tertiary: #EFEDE6;
+  --gold-primary: #C9A84C;
+  --gold-accent: #E8D08A;
+  --ink-900: #1A1A1A;
+  --ink-600: #5E5E5E;
+  --ink-400: #9E9E9E;
+  --navy-deep: #0D1B2A;
+  --success: #2D7A4F;
+  --warning: #B45309;
+  --error: #C0392B;
+  --line-soft: #E8E5DC;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+}
+:root[data-theme="dark"] {
+  --surface-primary: #0D1117;
+  --surface-card: #161B22;
+  --surface-tertiary: #21262D;
+  --gold-primary: #D4AF37;
+  --gold-accent: #8B6914;
+  --ink-900: #E6EDF3;
+  --ink-600: #8B949E;
+  --ink-400: #484F58;
+  --navy-deep: #E6EDF3;
+  --success: #3FB950;
+  --warning: #D29922;
+  --error: #F85149;
+  --line-soft: #30363D;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.6);
+}
+
+/* ============================================
+   RESET + BASE
+   ============================================ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--surface-primary);
+  color: var(--ink-900);
+  -webkit-font-smoothing: antialiased;
+  transition: background 250ms ease, color 250ms ease;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+/* ============================================
+   TYPOGRAPHY TOKENS
+   ============================================ */
+.t-display-xl {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 40px;
+  letter-spacing: -0.02em;
+}
+.t-display-lg {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 32px;
+  letter-spacing: -0.01em;
+}
+.t-display-md {
+  font-family: 'Playfair Display', serif;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 26px;
+}
+.t-heading {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.01em;
+}
+.t-subheading {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 22px;
+}
+.t-body {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 22px;
+}
+.t-body-sm {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 20px;
+}
+.t-label {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+}
+.t-caption {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: 0.01em;
+  color: var(--ink-600);
+}
+.t-overline {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ============================================
+   LAYOUT
+   ============================================ */
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 24px 96px;
+}
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--surface-primary);
+  border-bottom: 1px solid var(--line-soft);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  backdrop-filter: blur(8px);
+}
+.topbar-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 20px;
+}
+.topbar-title span {
+  color: var(--gold-primary);
+}
+.topbar-meta {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.toggle-btn {
+  background: var(--surface-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink-900);
+  transition: all 200ms ease;
+}
+.toggle-btn:hover {
+  border-color: var(--gold-primary);
+}
+
+/* Hero */
+.hero {
+  padding: 64px 0 48px;
+  border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 48px;
+}
+.hero-eyebrow {
+  color: var(--gold-primary);
+  margin-bottom: 16px;
+}
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: clamp(36px, 6vw, 56px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+.hero p {
+  color: var(--ink-600);
+  font-size: 16px;
+  line-height: 26px;
+  max-width: 640px;
+}
+
+/* Section */
+.section {
+  padding: 48px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.section:last-of-type { border-bottom: none; }
+.section-num {
+  color: var(--gold-primary);
+  margin-bottom: 12px;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 36px;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.section-sub {
+  color: var(--ink-600);
+  margin-bottom: 32px;
+  max-width: 640px;
+}
+
+/* Grids */
+.grid {
+  display: grid;
+  gap: 16px;
+}
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-6 { grid-template-columns: repeat(6, 1fr); }
+@media (max-width: 900px) {
+  .grid-4, .grid-6 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 540px) {
+  .grid-2, .grid-3, .grid-4, .grid-6 { grid-template-columns: 1fr; }
+}
+
+/* ============================================
+   COLOUR SWATCH
+   ============================================ */
+.swatch {
+  background: var(--surface-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.swatch:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.swatch-color {
+  height: 88px;
+  position: relative;
+}
+.swatch-info {
+  padding: 12px 14px;
+}
+.swatch-token {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+.swatch-hex {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: var(--ink-600);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* ============================================
+   TYPE SAMPLE
+   ============================================ */
+.type-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: baseline;
+}
+.type-row:last-child { border-bottom: none; }
+.type-meta {
+  color: var(--ink-600);
+  font-size: 12px;
+  line-height: 18px;
+}
+.type-meta strong {
+  display: block;
+  color: var(--ink-900);
+  font-size: 13px;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+@media (max-width: 720px) {
+  .type-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+/* ============================================
+   SPACING DEMO
+   ============================================ */
+.spacing-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 16px;
+  background: var(--surface-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.spacing-bar {
+  background: var(--gold-primary);
+  height: 16px;
+  border-radius: 4px;
+}
+.spacing-label {
+  width: 96px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+}
+.spacing-value {
+  margin-left: auto;
+  color: var(--ink-600);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================
+   RADIUS DEMO
+   ============================================ */
+.radius-card {
+  background: var(--surface-card);
+  border: 1px solid var(--line-soft);
+  padding: 20px;
+  text-align: center;
+}
+.radius-shape {
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, var(--gold-primary), var(--gold-accent));
+  margin-bottom: 12px;
+  max-width: 120px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ============================================
+   SHADOW DEMO
+   ============================================ */
+.shadow-card {
+  background: var(--surface-card);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  border: 1px solid var(--line-soft);
+}
+
+/* ============================================
+   COMPONENTS — BUTTONS
+   ============================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 200ms ease;
+  border: 1px solid transparent;
+  text-decoration: none;
+  min-height: 48px;
+}
+.btn-primary {
+  background: var(--gold-primary);
+  color: #1A1A1A;
+}
+.btn-primary:hover {
+  background: var(--gold-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(201, 168, 76, 0.35);
+}
+.btn-primary:active { transform: translateY(0); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--ink-900);
+  border: 1px solid var(--ink-900);
+}
+[data-theme="dark"] .btn-secondary {
+  color: var(--ink-900);
+  border-color: var(--ink-600);
+}
+.btn-secondary:hover {
+  background: var(--surface-tertiary);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-900);
+}
+.btn-ghost:hover {
+  background: var(--surface-tertiary);
+}
+
+.btn-disabled {
+  background: var(--surface-tertiary);
+  color: var(--ink-400);
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  padding: 10px 16px;
+  font-size: 13px;
+  min-height: 40px;
+}
+
+/* ============================================
+   COMPONENTS — INPUTS
+   ============================================ */
+.input-group {
+  margin-bottom: 16px;
+}
+.input-label {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--ink-600);
+  margin-bottom: 8px;
+}
+.input {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--surface-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--ink-900);
+  transition: all 200ms ease;
+  min-height: 48px;
+}
+.input::placeholder { color: var(--ink-400); }
+.input:focus {
+  outline: none;
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
+}
+.input.error {
+  border-color: var(--error);
+}
+.input-helper {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--ink-600);
+}
+.input-helper.error { color: var(--error); }
+
+/* Search bar special */
+.searchbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  padding: 12px 16px;
+}
+.searchbar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--ink-900);
+}
+.searchbar input::placeholder { color: var(--ink-400); }
+.searchbar-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--ink-600);
+}
+
+/* ============================================
+   COMPONENTS — CHIPS
+   ============================================ */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.chip-filter {
+  background: var(--surface-tertiary);
+  color: var(--ink-900);
+  border: 1px solid var(--line-soft);
+  cursor: pointer;
+}
+.chip-filter.active {
+  background: var(--ink-900);
+  color: var(--surface-primary);
+  border-color: var(--ink-900);
+}
+.chip-success {
+  background: rgba(45, 122, 79, 0.12);
+  color: var(--success);
+}
+.chip-warning {
+  background: rgba(180, 83, 9, 0.12);
+  color: var(--warning);
+}
+.chip-error {
+  background: rgba(192, 57, 43, 0.12);
+  color: var(--error);
+}
+.chip-premium {
+  background: var(--gold-primary);
+  color: #1A1A1A;
+  text-transform: uppercase;
+}
+.chip-overline {
+  background: var(--surface-tertiary);
+  color: var(--ink-600);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+}
+
+/* Dot for status */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+/* ============================================
+   COMPONENTS — TABS
+   ============================================ */
+.tabs {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid var(--line-soft);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  padding: 14px 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--ink-600);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 200ms ease;
+}
+.tab.active {
+  color: var(--ink-900);
+  border-bottom-color: var(--gold-primary);
+  font-weight: 600;
+}
+
+/* ============================================
+   COMPONENTS — CARDS
+   ============================================ */
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 250ms ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Deal card */
+.deal-card {
+  background: var(--surface-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  transition: all 300ms ease;
+}
+.deal-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+.deal-image {
+  width: 100%;
+  aspect-ratio: 16/10;
+  background: linear-gradient(135deg, #1a3a4a, #2d5a6a);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+.deal-image-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(255,255,255,0.95);
+  color: var(--ink-900);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.deal-heart {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  background: rgba(255,255,255,0.95);
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 200ms ease;
+}
+.deal-heart:hover {
+  transform: scale(1.1);
+}
+.deal-body {
+  padding: 16px;
+}
+.deal-title {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 4px;
+  color: var(--ink-900);
+}
+.deal-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: var(--ink-600);
+  margin-bottom: 12px;
+}
+.deal-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.deal-price {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--gold-primary);
+}
+.deal-price-original {
+  font-size: 13px;
+  color: var(--ink-400);
+  text-decoration: line-through;
+}
+.deal-discount {
+  margin-left: auto;
+  background: rgba(45, 122, 79, 0.12);
+  color: var(--success);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* News card compact */
+.news-card {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  background: var(--surface-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  align-items: center;
+  transition: all 200ms ease;
+  cursor: pointer;
+}
+.news-card:hover {
+  border-color: var(--ink-400);
+}
+.news-thumb {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #c4a0d2, #8a6da1);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.news-body { flex: 1; min-width: 0; }
+.news-title {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: var(--ink-900);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.news-meta {
+  font-size: 11px;
+  color: var(--ink-600);
+}
+
+/* List item */
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+.list-item:hover { border-color: var(--ink-400); }
+.list-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--gold-accent), var(--gold-primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-900);
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.list-text { flex: 1; min-width: 0; }
+.list-title {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+.list-subtitle {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: var(--ink-600);
+}
+.list-chevron {
+  color: var(--ink-400);
+}
+
+/* ============================================
+   APP BAR + BOTTOM NAV PREVIEW
+   ============================================ */
+.preview-frame {
+  background: var(--surface-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  padding: 20px;
+}
+.appbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--surface-primary);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+.appbar-greeting strong {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  display: block;
+}
+.appbar-greeting span {
+  font-size: 12px;
+  color: var(--ink-600);
+}
+.appbar-bell {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--surface-card);
+  border: 1px solid var(--line-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.appbar-bell::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  background: var(--error);
+  border-radius: 999px;
+  border: 2px solid var(--surface-card);
+}
+
+.bottomnav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--surface-primary);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  padding: 10px;
+  gap: 4px;
+}
+.bottomnav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px;
+  border-radius: 12px;
+  cursor: pointer;
+  color: var(--ink-600);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  transition: color 200ms ease;
+}
+.bottomnav-item.active {
+  color: var(--gold-primary);
+  font-weight: 600;
+}
+.bottomnav-icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* ============================================
+   STATES (loading / empty / error)
+   ============================================ */
+.state-card {
+  background: var(--surface-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  padding: 40px 24px;
+  text-align: center;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.state-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  color: var(--ink-400);
+}
+.state-title {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+.state-body {
+  font-size: 13px;
+  color: var(--ink-600);
+  margin-bottom: 20px;
+  max-width: 260px;
+}
+
+/* Skeleton */
+.skel {
+  background: linear-gradient(90deg,
+    var(--surface-tertiary) 0%,
+    var(--line-soft) 50%,
+    var(--surface-tertiary) 100%);
+  background-size: 200% 100%;
+  animation: skel 1.5s infinite;
+  border-radius: 6px;
+}
+@keyframes skel {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skel-card {
+  background: var(--surface-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.skel-image {
+  height: 140px;
+  background: linear-gradient(90deg,
+    var(--surface-tertiary) 0%,
+    var(--line-soft) 50%,
+    var(--surface-tertiary) 100%);
+  background-size: 200% 100%;
+  animation: skel 1.5s infinite;
+}
+.skel-body { padding: 16px; }
+.skel-line {
+  height: 14px;
+  margin-bottom: 10px;
+}
+
+/* Toggle (sun/moon) icons */
+.icon { width: 16px; height: 16px; }
+
+/* code chip */
+.kbd {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 11px;
+  background: var(--surface-tertiary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--ink-900);
+}
+
+/* Token table */
+.token-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--surface-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.token-table th,
+.token-table td {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 13px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.token-table tr:last-child td { border-bottom: none; }
+.token-table th {
+  background: var(--surface-tertiary);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--ink-600);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Gold rules card */
+.rules-card {
+  background: var(--surface-card);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  padding: 24px;
+}
+.rules-card h4 {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rules-card.allow h4 { color: var(--success); }
+.rules-card.deny h4 { color: var(--error); }
+.rules-card ul { list-style: none; }
+.rules-card li {
+  padding: 8px 0;
+  font-size: 13px;
+  color: var(--ink-600);
+  border-bottom: 1px solid var(--line-soft);
+}
+.rules-card li:last-child { border-bottom: none; }
+
+/* nav anchors */
+.nav-anchors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 20px 0 24px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.nav-anchor {
+  padding: 6px 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-600);
+  text-decoration: none;
+  transition: all 200ms ease;
+}
+.nav-anchor:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+}
+
+/* Subsection title */
+.sub-title {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-600);
+  margin-bottom: 16px;
+}
+
+/* Flex helpers */
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.row-lg { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.stack-sm { display: flex; flex-direction: column; gap: 8px; }
+</style>
+</head>
+<body>
+
+<!-- ============================================
+     TOP BAR
+     ============================================ -->
+<header class="topbar">
+  <div class="topbar-title">Travel World <span>Online</span></div>
+  <div class="topbar-meta">
+    <span class="t-caption">Design System v1.1</span>
+    <button class="toggle-btn" onclick="toggleTheme()">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+      </svg>
+      <span id="theme-label">Light</span>
+    </button>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- ============================================
+       HERO
+       ============================================ -->
+  <section class="hero">
+    <div class="t-overline hero-eyebrow">DESIGN SYSTEM · v1.1 · MAY 2026</div>
+    <h1>The foundation for every screen in the app.</h1>
+    <p>Every colour, font, button, card, and state used in Travel World Online. If it's not on this page, it doesn't exist in the app. Toggle light/dark in the top right to see both modes.</p>
+  </section>
+
+  <!-- Quick anchors -->
+  <div class="nav-anchors">
+    <a href="#colour" class="nav-anchor">Colour</a>
+    <a href="#type" class="nav-anchor">Typography</a>
+    <a href="#spacing" class="nav-anchor">Spacing</a>
+    <a href="#radius" class="nav-anchor">Radius</a>
+    <a href="#elevation" class="nav-anchor">Elevation</a>
+    <a href="#gold-rules" class="nav-anchor">Gold rules</a>
+    <a href="#buttons" class="nav-anchor">Buttons</a>
+    <a href="#inputs" class="nav-anchor">Inputs</a>
+    <a href="#chips" class="nav-anchor">Chips</a>
+    <a href="#tabs" class="nav-anchor">Tabs</a>
+    <a href="#cards" class="nav-anchor">Cards</a>
+    <a href="#nav" class="nav-anchor">Nav</a>
+    <a href="#states" class="nav-anchor">States</a>
+  </div>
+
+  <!-- ============================================
+       1. COLOUR
+       ============================================ -->
+  <section class="section" id="colour">
+    <div class="t-overline section-num">01 · FOUNDATIONS</div>
+    <h2 class="section-title">Colour</h2>
+    <p class="section-sub">The palette is restrained on purpose. Gold is the one accent. Everything else is structural — surfaces, ink, lines, and four semantic colours.</p>
+
+    <div class="sub-title">Surfaces</div>
+    <div class="grid grid-4" style="margin-bottom: 32px;">
+      <div class="swatch">
+        <div class="swatch-color" style="background: var(--surface-primary); border-bottom: 1px solid var(--line-soft);"></div>
+        <div class="swatch-info">
+          <div class="swatch-token">surface-primary</div>
+          <div class="swatch-hex" id="hex-surface-primary">—</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: var(--surface-card);"></div>
+        <div class="swatch-info">
+          <div class="swatch-token">surface-card</div>
+          <div class="swatch-hex" id="hex-surface-card">—</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: var(--surface-tertiary);"></div>
+        <div class="swatch-info">
+          <div class="swatch-token">surface-tertiary</div>
+          <div class="swatch-hex" id="hex-surface-tertiary">—</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: var(--line-soft);"></div>
+        <div class="swatch-info">
+          <div class="swatch-token">line-soft</div>
+          <div class="swatch-hex" id="hex-line-soft">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Brand</div>
+    <div class="grid grid-4" style="margin-bottom: 32px;">
+      <div class="swatch">
+        <div class="swatch-color" style="background: var(--gold-primary);"></div>
+        <div class="swatch-info">
+          <div class="swatch-token">gold-primary</div>
+          <div class="swatch-hex" id="hex-gold-primary">—</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: var(--gold-accent);"></div>
+        <div class="swatch-info">
+          <div class="swatch-token">gold-accent</div>
+          <div class="swatch-hex" id="hex-gold-accent">—</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: var(--navy-deep);"></div>
+        <div class="swatch-info">
+          <div class="swatch-token">navy-deep</div>
+          <div class="swatch-hex" id="hex-navy-deep">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Ink (text)</div>
+    <div class="grid grid-4" style="margin-bottom: 32px;">
+      <div class="swatch">
+        <div class="swatch-color" style="background: var(--ink-900);"></div>
+        <div class="swatch-info">
+          <div class="swatch-token">ink-900</div>
+          <div class="swatch-hex" id="hex-ink-900">—</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: var(--ink-600);"></div>
+        <div class="swatch-info">
+          <div class="swatch-token">ink-600</div>
+          <div class="swatch-hex" id="hex-ink-600">—</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: var(--ink-400);"></div>
+        <div class="swatch-info">
+          <div class="swatch-token">ink-400</div>
+          <div class="swatch-hex" id="hex-ink-400">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Semantic</div>
+    <div class="grid grid-4">
+      <div class="swatch">
+        <div class="swatch-color" style="background: var(--success);"></div>
+        <div class="swatch-info">
+          <div class="swatch-token">success</div>
+          <div class="swatch-hex" id="hex-success">—</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: var(--warning);"></div>
+        <div class="swatch-info">
+          <div class="swatch-token">warning</div>
+          <div class="swatch-hex" id="hex-warning">—</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: var(--error);"></div>
+        <div class="swatch-info">
+          <div class="swatch-token">error</div>
+          <div class="swatch-hex" id="hex-error">—</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       2. TYPOGRAPHY
+       ============================================ -->
+  <section class="section" id="type">
+    <div class="t-overline section-num">02 · FOUNDATIONS</div>
+    <h2 class="section-title">Typography</h2>
+    <p class="section-sub">Playfair Display for moments worth lingering on (page titles, hero headlines). DM Sans for everything you read more than once. Playfair is never used below 18px.</p>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <strong>display-xl</strong>
+        Playfair Display 700<br>
+        32px / 40px line-height<br>
+        Splash, hero
+      </div>
+      <div class="t-display-xl">Travel Business. Elevated.</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">
+        <strong>display-lg</strong>
+        Playfair Display 700<br>
+        24px / 32px<br>
+        Page titles
+      </div>
+      <div class="t-display-lg">Luxury Goa Getaway</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">
+        <strong>display-md</strong>
+        Playfair Display 500<br>
+        18px / 26px<br>
+        Section headers
+      </div>
+      <div class="t-display-md">Featured Deals</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">
+        <strong>heading</strong>
+        DM Sans 600<br>
+        16px / 24px<br>
+        Card titles
+      </div>
+      <div class="t-heading">5★ Resort · 3 Days 2 Nights</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">
+        <strong>subheading</strong>
+        DM Sans 500<br>
+        15px / 22px<br>
+        Prominent labels
+      </div>
+      <div class="t-subheading">Active Member · TAAI</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">
+        <strong>body</strong>
+        DM Sans 400<br>
+        14px / 22px<br>
+        Body copy
+      </div>
+      <div class="t-body">Find the updated advisory regarding Schengen visa procedures and documentation requirements for travel agents.</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">
+        <strong>body-sm</strong>
+        DM Sans 400<br>
+        13px / 20px<br>
+        Dense lists
+      </div>
+      <div class="t-body-sm">Tour Operations Manager · Travel Corp India · New Delhi</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">
+        <strong>label</strong>
+        DM Sans 600<br>
+        12px / 16px · +0.04em<br>
+        Buttons, chips
+      </div>
+      <div class="t-label">Send Enquiry</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">
+        <strong>caption</strong>
+        DM Sans 400<br>
+        12px / 18px<br>
+        Timestamps
+      </div>
+      <div class="t-caption">20 May 2025 · 11:30 AM</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">
+        <strong>overline</strong>
+        DM Sans 500<br>
+        10px / 14px · +0.08em · UPPER<br>
+        Category tags
+      </div>
+      <div class="t-overline">HOTEL DEAL</div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       3. SPACING
+       ============================================ -->
+  <section class="section" id="spacing">
+    <div class="t-overline section-num">03 · FOUNDATIONS</div>
+    <h2 class="section-title">Spacing</h2>
+    <p class="section-sub">8px base grid. Stick to these values. Spacing is what makes a screen feel premium.</p>
+
+    <div class="spacing-row">
+      <div class="spacing-label">space-xs</div>
+      <div class="spacing-bar" style="width: 4px;"></div>
+      <div class="spacing-value">4 px</div>
+    </div>
+    <div class="spacing-row">
+      <div class="spacing-label">space-sm</div>
+      <div class="spacing-bar" style="width: 8px;"></div>
+      <div class="spacing-value">8 px</div>
+    </div>
+    <div class="spacing-row">
+      <div class="spacing-label">space-md</div>
+      <div class="spacing-bar" style="width: 16px;"></div>
+      <div class="spacing-value">16 px</div>
+    </div>
+    <div class="spacing-row">
+      <div class="spacing-label">space-lg</div>
+      <div class="spacing-bar" style="width: 24px;"></div>
+      <div class="spacing-value">24 px</div>
+    </div>
+    <div class="spacing-row">
+      <div class="spacing-label">space-xl</div>
+      <div class="spacing-bar" style="width: 32px;"></div>
+      <div class="spacing-value">32 px</div>
+    </div>
+    <div class="spacing-row">
+      <div class="spacing-label">space-2xl</div>
+      <div class="spacing-bar" style="width: 48px;"></div>
+      <div class="spacing-value">48 px</div>
+    </div>
+    <div class="spacing-row">
+      <div class="spacing-label">space-3xl</div>
+      <div class="spacing-bar" style="width: 64px;"></div>
+      <div class="spacing-value">64 px</div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       4. RADIUS
+       ============================================ -->
+  <section class="section" id="radius">
+    <div class="t-overline section-num">04 · FOUNDATIONS</div>
+    <h2 class="section-title">Border radius</h2>
+    <p class="section-sub">Five levels. Inputs are sharper, hero cards are softer, pills are round. Pick by component, never freestyle.</p>
+
+    <div class="grid grid-6">
+      <div class="radius-card">
+        <div class="radius-shape" style="border-radius: 6px;"></div>
+        <div class="t-label">radius-sm</div>
+        <div class="t-caption">6 px</div>
+      </div>
+      <div class="radius-card">
+        <div class="radius-shape" style="border-radius: 12px;"></div>
+        <div class="t-label">radius-md</div>
+        <div class="t-caption">12 px</div>
+      </div>
+      <div class="radius-card">
+        <div class="radius-shape" style="border-radius: 20px;"></div>
+        <div class="t-label">radius-lg</div>
+        <div class="t-caption">20 px</div>
+      </div>
+      <div class="radius-card">
+        <div class="radius-shape" style="border-radius: 28px;"></div>
+        <div class="t-label">radius-xl</div>
+        <div class="t-caption">28 px</div>
+      </div>
+      <div class="radius-card">
+        <div class="radius-shape" style="border-radius: 999px;"></div>
+        <div class="t-label">radius-full</div>
+        <div class="t-caption">999 px</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       5. ELEVATION
+       ============================================ -->
+  <section class="section" id="elevation">
+    <div class="t-overline section-num">05 · FOUNDATIONS</div>
+    <h2 class="section-title">Elevation</h2>
+    <p class="section-sub">In light mode, shadows. In dark mode, background colour differentiation does the lifting instead.</p>
+
+    <div class="grid grid-3">
+      <div class="shadow-card" style="box-shadow: var(--shadow-sm);">
+        <div class="t-label" style="margin-bottom: 4px;">shadow-sm</div>
+        <div class="t-caption">Subtle card lift</div>
+      </div>
+      <div class="shadow-card" style="box-shadow: var(--shadow-md);">
+        <div class="t-label" style="margin-bottom: 4px;">shadow-md</div>
+        <div class="t-caption">Floating cards</div>
+      </div>
+      <div class="shadow-card" style="box-shadow: var(--shadow-lg);">
+        <div class="t-label" style="margin-bottom: 4px;">shadow-lg</div>
+        <div class="t-caption">Modals, drawers</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       6. GOLD USAGE RULES
+       ============================================ -->
+  <section class="section" id="gold-rules">
+    <div class="t-overline section-num">06 · PRINCIPLES</div>
+    <h2 class="section-title">Gold usage rules</h2>
+    <p class="section-sub">The single biggest reason premium apps feel premium is restraint with their accent colour. Follow this strictly.</p>
+
+    <div class="grid grid-2">
+      <div class="rules-card allow">
+        <h4>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Gold IS allowed on
+        </h4>
+        <ul>
+          <li>The single primary CTA on a screen</li>
+          <li>Active tab indicator (underline)</li>
+          <li>Active icon in the bottom nav</li>
+          <li>Featured price emphasis on deal cards</li>
+          <li>One premium badge per screen (BEST VALUE, VERIFIED, PREMIUM)</li>
+        </ul>
+      </div>
+      <div class="rules-card deny">
+        <h4>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          Gold is NOT allowed on
+        </h4>
+        <ul>
+          <li>Secondary buttons (use outlined navy)</li>
+          <li>Filter chips (use cream/grey)</li>
+          <li>Card backgrounds or borders</li>
+          <li>Status chips (use semantic colours)</li>
+          <li>Section dividers, decorative accents</li>
+          <li>Icons in general</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       7. BUTTONS
+       ============================================ -->
+  <section class="section" id="buttons">
+    <div class="t-overline section-num">07 · COMPONENTS</div>
+    <h2 class="section-title">Buttons</h2>
+    <p class="section-sub">Primary is gold and rare. Secondary is outlined. Ghost is text-only. One primary per screen, maximum.</p>
+
+    <div class="sub-title">Primary (gold) — for the most important action only</div>
+    <div class="row-lg" style="margin-bottom: 32px;">
+      <button class="btn btn-primary">Send Enquiry</button>
+      <button class="btn btn-primary">
+        Login
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </button>
+      <button class="btn btn-primary btn-sm">Apply Now</button>
+    </div>
+
+    <div class="sub-title">Secondary (outlined) — for alternative actions</div>
+    <div class="row-lg" style="margin-bottom: 32px;">
+      <button class="btn btn-secondary">Resend Email</button>
+      <button class="btn btn-secondary">Cancel</button>
+      <button class="btn btn-secondary btn-sm">View All</button>
+    </div>
+
+    <div class="sub-title">Ghost — for tertiary, low-emphasis actions</div>
+    <div class="row-lg" style="margin-bottom: 32px;">
+      <button class="btn btn-ghost">Skip</button>
+      <button class="btn btn-ghost">Read More</button>
+      <button class="btn btn-ghost btn-sm">Forgot Password?</button>
+    </div>
+
+    <div class="sub-title">Disabled</div>
+    <div class="row-lg">
+      <button class="btn btn-disabled" disabled>Send Enquiry</button>
+      <button class="btn btn-disabled btn-sm" disabled>Apply</button>
+    </div>
+  </section>
+
+  <!-- ============================================
+       8. INPUTS
+       ============================================ -->
+  <section class="section" id="inputs">
+    <div class="t-overline section-num">08 · COMPONENTS</div>
+    <h2 class="section-title">Inputs &amp; forms</h2>
+    <p class="section-sub">Generous padding, clear labels, gold focus ring. Errors are red and inline.</p>
+
+    <div class="grid grid-2">
+      <div>
+        <div class="sub-title">Standard input</div>
+        <div class="input-group">
+          <label class="input-label">Mobile Number</label>
+          <input type="text" class="input" placeholder="+91 98765 43210" value="+91 98765 43210">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Password</label>
+          <input type="password" class="input" value="••••••••••">
+          <span class="input-helper">Must be at least 8 characters</span>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Email Address</label>
+          <input type="email" class="input error" value="rakesh@invalid">
+          <span class="input-helper error">Please enter a valid email address</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="sub-title">Search bar (used on lists)</div>
+        <div class="searchbar" style="margin-bottom: 24px;">
+          <svg class="searchbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" placeholder="Search deals, news, people...">
+        </div>
+
+        <div class="sub-title">Textarea</div>
+        <div class="input-group">
+          <label class="input-label">Your Message</label>
+          <textarea class="input" rows="4" placeholder="Any specific requirements?"></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       9. CHIPS
+       ============================================ -->
+  <section class="section" id="chips">
+    <div class="t-overline section-num">09 · COMPONENTS</div>
+    <h2 class="section-title">Chips &amp; badges</h2>
+    <p class="section-sub">Filter chips for tabs and selections. Status chips use semantic colours (green / orange / red), never gold. Premium chips are the one place gold appears on a badge — and only once per screen.</p>
+
+    <div class="sub-title">Filter chips</div>
+    <div class="row" style="margin-bottom: 32px;">
+      <span class="chip chip-filter active">All</span>
+      <span class="chip chip-filter">Hotels</span>
+      <span class="chip chip-filter">Packages</span>
+      <span class="chip chip-filter">Transport</span>
+      <span class="chip chip-filter">Villas</span>
+      <span class="chip chip-filter">Tailor Made</span>
+    </div>
+
+    <div class="sub-title">Status chips (semantic)</div>
+    <div class="row" style="margin-bottom: 32px;">
+      <span class="chip chip-success"><span class="dot"></span>Confirmed</span>
+      <span class="chip chip-warning"><span class="dot"></span>Pending</span>
+      <span class="chip chip-error"><span class="dot"></span>Cancelled</span>
+      <span class="chip chip-success"><span class="dot"></span>Active Member</span>
+      <span class="chip chip-warning"><span class="dot"></span>Processing</span>
+    </div>
+
+    <div class="sub-title">Premium / overline</div>
+    <div class="row">
+      <span class="chip chip-premium">BEST VALUE</span>
+      <span class="chip chip-premium">VERIFIED</span>
+      <span class="chip chip-premium">PREMIUM</span>
+      <span class="chip chip-overline">HOTEL</span>
+      <span class="chip chip-overline">PACKAGE</span>
+      <span class="chip chip-overline">CIRCULAR</span>
+    </div>
+  </section>
+
+  <!-- ============================================
+       10. TABS
+       ============================================ -->
+  <section class="section" id="tabs">
+    <div class="t-overline section-num">10 · COMPONENTS</div>
+    <h2 class="section-title">Tab bar</h2>
+    <p class="section-sub">Active tab has the gold underline. Inactive tabs are ink-600. Scrollable horizontally when content overflows.</p>
+
+    <div class="tabs" style="margin-bottom: 32px;">
+      <div class="tab active">All</div>
+      <div class="tab">Pending</div>
+      <div class="tab">Responded</div>
+      <div class="tab">Closed</div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab">Top News</div>
+      <div class="tab active">Industry</div>
+      <div class="tab">Destinations</div>
+      <div class="tab">Aviation</div>
+      <div class="tab">Hotels</div>
+      <div class="tab">Technology</div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       11. CARDS
+       ============================================ -->
+  <section class="section" id="cards">
+    <div class="t-overline section-num">11 · COMPONENTS</div>
+    <h2 class="section-title">Cards</h2>
+    <p class="section-sub">The three workhorse cards: deal card (commercial), news card (editorial), list item (utility). Every screen uses some combination of these.</p>
+
+    <div class="sub-title">Deal card (for B2B marketplace, luxury, packages)</div>
+    <div class="grid grid-3" style="margin-bottom: 32px;">
+      <div class="deal-card">
+        <div class="deal-image" style="background-image: linear-gradient(135deg, rgba(13,27,42,0.4), rgba(13,27,42,0.7)), url('https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600'); background-size: cover; background-position: center;">
+          <span class="deal-image-tag">HOTEL</span>
+          <div class="deal-heart">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="deal-body">
+          <div class="deal-title">Luxury Goa Getaway</div>
+          <div class="deal-sub">5★ Resort · 3D/2N · Goa, India</div>
+          <div class="deal-price-row">
+            <span class="deal-price">₹16,999</span>
+            <span class="deal-price-original">₹22,999</span>
+            <span class="deal-discount">26% OFF</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="deal-card">
+        <div class="deal-image" style="background-image: linear-gradient(135deg, rgba(13,27,42,0.4), rgba(13,27,42,0.7)), url('https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600'); background-size: cover; background-position: center;">
+          <span class="deal-image-tag">PACKAGE</span>
+          <div class="deal-heart">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#C9A84C" stroke="#C9A84C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="deal-body">
+          <div class="deal-title">Dubai Holiday Package</div>
+          <div class="deal-sub">4★ Hotel · 5D/4N · Dubai</div>
+          <div class="deal-price-row">
+            <span class="deal-price">₹24,500</span>
+            <span class="deal-price-original">₹29,999</span>
+            <span class="deal-discount">18% OFF</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="deal-card">
+        <div class="deal-image" style="background-image: linear-gradient(135deg, rgba(13,27,42,0.4), rgba(13,27,42,0.7)), url('https://images.unsplash.com/photo-1602002418082-a4443e081dd1?w=600'); background-size: cover; background-position: center;">
+          <span class="deal-image-tag">VILLA</span>
+          <span class="chip chip-premium" style="position: absolute; bottom: 12px; left: 12px;">BEST VALUE</span>
+          <div class="deal-heart">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="deal-body">
+          <div class="deal-title">Kerala Backwaters</div>
+          <div class="deal-sub">Houseboat · 3D/2N · Alleppey</div>
+          <div class="deal-price-row">
+            <span class="deal-price">₹12,099</span>
+            <span class="deal-price-original">₹15,500</span>
+            <span class="deal-discount">22% OFF</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">News card (compact)</div>
+    <div class="stack-sm" style="margin-bottom: 32px;">
+      <div class="news-card">
+        <div class="news-thumb" style="background-image: linear-gradient(135deg, rgba(13,27,42,0.3), rgba(13,27,42,0.6)), url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=200'); background-size: cover;"></div>
+        <div class="news-body">
+          <div class="t-overline" style="color: var(--ink-600); margin-bottom: 4px;">AVIATION</div>
+          <div class="news-title">Air India Orders 470 Aircraft from Airbus &amp; Boeing</div>
+          <div class="news-meta">Travel World · 5h ago · 3 min read</div>
+        </div>
+      </div>
+      <div class="news-card">
+        <div class="news-thumb" style="background-image: linear-gradient(135deg, rgba(13,27,42,0.3), rgba(13,27,42,0.6)), url('https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=200'); background-size: cover;"></div>
+        <div class="news-body">
+          <div class="t-overline" style="color: var(--ink-600); margin-bottom: 4px;">INDUSTRY</div>
+          <div class="news-title">Ministry of Tourism Announces New Incredible India 2.0 Campaign</div>
+          <div class="news-meta">Travel World · 2h ago · 5 min read</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">List item (members, jobs, bookings)</div>
+    <div class="stack-sm">
+      <div class="list-item">
+        <div class="list-avatar">RS</div>
+        <div class="list-text">
+          <div class="list-title">Rakesh Sharma</div>
+          <div class="list-subtitle">rakesh@sharmatravels.com</div>
+        </div>
+        <span class="chip chip-success"><span class="dot"></span>Active</span>
+        <svg class="list-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </div>
+      <div class="list-item">
+        <div class="list-avatar" style="background: linear-gradient(135deg, #b8a6d4, #7a5fa3);">PM</div>
+        <div class="list-text">
+          <div class="list-title">Priya Mehta</div>
+          <div class="list-subtitle">priya@holidaysindia.com</div>
+        </div>
+        <span class="chip chip-success"><span class="dot"></span>Active</span>
+        <svg class="list-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </div>
+      <div class="list-item">
+        <div class="list-avatar" style="background: linear-gradient(135deg, #a8c8e6, #4a7eb0);">SI</div>
+        <div class="list-text">
+          <div class="list-title">Suresh Iyer</div>
+          <div class="list-subtitle">suresh@iyertravels.com</div>
+        </div>
+        <span class="chip chip-warning"><span class="dot"></span>Pending</span>
+        <svg class="list-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       12. NAVIGATION
+       ============================================ -->
+  <section class="section" id="nav">
+    <div class="t-overline section-num">12 · COMPONENTS</div>
+    <h2 class="section-title">Navigation</h2>
+    <p class="section-sub">App bar (top, with greeting and notification bell) and bottom nav (4 tabs, no More tab). The active bottom-nav icon is the only place gold appears in chrome.</p>
+
+    <div class="sub-title">App bar</div>
+    <div class="preview-frame" style="margin-bottom: 32px;">
+      <div class="appbar">
+        <div class="appbar-greeting">
+          <strong>Hello, Rakesh 👋</strong>
+          <span>Good Morning</span>
+        </div>
+        <div class="appbar-bell">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Bottom nav — 4 tabs, locked</div>
+    <div class="preview-frame">
+      <div class="bottomnav">
+        <div class="bottomnav-item active">
+          <svg class="bottomnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          Home
+        </div>
+        <div class="bottomnav-item">
+          <svg class="bottomnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Discover
+        </div>
+        <div class="bottomnav-item">
+          <svg class="bottomnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          My Space
+        </div>
+        <div class="bottomnav-item">
+          <svg class="bottomnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+          Profile
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       13. STATES — LOADING / EMPTY / ERROR
+       ============================================ -->
+  <section class="section" id="states">
+    <div class="t-overline section-num">13 · STATES</div>
+    <h2 class="section-title">Loading, empty, error</h2>
+    <p class="section-sub">Mandatory on every screen that loads data. Loading shimmers match the populated layout. Empty shows the path forward. Error always offers a retry.</p>
+
+    <div class="grid grid-3">
+      <!-- LOADING -->
+      <div>
+        <div class="t-overline" style="margin-bottom: 12px; color: var(--ink-600);">LOADING</div>
+        <div class="skel-card">
+          <div class="skel-image"></div>
+          <div class="skel-body">
+            <div class="skel skel-line" style="width: 80%;"></div>
+            <div class="skel skel-line" style="width: 60%;"></div>
+            <div class="skel skel-line" style="width: 40%; height: 18px; margin-top: 8px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMPTY -->
+      <div>
+        <div class="t-overline" style="margin-bottom: 12px; color: var(--ink-600);">EMPTY</div>
+        <div class="state-card">
+          <svg class="state-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="10" y="14" width="44" height="38" rx="3"/>
+            <path d="M10 24h44M22 32h12M22 38h20M22 44h8"/>
+          </svg>
+          <div class="state-title">No bookings yet</div>
+          <div class="state-body">Your bookings will appear here once you make your first reservation.</div>
+          <button class="btn btn-secondary btn-sm">Explore Deals</button>
+        </div>
+      </div>
+
+      <!-- ERROR -->
+      <div>
+        <div class="t-overline" style="margin-bottom: 12px; color: var(--ink-600);">ERROR</div>
+        <div class="state-card">
+          <svg class="state-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--error);">
+            <circle cx="32" cy="32" r="22"/>
+            <line x1="32" y1="22" x2="32" y2="34"/>
+            <line x1="32" y1="42" x2="32.01" y2="42"/>
+          </svg>
+          <div class="state-title">Something went wrong</div>
+          <div class="state-body">We couldn't load your data. Please check your connection and try again.</div>
+          <button class="btn btn-primary btn-sm">Try Again</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer note -->
+  <section style="padding: 48px 0 16px; text-align: center;">
+    <div class="t-caption">Travel World Online · Design System v1.1 · May 2026</div>
+  </section>
+
+</div>
+
+<script>
+  // ============================================
+  // THEME TOGGLE
+  // ============================================
+  function toggleTheme() {
+    const root = document.documentElement;
+    const current = root.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    document.getElementById('theme-label').textContent = next === 'light' ? 'Light' : 'Dark';
+    updateHexValues();
+  }
+
+  // ============================================
+  // SHOW LIVE HEX VALUES (reflects current theme)
+  // ============================================
+  function updateHexValues() {
+    const tokens = [
+      'surface-primary', 'surface-card', 'surface-tertiary', 'line-soft',
+      'gold-primary', 'gold-accent', 'navy-deep',
+      'ink-900', 'ink-600', 'ink-400',
+      'success', 'warning', 'error'
+    ];
+    const styles = getComputedStyle(document.documentElement);
+    tokens.forEach(t => {
+      const el = document.getElementById('hex-' + t);
+      if (el) {
+        const val = styles.getPropertyValue('--' + t).trim();
+        el.textContent = val.toUpperCase();
+      }
+    });
+  }
+
+  // Init
+  updateHexValues();
+</script>
+
+</body>
+</html>

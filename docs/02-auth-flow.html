@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Travel World Online — Auth Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   PAGE BACKGROUND (the gallery view)
+   ============================================ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #1a1a1a;
+  color: #fff;
+  padding: 48px 24px 80px;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.gallery-header {
+  text-align: center;
+  margin-bottom: 56px;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.gallery-eyebrow {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #C9A84C;
+  margin-bottom: 16px;
+}
+.gallery-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+.gallery-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 24px;
+  color: #9E9E9E;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* Grid of phone frames */
+.frames-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 48px 32px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+.frame-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.frame-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 16px;
+}
+.frame-label span {
+  color: #9E9E9E;
+  font-weight: 400;
+  margin-left: 8px;
+}
+
+/* ============================================
+   PHONE FRAME (iPhone-ish)
+   ============================================ */
+.phone {
+  width: 380px;
+  height: 800px;
+  background: #000;
+  border-radius: 44px;
+  padding: 8px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+  position: relative;
+  flex-shrink: 0;
+}
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 36px;
+  overflow: hidden;
+  position: relative;
+  font-family: 'DM Sans', sans-serif;
+}
+/* iOS-style notch */
+.notch {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110px;
+  height: 28px;
+  background: #000;
+  border-radius: 16px;
+  z-index: 100;
+}
+/* Status bar */
+.status-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+  padding: 14px 28px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 50;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+}
+.status-time {
+  letter-spacing: -0.01em;
+}
+.status-icons {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+/* Light vs dark status bar */
+.status-light { color: #1A1A1A; }
+.status-dark { color: #fff; }
+
+/* ============================================
+   SHARED — type tokens
+   ============================================ */
+.t-playfair { font-family: 'Playfair Display', serif; }
+.t-dm { font-family: 'DM Sans', sans-serif; }
+
+/* Buttons (component reused across screens) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 24px;
+  border-radius: 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
+  width: 100%;
+  min-height: 52px;
+  transition: all 200ms ease;
+}
+.btn-primary {
+  background: #C9A84C;
+  color: #1A1A1A;
+}
+.btn-primary:hover {
+  background: #E8D08A;
+  box-shadow: 0 6px 16px rgba(201, 168, 76, 0.35);
+}
+.btn-primary-dark {
+  background: #D4AF37;
+  color: #0D1B2A;
+}
+.btn-secondary-light {
+  background: transparent;
+  color: #1A1A1A;
+  border: 1px solid #1A1A1A;
+}
+.btn-secondary-dark {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.4);
+}
+.btn-ghost-dark {
+  background: transparent;
+  color: #fff;
+}
+
+/* ============================================
+   SCREEN 1 — SPLASH (dark, deep navy)
+   ============================================ */
+.splash {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #0D1B2A 0%, #06111d 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+}
+/* Subtle decorative globe lines */
+.splash::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 600px;
+  height: 600px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 65%);
+  border-radius: 50%;
+}
+.splash::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 320px;
+  height: 320px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(201,168,76,0.08);
+  border-radius: 50%;
+}
+.splash-logo-mark {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 2px solid #C9A84C;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+  position: relative;
+  z-index: 2;
+}
+.splash-logo-mark svg { color: #C9A84C; }
+.splash-name {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.15;
+  text-align: center;
+  color: #FAF8F3;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+  position: relative;
+  z-index: 2;
+}
+.splash-name .accent {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  color: rgba(255,255,255,0.6);
+  margin-top: 8px;
+}
+.splash-tagline {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 14px;
+  color: #C9A84C;
+  margin-top: 24px;
+  letter-spacing: 0.02em;
+  position: relative;
+  z-index: 2;
+}
+.splash-progress {
+  position: absolute;
+  bottom: 60px;
+  left: 32px;
+  right: 32px;
+  height: 2px;
+  background: rgba(201,168,76,0.15);
+  border-radius: 1px;
+  overflow: hidden;
+  z-index: 2;
+}
+.splash-progress-fill {
+  height: 100%;
+  width: 65%;
+  background: #C9A84C;
+  border-radius: 1px;
+}
+
+/* ============================================
+   SCREENS 2-4 — ONBOARDING (full-bleed image + bottom card)
+   ============================================ */
+.onb {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #0D1B2A;
+}
+.onb-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 62%;
+  background-size: cover;
+  background-position: center;
+}
+.onb-image::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background: linear-gradient(180deg, transparent, rgba(13,27,42,0.8));
+}
+.onb-skip {
+  position: absolute;
+  top: 56px;
+  right: 24px;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(8px);
+  padding: 6px 14px;
+  border-radius: 999px;
+  z-index: 10;
+  cursor: pointer;
+}
+.onb-card {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #FAF8F3;
+  border-radius: 32px 32px 0 0;
+  padding: 36px 28px 36px;
+  min-height: 44%;
+  display: flex;
+  flex-direction: column;
+}
+.onb-eyebrow {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #C9A84C;
+  margin-bottom: 14px;
+}
+.onb-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+  color: #1A1A1A;
+  margin-bottom: 14px;
+}
+.onb-body {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 22px;
+  color: #5E5E5E;
+  margin-bottom: 28px;
+}
+.onb-dots {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 24px;
+  margin-top: auto;
+}
+.onb-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #E8E5DC;
+}
+.onb-dot.active {
+  width: 24px;
+  background: #C9A84C;
+}
+.onb-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.onb-back {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: transparent;
+  border: 1px solid #E8E5DC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1A1A1A;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   SCREEN 5 — LOGIN (light, cream)
+   ============================================ */
+.login {
+  width: 100%;
+  height: 100%;
+  background: #FAF8F3;
+  padding: 64px 28px 28px;
+  position: relative;
+  overflow-y: auto;
+}
+.login-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid #C9A84C;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+.login-logo svg { color: #C9A84C; }
+.login-name {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  text-align: center;
+  color: #1A1A1A;
+  margin-bottom: 32px;
+}
+.login-name .small {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  color: #9E9E9E;
+  display: block;
+  margin-top: 4px;
+}
+.login-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.2;
+  color: #1A1A1A;
+  margin-bottom: 6px;
+}
+.login-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 22px;
+  color: #5E5E5E;
+  margin-bottom: 28px;
+}
+.form-field {
+  margin-bottom: 16px;
+}
+.form-label {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  color: #5E5E5E;
+  margin-bottom: 8px;
+  display: block;
+}
+.form-input {
+  width: 100%;
+  padding: 16px;
+  background: #FFFFFF;
+  border: 1px solid #E8E5DC;
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #1A1A1A;
+  min-height: 52px;
+}
+.form-input::placeholder { color: #9E9E9E; }
+.form-input-with-icon {
+  position: relative;
+}
+.form-input-with-icon .form-input {
+  padding-right: 48px;
+}
+.form-input-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9E9E9E;
+  cursor: pointer;
+}
+.row-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #1A1A1A;
+}
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: #C9A84C;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.link-gold {
+  color: #C9A84C;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+}
+.divider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+  color: #9E9E9E;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+}
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: #E8E5DC;
+}
+.social-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+.social-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #FFFFFF;
+  border: 1px solid #E8E5DC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+.social-btn:hover {
+  border-color: #C9A84C;
+}
+.bottom-link {
+  text-align: center;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #5E5E5E;
+  margin-top: 16px;
+}
+.bottom-link a {
+  color: #C9A84C;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ============================================
+   SCREEN 6 — REGISTER (similar to login)
+   ============================================ */
+.register {
+  width: 100%;
+  height: 100%;
+  background: #FAF8F3;
+  padding: 56px 28px 28px;
+  overflow-y: auto;
+}
+.back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: #FFFFFF;
+  border: 1px solid #E8E5DC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1A1A1A;
+  margin-bottom: 20px;
+}
+.row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.terms-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 16px 0 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  line-height: 18px;
+  color: #5E5E5E;
+}
+.terms-row a {
+  color: #C9A84C;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ============================================
+   SCREEN 7 — VERIFY EMAIL
+   ============================================ */
+.verify {
+  width: 100%;
+  height: 100%;
+  background: #FAF8F3;
+  padding: 56px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+.verify-back {
+  position: absolute;
+  top: 56px;
+  left: 24px;
+}
+.verify-illustration {
+  margin: 32px auto 0;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.verify-illo-svg {
+  width: 100%;
+  height: 100%;
+}
+.verify-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1.2;
+  color: #1A1A1A;
+  margin-top: 32px;
+  margin-bottom: 12px;
+}
+.verify-body {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 22px;
+  color: #5E5E5E;
+  max-width: 280px;
+  margin: 0 auto 4px;
+}
+.verify-email-line {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #1A1A1A;
+  margin-bottom: 32px;
+}
+.verify-actions {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.verify-signout {
+  text-align: center;
+  margin-top: 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #5E5E5E;
+}
+.verify-signout a {
+  color: #1A1A1A;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid #1A1A1A;
+}
+
+/* Section divider in the gallery */
+.gallery-section {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 32px 0 8px;
+  color: #C9A84C;
+}
+.gallery-section-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(201,168,76,0.2);
+}
+.gallery-section-label {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================
+     GALLERY HEADER
+     ============================================ -->
+<div class="gallery-header">
+  <div class="gallery-eyebrow">FLOW 01 · AUTHENTICATION</div>
+  <h1 class="gallery-title">First impressions, locked in.</h1>
+  <p class="gallery-sub">Six screens covering the entire entry experience — splash, onboarding, login, register, and email verification. Editorial photography, restrained gold, professional tone.</p>
+</div>
+
+<div class="frames-grid">
+
+  <!-- SECTION 1 — Splash + Onboarding -->
+  <div class="gallery-section">
+    <span class="gallery-section-label">01 · Splash</span>
+    <div class="gallery-section-line"></div>
+  </div>
+
+  <!-- ============================================
+       SCREEN 1 — SPLASH
+       ============================================ -->
+  <div class="frame-block">
+    <div class="frame-label">Splash <span>3–4 sec</span></div>
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="status-bar status-dark">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">
+            <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx="0.5"/><rect x="4" y="4" width="3" height="7" rx="0.5"/><rect x="8" y="2" width="3" height="9" rx="0.5"/><rect x="12" y="0" width="3" height="11" rx="0.5"/></svg>
+            <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><path d="M7.5 1.5C5.5 1.5 3.6 2.3 2.1 3.6c-.2.2-.2.5 0 .7l1 1c.2.2.5.2.7 0C5 4.4 6.2 4 7.5 4s2.5.4 3.7 1.3c.2.2.5.2.7 0l1-1c.2-.2.2-.5 0-.7C11.4 2.3 9.5 1.5 7.5 1.5zm0 3.5c-1.1 0-2.2.4-3 1.2-.2.2-.2.5 0 .7l1 1c.2.2.5.2.7 0 .4-.3.8-.5 1.3-.5s.9.2 1.3.5c.2.2.5.2.7 0l1-1c.2-.2.2-.5 0-.7-.8-.8-1.9-1.2-3-1.2zm0 3.5c-.4 0-.8.2-1 .5-.2.2-.2.5 0 .7l.7.7c.2.2.5.2.7 0l.7-.7c.2-.2.2-.5 0-.7-.3-.3-.7-.5-1.1-.5z"/></svg>
+            <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x="0.5" y="0.5" width="21" height="10" rx="2.5" stroke="currentColor" opacity="0.5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/><rect x="22" y="3.5" width="1" height="4" rx="0.5" fill="currentColor" opacity="0.5"/></svg>
+          </span>
+        </div>
+
+        <div class="splash">
+          <div class="splash-logo-mark">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M4 24 Q24 14 44 24 Q24 34 4 24" stroke="currentColor" stroke-width="1.2" fill="none"/>
+              <path d="M24 4 Q14 24 24 44 Q34 24 24 4" stroke="currentColor" stroke-width="1.2" fill="none"/>
+            </svg>
+          </div>
+          <div class="splash-name">
+            TRAVEL WORLD
+            <span class="accent">ONLINE</span>
+          </div>
+          <div class="splash-tagline">Travel Business. Elevated.</div>
+          <div class="splash-progress">
+            <div class="splash-progress-fill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gallery-section">
+    <span class="gallery-section-label">02 · Onboarding (3 slides)</span>
+    <div class="gallery-section-line"></div>
+  </div>
+
+  <!-- ============================================
+       SCREEN 2 — ONBOARDING SLIDE 1: CONNECT
+       ============================================ -->
+  <div class="frame-block">
+    <div class="frame-label">Onboarding 01 <span>Connect</span></div>
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="status-bar status-dark">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">
+            <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx="0.5"/><rect x="4" y="4" width="3" height="7" rx="0.5"/><rect x="8" y="2" width="3" height="9" rx="0.5"/><rect x="12" y="0" width="3" height="11" rx="0.5"/></svg>
+            <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x="0.5" y="0.5" width="21" height="10" rx="2.5" stroke="currentColor" opacity="0.5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg>
+          </span>
+        </div>
+
+        <div class="onb">
+          <div class="onb-image" style="background-image: url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=900&q=80');"></div>
+          <div class="onb-skip">Skip</div>
+          <div class="onb-card">
+            <div class="onb-eyebrow">01 · CONNECT</div>
+            <h2 class="onb-title">Your association,<br>at your fingertips.</h2>
+            <p class="onb-body">Stay in sync with TAAI, TAFI, IATA and India's leading travel associations. Read circulars, find members, and never miss an industry update.</p>
+            <div class="onb-dots">
+              <div class="onb-dot active"></div>
+              <div class="onb-dot"></div>
+              <div class="onb-dot"></div>
+            </div>
+            <div class="onb-actions">
+              <button class="btn btn-primary">
+                Next
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       SCREEN 3 — ONBOARDING SLIDE 2: DISCOVER
+       ============================================ -->
+  <div class="frame-block">
+    <div class="frame-label">Onboarding 02 <span>Discover</span></div>
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="status-bar status-dark">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">
+            <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx="0.5"/><rect x="4" y="4" width="3" height="7" rx="0.5"/><rect x="8" y="2" width="3" height="9" rx="0.5"/><rect x="12" y="0" width="3" height="11" rx="0.5"/></svg>
+            <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x="0.5" y="0.5" width="21" height="10" rx="2.5" stroke="currentColor" opacity="0.5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg>
+          </span>
+        </div>
+
+        <div class="onb">
+          <div class="onb-image" style="background-image: url('https://images.unsplash.com/photo-1542359649-31e03cd4d909?w=900&q=80');"></div>
+          <div class="onb-skip">Skip</div>
+          <div class="onb-card">
+            <div class="onb-eyebrow">02 · DISCOVER</div>
+            <h2 class="onb-title">The B2B marketplace,<br>made for agents.</h2>
+            <p class="onb-body">Discover hotels, packages, and luxury properties. Post your own deals, find a DMC, and connect with verified sellers across the trade.</p>
+            <div class="onb-dots">
+              <div class="onb-dot"></div>
+              <div class="onb-dot active"></div>
+              <div class="onb-dot"></div>
+            </div>
+            <div class="onb-actions">
+              <button class="onb-back">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+                </svg>
+              </button>
+              <button class="btn btn-primary" style="flex: 1;">
+                Next
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       SCREEN 4 — ONBOARDING SLIDE 3: GROW
+       ============================================ -->
+  <div class="frame-block">
+    <div class="frame-label">Onboarding 03 <span>Grow</span></div>
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="status-bar status-dark">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">
+            <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx="0.5"/><rect x="4" y="4" width="3" height="7" rx="0.5"/><rect x="8" y="2" width="3" height="9" rx="0.5"/><rect x="12" y="0" width="3" height="11" rx="0.5"/></svg>
+            <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x="0.5" y="0.5" width="21" height="10" rx="2.5" stroke="currentColor" opacity="0.5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg>
+          </span>
+        </div>
+
+        <div class="onb">
+          <div class="onb-image" style="background-image: url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=900&q=80');"></div>
+          <div class="onb-card">
+            <div class="onb-eyebrow">03 · GROW</div>
+            <h2 class="onb-title">Upskill, book, and<br>scale your agency.</h2>
+            <p class="onb-body">Train on the Campus, book insurance and visas for clients, find jobs in the industry, and run your travel business — all in one professional tool.</p>
+            <div class="onb-dots">
+              <div class="onb-dot"></div>
+              <div class="onb-dot"></div>
+              <div class="onb-dot active"></div>
+            </div>
+            <div class="onb-actions">
+              <button class="onb-back">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+                </svg>
+              </button>
+              <button class="btn btn-primary" style="flex: 1;">Get Started</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gallery-section">
+    <span class="gallery-section-label">03 · Authentication</span>
+    <div class="gallery-section-line"></div>
+  </div>
+
+  <!-- ============================================
+       SCREEN 5 — LOGIN
+       ============================================ -->
+  <div class="frame-block">
+    <div class="frame-label">Login</div>
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="status-bar status-light">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">
+            <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx="0.5"/><rect x="4" y="4" width="3" height="7" rx="0.5"/><rect x="8" y="2" width="3" height="9" rx="0.5"/><rect x="12" y="0" width="3" height="11" rx="0.5"/></svg>
+            <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x="0.5" y="0.5" width="21" height="10" rx="2.5" stroke="currentColor" opacity="0.5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg>
+          </span>
+        </div>
+
+        <div class="login">
+          <div class="login-logo">
+            <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M4 24 Q24 14 44 24 Q24 34 4 24" stroke="currentColor" stroke-width="1.2" fill="none"/>
+              <path d="M24 4 Q14 24 24 44 Q34 24 24 4" stroke="currentColor" stroke-width="1.2" fill="none"/>
+            </svg>
+          </div>
+          <div class="login-name">
+            TRAVEL WORLD
+            <span class="small">ONLINE</span>
+          </div>
+
+          <h1 class="login-title">Welcome back</h1>
+          <p class="login-sub">Sign in to continue to your travel business.</p>
+
+          <div class="form-field">
+            <label class="form-label">Mobile Number</label>
+            <input type="text" class="form-input" value="+91 98765 43210">
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Password</label>
+            <div class="form-input-with-icon">
+              <input type="password" class="form-input" value="••••••••••">
+              <svg class="form-input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="row-between">
+            <div class="checkbox-row">
+              <div class="checkbox">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+              Remember Me
+            </div>
+            <a href="#" class="link-gold">Forgot Password?</a>
+          </div>
+
+          <button class="btn btn-primary" style="margin-bottom: 8px;">Login</button>
+
+          <div class="divider-row">
+            <div class="divider-line"></div>
+            <span>or continue with</span>
+            <div class="divider-line"></div>
+          </div>
+
+          <div class="social-row">
+            <div class="social-btn">
+              <svg width="22" height="22" viewBox="0 0 48 48">
+                <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
+                <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"/>
+                <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
+                <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
+              </svg>
+            </div>
+            <div class="social-btn">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#1A1A1A">
+                <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.53 4.08zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+              </svg>
+            </div>
+            <div class="social-btn">
+              <svg width="22" height="22" viewBox="0 0 23 23" fill="none">
+                <rect x="1" y="1" width="10" height="10" fill="#F25022"/>
+                <rect x="12" y="1" width="10" height="10" fill="#7FBA00"/>
+                <rect x="1" y="12" width="10" height="10" fill="#00A4EF"/>
+                <rect x="12" y="12" width="10" height="10" fill="#FFB900"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="bottom-link">
+            Don't have an account? <a href="#">Sign Up</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       SCREEN 6 — REGISTER
+       ============================================ -->
+  <div class="frame-block">
+    <div class="frame-label">Register</div>
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="status-bar status-light">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">
+            <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx="0.5"/><rect x="4" y="4" width="3" height="7" rx="0.5"/><rect x="8" y="2" width="3" height="9" rx="0.5"/><rect x="12" y="0" width="3" height="11" rx="0.5"/></svg>
+            <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x="0.5" y="0.5" width="21" height="10" rx="2.5" stroke="currentColor" opacity="0.5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg>
+          </span>
+        </div>
+
+        <div class="register">
+          <div class="back-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+            </svg>
+          </div>
+
+          <h1 class="login-title">Create an account</h1>
+          <p class="login-sub">Join thousands of travel professionals on India's premier B2B platform.</p>
+
+          <div class="row-2col">
+            <div class="form-field">
+              <label class="form-label">First Name</label>
+              <input type="text" class="form-input" value="Rakesh">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Last Name</label>
+              <input type="text" class="form-input" value="Sharma">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input" value="rakesh@sharmatravels.com">
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Mobile Number</label>
+            <input type="text" class="form-input" placeholder="+91 98765 43210">
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Password</label>
+            <div class="form-input-with-icon">
+              <input type="password" class="form-input" placeholder="At least 8 characters">
+              <svg class="form-input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="terms-row">
+            <div class="checkbox" style="flex-shrink: 0;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <span>By signing up, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</span>
+          </div>
+
+          <button class="btn btn-primary">Create Account</button>
+
+          <div class="bottom-link" style="margin-top: 20px;">
+            Already have an account? <a href="#">Sign In</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       SCREEN 7 — VERIFY EMAIL
+       ============================================ -->
+  <div class="frame-block">
+    <div class="frame-label">Verify Email</div>
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="status-bar status-light">
+          <span class="status-time">9:41</span>
+          <span class="status-icons">
+            <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx="0.5"/><rect x="4" y="4" width="3" height="7" rx="0.5"/><rect x="8" y="2" width="3" height="9" rx="0.5"/><rect x="12" y="0" width="3" height="11" rx="0.5"/></svg>
+            <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x="0.5" y="0.5" width="21" height="10" rx="2.5" stroke="currentColor" opacity="0.5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg>
+          </span>
+        </div>
+
+        <div class="verify">
+          <div class="verify-back">
+            <div class="back-btn" style="margin-bottom: 0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="verify-illustration">
+            <!-- Line-art envelope illustration in navy -->
+            <svg class="verify-illo-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Background circle subtle -->
+              <circle cx="100" cy="100" r="84" stroke="#E8E5DC" stroke-width="1" stroke-dasharray="3 5"/>
+
+              <!-- Stars (decorative, navy) -->
+              <g stroke="#0D1B2A" stroke-width="1.5" stroke-linecap="round">
+                <path d="M40 50 L40 58 M36 54 L44 54"/>
+                <path d="M160 60 L160 66 M157 63 L163 63"/>
+                <path d="M50 150 L50 156 M47 153 L53 153"/>
+                <path d="M155 145 L155 151 M152 148 L158 148"/>
+              </g>
+
+              <!-- Envelope body -->
+              <rect x="55" y="75" width="90" height="65" rx="4" stroke="#0D1B2A" stroke-width="2"/>
+
+              <!-- Envelope flap (open) -->
+              <path d="M55 79 L100 110 L145 79" stroke="#0D1B2A" stroke-width="2" stroke-linejoin="round"/>
+
+              <!-- Letter coming out -->
+              <rect x="68" y="55" width="64" height="42" rx="2" fill="#FAF8F3" stroke="#0D1B2A" stroke-width="2"/>
+
+              <!-- Letter lines -->
+              <line x1="76" y1="68" x2="124" y2="68" stroke="#0D1B2A" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="76" y1="76" x2="116" y2="76" stroke="#0D1B2A" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+              <line x1="76" y1="84" x2="120" y2="84" stroke="#0D1B2A" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+
+              <!-- Checkmark badge gold -->
+              <circle cx="138" cy="62" r="14" fill="#C9A84C"/>
+              <path d="M132 62 L136 66 L144 58" stroke="#1A1A1A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+          </div>
+
+          <h2 class="verify-title">Check your inbox</h2>
+          <p class="verify-body">We've sent a verification link to</p>
+          <div class="verify-email-line">rakesh@sharmatravels.com</div>
+          <p class="verify-body" style="margin-bottom: 8px;">Tap the link in the email to activate your account, then come back here.</p>
+
+          <div class="verify-actions">
+            <button class="btn btn-primary">I Have Verified</button>
+            <button class="btn btn-secondary-light">Resend Email</button>
+          </div>
+
+          <div class="verify-signout">
+            Wrong account? <a href="#">Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
