@@ -1,0 +1,121 @@
+<svg viewBox="0 0 390 520" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#050D18"/>
+      <stop offset="100%" stop-color="#0A1C30"/>
+    </linearGradient>
+    <linearGradient id="mtn-back" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1A3048"/>
+      <stop offset="100%" stop-color="#0F2035"/>
+    </linearGradient>
+    <linearGradient id="mtn-mid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0F2238"/>
+      <stop offset="100%" stop-color="#091828"/>
+    </linearGradient>
+    <linearGradient id="mtn-front" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0A1A2C"/>
+      <stop offset="100%" stop-color="#060F1C"/>
+    </linearGradient>
+    <linearGradient id="fade-bottom" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="50%" stop-color="#0D1B2A" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0D1B2A" stop-opacity="1"/>
+    </linearGradient>
+    <radialGradient id="compass-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#C9A84C" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#0D1B2A" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="aurora" cx="50%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#1A5A3A" stop-opacity="0.18"/>
+      <stop offset="60%" stop-color="#0D2B4A" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#0D1B2A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background sky -->
+  <rect width="390" height="520" fill="url(#sky)"/>
+
+  <!-- Aurora-like glow in sky -->
+  <rect width="390" height="520" fill="url(#aurora)"/>
+
+  <!-- Stars -->
+  <circle cx="22" cy="25" r="1.1" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="55" cy="12" r="0.8" fill="#FFFFFF" opacity="0.6"/>
+  <circle cx="88" cy="38" r="1.3" fill="#C9A84C" opacity="0.8"/>
+  <circle cx="120" cy="18" r="0.9" fill="#FFFFFF" opacity="0.7"/>
+  <circle cx="148" cy="44" r="0.7" fill="#FFFFFF" opacity="0.5"/>
+  <circle cx="178" cy="22" r="1.0" fill="#FFFFFF" opacity="0.6"/>
+  <circle cx="210" cy="10" r="1.2" fill="#FFFFFF" opacity="0.7"/>
+  <circle cx="245" cy="35" r="0.8" fill="#C9A84C" opacity="0.6"/>
+  <circle cx="278" cy="15" r="1.1" fill="#FFFFFF" opacity="0.6"/>
+  <circle cx="312" cy="40" r="0.7" fill="#FFFFFF" opacity="0.5"/>
+  <circle cx="345" cy="20" r="1.2" fill="#FFFFFF" opacity="0.7"/>
+  <circle cx="372" cy="48" r="0.9" fill="#C9A84C" opacity="0.5"/>
+  <circle cx="38" cy="72" r="0.8" fill="#FFFFFF" opacity="0.5"/>
+  <circle cx="165" cy="65" r="0.7" fill="#FFFFFF" opacity="0.4"/>
+  <circle cx="295" cy="68" r="1.0" fill="#FFFFFF" opacity="0.5"/>
+  <circle cx="360" cy="82" r="0.8" fill="#FFFFFF" opacity="0.4"/>
+  <circle cx="18" cy="115" r="0.9" fill="#FFFFFF" opacity="0.4"/>
+  <circle cx="375" cy="125" r="0.7" fill="#FFFFFF" opacity="0.35"/>
+
+  <!-- Constellation lines (Orion-ish) -->
+  <line x1="55" y1="12" x2="88" y2="38" stroke="#C9A84C" stroke-width="0.4" opacity="0.3"/>
+  <line x1="88" y1="38" x2="120" y2="18" stroke="#C9A84C" stroke-width="0.4" opacity="0.3"/>
+  <line x1="210" y1="10" x2="245" y2="35" stroke="#C9A84C" stroke-width="0.4" opacity="0.25"/>
+  <line x1="245" y1="35" x2="278" y2="15" stroke="#C9A84C" stroke-width="0.4" opacity="0.25"/>
+
+  <!-- Hot air balloon -->
+  <!-- Balloon envelope -->
+  <ellipse cx="195" cy="120" rx="48" ry="58" fill="#1A3550" opacity="0.95"/>
+  <ellipse cx="195" cy="120" rx="48" ry="58" fill="none" stroke="#C9A84C" stroke-width="1.2" opacity="0.8"/>
+  <!-- Balloon panels -->
+  <path d="M195 62 Q218 90 218 145 Q207 158 195 178 Q183 158 172 145 Q172 90 195 62Z" fill="#C9A84C" opacity="0.18"/>
+  <path d="M195 62 Q243 78 243 145 Q228 162 195 178" fill="none" stroke="#C9A84C" stroke-width="0.8" opacity="0.4"/>
+  <path d="M195 62 Q147 78 147 145 Q162 162 195 178" fill="none" stroke="#C9A84C" stroke-width="0.8" opacity="0.4"/>
+  <path d="M147 95 Q195 88 243 95" fill="none" stroke="#C9A84C" stroke-width="0.7" opacity="0.35"/>
+  <path d="M148 130 Q195 122 242 130" fill="none" stroke="#C9A84C" stroke-width="0.7" opacity="0.35"/>
+  <path d="M155 160 Q195 152 235 160" fill="none" stroke="#C9A84C" stroke-width="0.6" opacity="0.3"/>
+  <!-- Top highlight -->
+  <ellipse cx="185" cy="80" rx="20" ry="12" fill="#FFFFFF" opacity="0.06"/>
+  <!-- Balloon ropes -->
+  <line x1="170" y1="173" x2="162" y2="195" stroke="#C9A84C" stroke-width="0.8" opacity="0.6"/>
+  <line x1="220" y1="173" x2="228" y2="195" stroke="#C9A84C" stroke-width="0.8" opacity="0.6"/>
+  <line x1="182" y1="178" x2="178" y2="195" stroke="#C9A84C" stroke-width="0.7" opacity="0.5"/>
+  <line x1="208" y1="178" x2="212" y2="195" stroke="#C9A84C" stroke-width="0.7" opacity="0.5"/>
+  <!-- Balloon basket -->
+  <rect x="165" y="195" width="60" height="30" fill="#0F2035" rx="4"/>
+  <rect x="165" y="195" width="60" height="30" fill="none" stroke="#C9A84C" stroke-width="1.0" rx="4" opacity="0.8"/>
+  <!-- Basket weave lines -->
+  <line x1="185" y1="195" x2="185" y2="225" stroke="#C9A84C" stroke-width="0.5" opacity="0.4"/>
+  <line x1="205" y1="195" x2="205" y2="225" stroke="#C9A84C" stroke-width="0.5" opacity="0.4"/>
+  <line x1="165" y1="210" x2="225" y2="210" stroke="#C9A84C" stroke-width="0.5" opacity="0.4"/>
+  <!-- Flame (inside basket, small) -->
+  <ellipse cx="195" cy="198" rx="5" ry="8" fill="#E8D08A" opacity="0.5"/>
+  <ellipse cx="195" cy="200" rx="3" ry="5" fill="#FFFFFF" opacity="0.3"/>
+
+  <!-- Mountain range - back layer -->
+  <path d="M-10 380 L50 260 L100 310 L155 230 L210 290 L265 225 L320 280 L375 240 L400 280 L400 520 L-10 520 Z" fill="url(#mtn-back)"/>
+
+  <!-- Mountain range - mid layer -->
+  <path d="M-10 400 L40 305 L90 345 L145 275 L200 320 L258 265 L315 305 L370 270 L400 300 L400 520 L-10 520 Z" fill="url(#mtn-mid)"/>
+
+  <!-- Dotted path / journey trail across mountains -->
+  <path d="M20 380 Q80 330 140 310 Q200 290 260 295 Q320 300 370 280" fill="none" stroke="#C9A84C" stroke-width="1.2" stroke-dasharray="5,4" opacity="0.5"/>
+  <!-- Path waypoint dots -->
+  <circle cx="80" cy="338" r="3.5" fill="#C9A84C" opacity="0.8"/>
+  <circle cx="195" cy="298" r="3.5" fill="#C9A84C" opacity="0.8"/>
+  <circle cx="315" cy="299" r="3.5" fill="#C9A84C" opacity="0.8"/>
+  <!-- Waypoint labels (small flag-like marks) -->
+  <line x1="80" y1="338" x2="80" y2="322" stroke="#C9A84C" stroke-width="1" opacity="0.7"/>
+  <path d="M80 322 L90 327 L80 332 Z" fill="#C9A84C" opacity="0.6"/>
+
+  <!-- Mountain range - front layer -->
+  <path d="M-10 440 L60 360 L118 400 L175 340 L232 390 L285 350 L340 385 L400 345 L400 520 L-10 520 Z" fill="url(#mtn-front)"/>
+
+  <!-- Snow caps on front mountains -->
+  <path d="M175 340 L158 368 L193 368 Z" fill="#FFFFFF" opacity="0.12"/>
+  <path d="M285 350 L270 374 L300 374 Z" fill="#FFFFFF" opacity="0.1"/>
+  <path d="M60 360 L48 380 L74 380 Z" fill="#FFFFFF" opacity="0.08"/>
+
+  <!-- Bottom fade -->
+  <rect width="390" height="520" fill="url(#fade-bottom)"/>
+</svg>

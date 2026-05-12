@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/router/route_names.dart';
-import '../widgets/onboarding_slide.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -23,35 +22,42 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       eyebrow: '01 · CONNECT',
       title: 'Your association, at your fingertips.',
       body:
-          'Stay in sync with TAAI, TAFI, IATA — circulars, updates, and live events in one place.',
-      color: Color(0xFF1A3A5C),
+          "Stay in sync with TAAI, TAFI, IATA and India's leading travel associations. Read circulars, find members, and never miss an industry update.",
+      illustration: 'assets/illustrations/onboarding_1.svg',
     ),
     (
       eyebrow: '02 · DISCOVER',
       title: 'The B2B marketplace, made for agents.',
       body:
-          'Compare hotels, packages, transport, and luxury products — all vetted for travel professionals.',
-      color: Color(0xFF0A2535),
+          'Discover hotels, packages, and luxury properties. Post your own deals, find a DMC, and connect with verified sellers across the trade.',
+      illustration: 'assets/illustrations/onboarding_2.svg',
     ),
     (
       eyebrow: '03 · GROW',
       title: 'Upskill, book, and scale your agency.',
       body:
-          'Access destination specialist courses, live TV, and exclusive agent tools — all in one platform.',
-      color: Color(0xFF1C2B1A),
+          'Train on the Campus, book insurance and visas for clients, and run your travel business — all in one professional tool.',
+      illustration: 'assets/illustrations/onboarding_3.svg',
     ),
   ];
 
+  void _goToPage(int page) {
+    _controller.animateToPage(
+      page,
+      duration: const Duration(milliseconds: 380),
+      curve: Curves.easeInOut,
+    );
+  }
+
   void _next() {
     if (_currentPage < _slides.length - 1) {
-      _controller.nextPage(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      );
+      _goToPage(_currentPage + 1);
     } else {
       context.go(RouteNames.login);
     }
   }
+
+  void _prev() => _goToPage(_currentPage - 1);
 
   @override
   void initState() {
@@ -67,90 +73,170 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final topPad = MediaQuery.paddingOf(context).top;
+    final bottomPad = MediaQuery.paddingOf(context).bottom;
+
+    // Card height: 44% of screen
+    final cardHeight = size.height * 0.44;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      // Static navy — never changes between slides
+      backgroundColor: const Color(0xFF0D1B2A),
       body: Stack(
         children: [
-          // Full-bleed slides
-          PageView.builder(
-            controller: _controller,
-            physics: const BouncingScrollPhysics(),
-            onPageChanged: (i) => setState(() => _currentPage = i),
-            itemCount: _slides.length,
-            itemBuilder: (_, i) {
-              final s = _slides[i];
-              return OnboardingSlide(
-                eyebrow: s.eyebrow,
-                title: s.title,
-                body: s.body,
-                accentColor: s.color,
-              );
-            },
+          // — Swipeable illustration PageView (fills everything above the card)
+          Positioned.fill(
+            bottom: cardHeight - 32,
+            child: PageView.builder(
+              controller: _controller,
+              physics: const BouncingScrollPhysics(),
+              onPageChanged: (i) => setState(() => _currentPage = i),
+              itemCount: _slides.length,
+              itemBuilder: (_, i) => SvgPicture.asset(
+                _slides[i].illustration,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+              ),
+            ),
           ),
-          // Pagination dots + navigation buttons
+
+          // — Skip button (top-right, frosted pill)
           Positioned(
-            bottom: AppSpacing.xl,
-            left: AppSpacing.lg,
-            right: AppSpacing.lg,
-            child: Row(
-              children: [
-                // Animated pagination dots
-                Row(
-                  children: List.generate(
-                    _slides.length,
-                    (i) => AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeInOut,
-                      margin: const EdgeInsets.only(right: 6),
-                      width: i == _currentPage ? 24 : 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: i == _currentPage
-                            ? AppColors.goldPrimary
-                            : Colors.white.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(999),
+            top: topPad + 12,
+            right: 20,
+            child: GestureDetector(
+              onTap: () => context.go(RouteNames.login),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.28),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.15),
+                  ),
+                ),
+                child: Text(
+                  'Skip',
+                  style: AppTypography.label.copyWith(
+                    color: Colors.white,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // — White bottom card (static; only text inside animates)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: cardHeight + bottomPad,
+            child: Container(
+              decoration: const BoxDecoration(
+                color: AppColors.surfacePrimary,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+              ),
+              padding: EdgeInsets.fromLTRB(28, 36, 28, 28 + bottomPad),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Animated slide text
+                  Expanded(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 220),
+                      transitionBuilder: (child, anim) => FadeTransition(
+                        opacity: anim,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0, 0.06),
+                            end: Offset.zero,
+                          ).animate(CurvedAnimation(
+                            parent: anim,
+                            curve: Curves.easeOut,
+                          )),
+                          child: child,
+                        ),
+                      ),
+                      child: _SlideContent(
+                        key: ValueKey(_currentPage),
+                        eyebrow: _slides[_currentPage].eyebrow,
+                        title: _slides[_currentPage].title,
+                        body: _slides[_currentPage].body,
                       ),
                     ),
                   ),
-                ),
-                const Spacer(),
-                if (_currentPage > 0)
-                  TextButton(
-                    onPressed: () => _controller.previousPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    ),
-                    child: Text(
-                      'Back',
-                      style: AppTypography.label
-                          .copyWith(color: Colors.white.withValues(alpha: 0.8)),
-                    ),
-                  ),
-                const SizedBox(width: AppSpacing.xs),
-                // Gold CTA with scale press animation
-                _PressableButton(
-                  onTap: _next,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg,
-                      vertical: 14,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.goldPrimary,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      _currentPage == _slides.length - 1
-                          ? 'Get Started'
-                          : 'Next  →',
-                      style: AppTypography.label.copyWith(
-                        color: AppColors.navyDeep,
-                        fontSize: 13,
+
+                  // Pagination dots
+                  Row(
+                    children: List.generate(
+                      _slides.length,
+                      (i) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeInOut,
+                        margin: const EdgeInsets.only(right: 6),
+                        width: i == _currentPage ? 24 : 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: i == _currentPage
+                              ? AppColors.goldPrimary
+                              : AppColors.lineSoft,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 20),
+
+                  // Action row
+                  Row(
+                    children: [
+                      if (_currentPage > 0) ...[
+                        _BackButton(onTap: _prev),
+                        const SizedBox(width: 12),
+                      ],
+                      Expanded(
+                        child: _PressableButton(
+                          onTap: _next,
+                          child: Container(
+                            height: 52,
+                            decoration: BoxDecoration(
+                              color: AppColors.goldPrimary,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  _currentPage == _slides.length - 1
+                                      ? 'Get Started'
+                                      : 'Next',
+                                  style: AppTypography.label.copyWith(
+                                    color: AppColors.navyDeep,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                if (_currentPage < _slides.length - 1) ...[
+                                  const SizedBox(width: 8),
+                                  const Icon(
+                                    Icons.arrow_forward_rounded,
+                                    color: AppColors.navyDeep,
+                                    size: 18,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -159,9 +245,88 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
+// — Text block for each slide
+class _SlideContent extends StatelessWidget {
+  const _SlideContent({
+    super.key,
+    required this.eyebrow,
+    required this.title,
+    required this.body,
+  });
+
+  final String eyebrow;
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          eyebrow,
+          style: AppTypography.overline.copyWith(
+            color: AppColors.goldPrimary,
+            fontSize: 10,
+            letterSpacing: 2.5,
+          ),
+        ),
+        const SizedBox(height: 14),
+        Text(
+          title,
+          style: AppTypography.displayLg.copyWith(
+            color: AppColors.ink900,
+            fontSize: 26,
+            height: 1.22,
+            letterSpacing: -0.3,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          body,
+          style: AppTypography.body.copyWith(
+            color: AppColors.ink600,
+            height: 1.55,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// — Square back-nav button
+class _BackButton extends StatelessWidget {
+  const _BackButton({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.lineSoft, width: 1.5),
+          borderRadius: BorderRadius.circular(14),
+          color: Colors.white,
+        ),
+        child: const Center(
+          child: Icon(
+            Icons.arrow_back_rounded,
+            color: AppColors.ink900,
+            size: 20,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// — Scale micro-interaction wrapper
 class _PressableButton extends StatefulWidget {
   const _PressableButton({required this.onTap, required this.child});
-
   final VoidCallback onTap;
   final Widget child;
 

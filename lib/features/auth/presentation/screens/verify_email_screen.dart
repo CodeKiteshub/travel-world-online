@@ -1,12 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/theme/app_radius.dart';
 import '../../../../core/router/route_names.dart';
+
+const _envelopeSvg = '''
+<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dashed circle ring -->
+  <circle cx="100" cy="100" r="88" stroke="#E8E5DC" stroke-width="1.5" stroke-dasharray="6,4"/>
+
+  <!-- Decorative star crosses -->
+  <line x1="28" y1="44" x2="28" y2="52" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24" y1="48" x2="32" y2="48" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="172" y1="40" x2="172" y2="48" stroke="#1A1A1A" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+  <line x1="168" y1="44" x2="176" y2="44" stroke="#1A1A1A" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+  <line x1="22" y1="148" x2="22" y2="156" stroke="#1A1A1A" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+  <line x1="18" y1="152" x2="26" y2="152" stroke="#1A1A1A" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+  <line x1="174" y1="154" x2="174" y2="162" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="170" y1="158" x2="178" y2="158" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Envelope body -->
+  <rect x="38" y="88" width="124" height="84" rx="4" fill="white" stroke="#1A1A1A" stroke-width="1.5"/>
+
+  <!-- Envelope V-flap -->
+  <path d="M38 92 L100 138 L162 92" stroke="#1A1A1A" stroke-width="1.5" stroke-linejoin="round" fill="none"/>
+
+  <!-- Letter rectangle -->
+  <rect x="62" y="58" width="76" height="60" rx="2" fill="#FAF8F3" stroke="#1A1A1A" stroke-width="1.5"/>
+
+  <!-- Lines on letter -->
+  <line x1="76" y1="76" x2="124" y2="76" stroke="#1A1A1A" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="76" y1="88" x2="124" y2="88" stroke="#1A1A1A" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="76" y1="100" x2="108" y2="100" stroke="#1A1A1A" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+
+  <!-- Gold checkmark badge -->
+  <circle cx="138" cy="62" r="14" fill="#C9A84C"/>
+  <path d="M131 62 L136 68 L145 55" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
+''';
 
 class VerifyEmailScreen extends StatefulWidget {
   const VerifyEmailScreen({super.key});
@@ -29,261 +63,190 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     return Scaffold(
       backgroundColor: colors.surfacePrimary,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(28, 0, 28, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: AppSpacing.md),
-              // Back button
-              IconButton(
-                onPressed: () => context.pop(),
-                icon: Container(
+              const SizedBox(height: 16),
+
+              // — Back button (40×40 circle, white bg, lineSoft border)
+              GestureDetector(
+                onTap: () => context.pop(),
+                child: Container(
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
+                    color: Colors.white,
                     border: Border.all(color: colors.lineSoft),
                   ),
-                  child: Icon(
-                    Icons.arrow_back,
-                    size: 18,
-                    color: colors.ink900,
+                  child: Center(
+                    child: Icon(
+                      Icons.arrow_back_rounded,
+                      size: 18,
+                      color: colors.ink900,
+                    ),
                   ),
                 ),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
               ),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Envelope illustration (line-art style)
-                    _EnvelopeIllustration(color: colors.ink900)
-                        .animate()
-                        .scale(
-                          begin: const Offset(0.8, 0.8),
-                          duration: 500.ms,
-                          curve: Curves.elasticOut,
-                        )
-                        .fadeIn(duration: 300.ms),
-                    const SizedBox(height: AppSpacing.xl),
-                    Text(
-                      'Check your inbox',
-                      style: AppTypography.displayLg
-                          .copyWith(color: colors.ink900),
-                      textAlign: TextAlign.center,
-                    )
-                        .animate()
-                        .fadeIn(delay: 200.ms, duration: 400.ms)
-                        .slideY(begin: 0.08, end: 0, delay: 200.ms, duration: 400.ms, curve: Curves.easeOut),
-                    const SizedBox(height: AppSpacing.md),
-                    Text(
-                      "We've sent a verification link to your email address. "
-                      "Click the link in the email to verify your account.",
-                      style: AppTypography.body.copyWith(color: colors.ink600),
-                      textAlign: TextAlign.center,
-                    )
-                        .animate()
-                        .fadeIn(delay: 280.ms, duration: 400.ms),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Check your spam folder if you don\'t see it within a few minutes.',
-                      style: AppTypography.caption
-                          .copyWith(color: colors.ink400),
-                      textAlign: TextAlign.center,
-                    )
-                        .animate()
-                        .fadeIn(delay: 340.ms, duration: 400.ms),
-                    const SizedBox(height: AppSpacing.xxl),
-                    // Gold CTA — "I Have Verified"
-                    _PressableButton(
-                      onTap: () {
-                        HapticFeedback.heavyImpact();
-                        context.go(RouteNames.home);
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: colors.goldPrimary,
-                          borderRadius: AppRadius.smAll,
-                        ),
-                        child: Center(
-                          child: Text(
-                            'I Have Verified',
-                            style: AppTypography.label.copyWith(
-                              color: AppColors.navyDeep,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ).animate().fadeIn(delay: 400.ms, duration: 350.ms),
-                    const SizedBox(height: AppSpacing.md),
-                    // Secondary — Resend Email
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Verification email resent.'),
-                            ),
-                          );
-                        },
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: colors.lineSoft),
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: AppRadius.smAll,
-                          ),
-                        ),
-                        child: Text(
-                          'Resend Email',
-                          style: AppTypography.label
-                              .copyWith(color: colors.ink600, fontSize: 15),
-                        ),
-                      ),
-                    ).animate().fadeIn(delay: 450.ms, duration: 350.ms),
-                    const SizedBox(height: AppSpacing.lg),
-                    // Sign out text link
-                    Center(
-                      child: GestureDetector(
-                        onTap: () => context.go(RouteNames.login),
-                        child: Text(
-                          'Wrong account? Sign Out',
-                          style: AppTypography.body
-                              .copyWith(color: colors.ink400),
-                        ),
-                      ),
-                    ).animate().fadeIn(delay: 500.ms, duration: 350.ms),
-                  ],
+
+              const SizedBox(height: 40),
+
+              // — Envelope SVG illustration (centered)
+              Center(
+                child: SvgPicture.string(
+                  _envelopeSvg,
+                  width: 180,
+                  height: 180,
                 ),
-              ),
+              )
+                  .animate()
+                  .scale(
+                    begin: const Offset(0.8, 0.8),
+                    end: const Offset(1.0, 1.0),
+                    duration: 500.ms,
+                    curve: Curves.elasticOut,
+                  )
+                  .fadeIn(duration: 300.ms),
+
+              const SizedBox(height: 32),
+
+              // — Heading
+              Center(
+                child: Text(
+                  'Check your inbox',
+                  style: AppTypography.displayLg.copyWith(
+                    color: colors.ink900,
+                    fontSize: 26,
+                    height: 1.2,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              )
+                  .animate()
+                  .fadeIn(delay: 200.ms, duration: 400.ms)
+                  .slideY(
+                    begin: 0.08,
+                    end: 0,
+                    delay: 200.ms,
+                    duration: 400.ms,
+                    curve: Curves.easeOut,
+                  ),
+
+              const SizedBox(height: 16),
+
+              // — Body text: "We've sent ... to" + bold email + continuation
+              Center(
+                child: RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: AppTypography.body.copyWith(
+                      color: colors.ink600,
+                      height: 1.55,
+                    ),
+                    children: [
+                      const TextSpan(
+                          text: "We've sent a verification link to\n"),
+                      TextSpan(
+                        text: 'rakesh@sharmatravels.com',
+                        style: TextStyle(
+                          color: colors.ink900,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const TextSpan(
+                        text:
+                            '\nTap the link in the email to activate your account, then come back here.',
+                      ),
+                    ],
+                  ),
+                ),
+              )
+                  .animate()
+                  .fadeIn(delay: 280.ms, duration: 400.ms),
+
+              const SizedBox(height: 36),
+
+              // — Gold CTA: "I Have Verified"
+              _PressableButton(
+                onTap: () {
+                  HapticFeedback.heavyImpact();
+                  context.go(RouteNames.home);
+                },
+                child: Container(
+                  width: double.infinity,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: colors.goldPrimary,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'I Have Verified',
+                      style: AppTypography.label.copyWith(
+                        color: AppColors.navyDeep,
+                        fontSize: 14,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+                ),
+              ).animate().fadeIn(delay: 360.ms, duration: 350.ms),
+
+              const SizedBox(height: 12),
+
+              // — Resend Email outlined button (dark border, btn-secondary-light)
+              _PressableButton(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Verification email resent.')),
+                  );
+                },
+                child: Container(
+                  width: double.infinity,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: colors.ink900, width: 1.5),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Resend Email',
+                      style: AppTypography.label.copyWith(
+                        color: colors.ink900,
+                        fontSize: 14,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+                ),
+              ).animate().fadeIn(delay: 410.ms, duration: 350.ms),
+
+              const SizedBox(height: 24),
+
+              // — Sign out text link
+              Center(
+                child: GestureDetector(
+                  onTap: () => context.go(RouteNames.login),
+                  child: Text(
+                    'Wrong account? Sign Out',
+                    style: AppTypography.body.copyWith(
+                      color: colors.ink400,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ).animate().fadeIn(delay: 460.ms, duration: 350.ms),
             ],
           ),
         ),
       ),
     );
   }
-}
-
-/// Line-art envelope illustration drawn with CustomPainter.
-class _EnvelopeIllustration extends StatelessWidget {
-  const _EnvelopeIllustration({required this.color});
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(140, 110),
-      painter: _EnvelopePainter(color: color),
-    );
-  }
-}
-
-class _EnvelopePainter extends CustomPainter {
-  _EnvelopePainter({required this.color});
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color.withValues(alpha: 0.8)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final goldPaint = Paint()
-      ..color = AppColors.goldPrimary
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8
-      ..strokeCap = StrokeCap.round;
-
-    final w = size.width;
-    final h = size.height;
-
-    // Envelope body
-    final body = RRect.fromLTRBR(0, h * 0.2, w, h, const Radius.circular(6));
-    canvas.drawRRect(body, paint);
-
-    // Envelope flap (open, V-shape)
-    final flapPath = Path()
-      ..moveTo(0, h * 0.2)
-      ..lineTo(w * 0.5, h * 0.55)
-      ..lineTo(w, h * 0.2);
-    canvas.drawPath(flapPath, paint);
-
-    // Letter coming out of envelope
-    final letter = RRect.fromLTRBR(
-      w * 0.2,
-      0,
-      w * 0.8,
-      h * 0.45,
-      const Radius.circular(4),
-    );
-    canvas.drawRRect(letter, paint);
-
-    // Lines on the letter
-    canvas.drawLine(
-      Offset(w * 0.32, h * 0.15),
-      Offset(w * 0.68, h * 0.15),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(w * 0.32, h * 0.26),
-      Offset(w * 0.68, h * 0.26),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(w * 0.32, h * 0.37),
-      Offset(w * 0.55, h * 0.37),
-      paint,
-    );
-
-    // Gold checkmark badge (bottom-right of envelope)
-    final badgePaint = Paint()
-      ..color = AppColors.goldPrimary
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(w * 0.82, h * 0.78), 12, badgePaint);
-
-    final checkPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    final checkPath = Path()
-      ..moveTo(w * 0.76, h * 0.78)
-      ..lineTo(w * 0.81, h * 0.84)
-      ..lineTo(w * 0.89, h * 0.72);
-    canvas.drawPath(checkPath, checkPaint);
-
-    // Decorative stars
-    _drawStar(canvas, Offset(w * 0.08, h * 0.08), 4, goldPaint);
-    _drawStar(canvas, Offset(w * 0.92, h * 0.12), 3, paint);
-  }
-
-  void _drawStar(Canvas canvas, Offset center, double radius, Paint paint) {
-    canvas.drawLine(
-      center.translate(-radius, 0),
-      center.translate(radius, 0),
-      paint,
-    );
-    canvas.drawLine(
-      center.translate(0, -radius),
-      center.translate(0, radius),
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_EnvelopePainter old) => old.color != color;
 }
 
 class _PressableButton extends StatefulWidget {

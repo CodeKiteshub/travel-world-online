@@ -1,0 +1,156 @@
+<svg viewBox="0 0 390 520" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#060F1A"/>
+      <stop offset="100%" stop-color="#0A1E35"/>
+    </linearGradient>
+    <linearGradient id="water-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0F2840"/>
+      <stop offset="100%" stop-color="#071520"/>
+    </linearGradient>
+    <linearGradient id="hotel-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1A3550"/>
+      <stop offset="100%" stop-color="#0D2238"/>
+    </linearGradient>
+    <linearGradient id="fade-bottom" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="50%" stop-color="#0D1B2A" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0D1B2A" stop-opacity="1"/>
+    </linearGradient>
+    <radialGradient id="moon-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#E8D08A" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#0D1B2A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Sky background -->
+  <rect width="390" height="520" fill="url(#sky-grad)"/>
+
+  <!-- Moon glow halo -->
+  <circle cx="310" cy="80" r="55" fill="url(#moon-glow)"/>
+
+  <!-- Moon -->
+  <circle cx="310" cy="80" r="28" fill="#E8D08A" opacity="0.85"/>
+  <circle cx="298" cy="72" r="26" fill="#060F1A" opacity="0.85"/>
+
+  <!-- Stars -->
+  <circle cx="28" cy="32" r="1.0" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="65" cy="18" r="1.3" fill="#FFFFFF" opacity="0.6"/>
+  <circle cx="98" cy="42" r="0.8" fill="#C9A84C" opacity="0.7"/>
+  <circle cx="140" cy="24" r="1.1" fill="#FFFFFF" opacity="0.7"/>
+  <circle cx="175" cy="50" r="0.8" fill="#FFFFFF" opacity="0.5"/>
+  <circle cx="215" cy="30" r="1.2" fill="#FFFFFF" opacity="0.6"/>
+  <circle cx="250" cy="14" r="0.9" fill="#C9A84C" opacity="0.6"/>
+  <circle cx="355" cy="140" r="1.0" fill="#FFFFFF" opacity="0.5"/>
+  <circle cx="22" cy="80" r="0.8" fill="#FFFFFF" opacity="0.5"/>
+  <circle cx="370" cy="58" r="0.9" fill="#FFFFFF" opacity="0.4"/>
+  <circle cx="48" cy="120" r="0.7" fill="#FFFFFF" opacity="0.4"/>
+  <circle cx="168" cy="88" r="0.9" fill="#FFFFFF" opacity="0.4"/>
+  <circle cx="82" cy="160" r="0.7" fill="#C9A84C" opacity="0.4"/>
+  <circle cx="362" cy="188" r="0.8" fill="#FFFFFF" opacity="0.3"/>
+
+  <!-- Reflection pool / water -->
+  <rect x="0" y="340" width="390" height="180" fill="url(#water-grad)"/>
+
+  <!-- Pool reflection shimmer lines -->
+  <line x1="20" y1="360" x2="80" y2="360" stroke="#C9A84C" stroke-width="0.5" opacity="0.25"/>
+  <line x1="100" y1="372" x2="190" y2="372" stroke="#FFFFFF" stroke-width="0.4" opacity="0.15"/>
+  <line x1="210" y1="358" x2="320" y2="358" stroke="#C9A84C" stroke-width="0.5" opacity="0.2"/>
+  <line x1="50" y1="385" x2="150" y2="385" stroke="#FFFFFF" stroke-width="0.4" opacity="0.12"/>
+  <line x1="240" y1="380" x2="370" y2="380" stroke="#C9A84C" stroke-width="0.4" opacity="0.18"/>
+
+  <!-- Hotel building — main tower -->
+  <rect x="115" y="95" width="160" height="248" fill="url(#hotel-grad)"/>
+  <rect x="115" y="95" width="160" height="248" fill="none" stroke="#C9A84C" stroke-width="0.8" opacity="0.4"/>
+
+  <!-- Hotel facade grid (windows) -->
+  <!-- Row 1 -->
+  <rect x="130" y="115" width="18" height="14" fill="#C9A84C" opacity="0.35" rx="1"/>
+  <rect x="156" y="115" width="18" height="14" fill="#C9A84C" opacity="0.15" rx="1"/>
+  <rect x="182" y="115" width="18" height="14" fill="#C9A84C" opacity="0.4" rx="1"/>
+  <rect x="208" y="115" width="18" height="14" fill="#C9A84C" opacity="0.2" rx="1"/>
+  <rect x="234" y="115" width="18" height="14" fill="#C9A84C" opacity="0.35" rx="1"/>
+  <!-- Row 2 -->
+  <rect x="130" y="138" width="18" height="14" fill="#C9A84C" opacity="0.2" rx="1"/>
+  <rect x="156" y="138" width="18" height="14" fill="#C9A84C" opacity="0.4" rx="1"/>
+  <rect x="182" y="138" width="18" height="14" fill="#C9A84C" opacity="0.15" rx="1"/>
+  <rect x="208" y="138" width="18" height="14" fill="#C9A84C" opacity="0.38" rx="1"/>
+  <rect x="234" y="138" width="18" height="14" fill="#C9A84C" opacity="0.22" rx="1"/>
+  <!-- Row 3 -->
+  <rect x="130" y="161" width="18" height="14" fill="#C9A84C" opacity="0.32" rx="1"/>
+  <rect x="156" y="161" width="18" height="14" fill="#C9A84C" opacity="0.18" rx="1"/>
+  <rect x="182" y="161" width="18" height="14" fill="#C9A84C" opacity="0.42" rx="1"/>
+  <rect x="208" y="161" width="18" height="14" fill="#C9A84C" opacity="0.12" rx="1"/>
+  <rect x="234" y="161" width="18" height="14" fill="#C9A84C" opacity="0.36" rx="1"/>
+  <!-- Row 4 -->
+  <rect x="130" y="184" width="18" height="14" fill="#C9A84C" opacity="0.18" rx="1"/>
+  <rect x="156" y="184" width="18" height="14" fill="#C9A84C" opacity="0.38" rx="1"/>
+  <rect x="182" y="184" width="18" height="14" fill="#C9A84C" opacity="0.25" rx="1"/>
+  <rect x="208" y="184" width="18" height="14" fill="#C9A84C" opacity="0.35" rx="1"/>
+  <rect x="234" y="184" width="18" height="14" fill="#C9A84C" opacity="0.16" rx="1"/>
+  <!-- Row 5 -->
+  <rect x="130" y="207" width="18" height="14" fill="#C9A84C" opacity="0.38" rx="1"/>
+  <rect x="156" y="207" width="18" height="14" fill="#C9A84C" opacity="0.14" rx="1"/>
+  <rect x="182" y="207" width="18" height="14" fill="#C9A84C" opacity="0.3" rx="1"/>
+  <rect x="208" y="207" width="18" height="14" fill="#C9A84C" opacity="0.42" rx="1"/>
+  <rect x="234" y="207" width="18" height="14" fill="#C9A84C" opacity="0.2" rx="1"/>
+  <!-- Row 6 -->
+  <rect x="130" y="230" width="18" height="14" fill="#C9A84C" opacity="0.22" rx="1"/>
+  <rect x="156" y="230" width="18" height="14" fill="#C9A84C" opacity="0.4" rx="1"/>
+  <rect x="182" y="230" width="18" height="14" fill="#C9A84C" opacity="0.16" rx="1"/>
+  <rect x="208" y="230" width="18" height="14" fill="#C9A84C" opacity="0.34" rx="1"/>
+  <rect x="234" y="230" width="18" height="14" fill="#C9A84C" opacity="0.28" rx="1"/>
+
+  <!-- Hotel entrance arch -->
+  <path d="M168 343 L168 310 Q195 295 222 310 L222 343 Z" fill="#0A1A2E"/>
+  <path d="M168 343 L168 310 Q195 295 222 310 L222 343 Z" fill="none" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+
+  <!-- Side wings (lower buildings) -->
+  <rect x="30" y="200" width="85" height="143" fill="#0F2135"/>
+  <rect x="30" y="200" width="85" height="143" fill="none" stroke="#C9A84C" stroke-width="0.6" opacity="0.25"/>
+  <rect x="275" y="200" width="85" height="143" fill="#0F2135"/>
+  <rect x="275" y="200" width="85" height="143" fill="none" stroke="#C9A84C" stroke-width="0.6" opacity="0.25"/>
+
+  <!-- Wing windows -->
+  <rect x="42" y="215" width="14" height="11" fill="#C9A84C" opacity="0.2" rx="1"/>
+  <rect x="62" y="215" width="14" height="11" fill="#C9A84C" opacity="0.32" rx="1"/>
+  <rect x="82" y="215" width="14" height="11" fill="#C9A84C" opacity="0.15" rx="1"/>
+  <rect x="42" y="235" width="14" height="11" fill="#C9A84C" opacity="0.28" rx="1"/>
+  <rect x="62" y="235" width="14" height="11" fill="#C9A84C" opacity="0.15" rx="1"/>
+  <rect x="82" y="235" width="14" height="11" fill="#C9A84C" opacity="0.24" rx="1"/>
+  <rect x="287" y="215" width="14" height="11" fill="#C9A84C" opacity="0.25" rx="1"/>
+  <rect x="307" y="215" width="14" height="11" fill="#C9A84C" opacity="0.15" rx="1"/>
+  <rect x="327" y="215" width="14" height="11" fill="#C9A84C" opacity="0.35" rx="1"/>
+  <rect x="287" y="235" width="14" height="11" fill="#C9A84C" opacity="0.18" rx="1"/>
+  <rect x="307" y="235" width="14" height="11" fill="#C9A84C" opacity="0.3" rx="1"/>
+  <rect x="327" y="235" width="14" height="11" fill="#C9A84C" opacity="0.22" rx="1"/>
+
+  <!-- Palm trees left -->
+  <line x1="62" y1="343" x2="62" y2="255" stroke="#1A3A28" stroke-width="5"/>
+  <ellipse cx="62" cy="258" rx="28" ry="12" fill="#1E4A30" opacity="0.8" transform="rotate(-15,62,258)"/>
+  <ellipse cx="62" cy="258" rx="26" ry="10" fill="#1E4A30" opacity="0.7" transform="rotate(10,62,258)"/>
+  <ellipse cx="62" cy="258" rx="24" ry="9" fill="#1E4A30" opacity="0.6" transform="rotate(35,62,258)"/>
+  <ellipse cx="62" cy="258" rx="24" ry="9" fill="#1E4A30" opacity="0.6" transform="rotate(-40,62,258)"/>
+
+  <!-- Palm trees right -->
+  <line x1="328" y1="343" x2="328" y2="255" stroke="#1A3A28" stroke-width="5"/>
+  <ellipse cx="328" cy="258" rx="28" ry="12" fill="#1E4A30" opacity="0.8" transform="rotate(15,328,258)"/>
+  <ellipse cx="328" cy="258" rx="26" ry="10" fill="#1E4A30" opacity="0.7" transform="rotate(-10,328,258)"/>
+  <ellipse cx="328" cy="258" rx="24" ry="9" fill="#1E4A30" opacity="0.6" transform="rotate(-35,328,258)"/>
+  <ellipse cx="328" cy="258" rx="24" ry="9" fill="#1E4A30" opacity="0.6" transform="rotate(40,328,258)"/>
+
+  <!-- Gold accent line (rooftop) -->
+  <rect x="108" y="90" width="174" height="8" fill="#C9A84C" opacity="0.5" rx="1"/>
+
+  <!-- Rooftop antenna/flag -->
+  <line x1="195" y1="90" x2="195" y2="55" stroke="#C9A84C" stroke-width="1.5" opacity="0.8"/>
+  <path d="M195 55 L218 65 L195 75 Z" fill="#C9A84C" opacity="0.7"/>
+
+  <!-- Reflection in pool -->
+  <rect x="115" y="343" width="160" height="80" fill="url(#hotel-grad)" opacity="0.2"/>
+  <rect x="130" y="355" width="18" height="10" fill="#C9A84C" opacity="0.1" rx="1"/>
+  <rect x="182" y="355" width="18" height="10" fill="#C9A84C" opacity="0.12" rx="1"/>
+  <rect x="234" y="355" width="18" height="10" fill="#C9A84C" opacity="0.1" rx="1"/>
+
+  <!-- Bottom fade -->
+  <rect width="390" height="520" fill="url(#fade-bottom)"/>
+</svg>

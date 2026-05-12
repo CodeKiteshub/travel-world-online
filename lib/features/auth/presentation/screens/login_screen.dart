@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/theme/app_radius.dart';
 import '../../../../core/router/route_names.dart';
-import '../widgets/social_login_button.dart';
+
+// Globe SVG from the HTML mockup (exact paths)
+const _globeSvg = '''
+<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1.5"/>
+  <path d="M4 24 Q24 14 44 24 Q24 34 4 24" stroke="currentColor" stroke-width="1.2" fill="none"/>
+  <path d="M24 4 Q14 24 24 44 Q34 24 24 4" stroke="currentColor" stroke-width="1.2" fill="none"/>
+</svg>
+''';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -39,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _submit() {
     if (_form.currentState?.validate() ?? false) {
       HapticFeedback.mediumImpact();
-      // Auth logic will be wired via AuthNotifier in a future task
+      // Auth logic wired via AuthNotifier in future task
     }
   }
 
@@ -51,28 +59,32 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: colors.surfacePrimary,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          padding: const EdgeInsets.fromLTRB(28, 0, 28, 32),
           child: Form(
             key: _form,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: AppSpacing.xl),
-                // Logo
+
+                // — Globe logo (56×56, gold border + SVG)
                 Container(
-                  width: 72,
-                  height: 72,
+                  width: 56,
+                  height: 56,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: colors.goldPrimary,
-                      width: 1.5,
-                    ),
+                    border: Border.all(color: colors.goldPrimary, width: 2),
                   ),
-                  child: Icon(
-                    Icons.language_outlined,
-                    color: colors.goldPrimary,
-                    size: 36,
+                  child: Center(
+                    child: SvgPicture.string(
+                      _globeSvg,
+                      colorFilter: ColorFilter.mode(
+                        colors.goldPrimary,
+                        BlendMode.srcIn,
+                      ),
+                      width: 30,
+                      height: 30,
+                    ),
                   ),
                 )
                     .animate()
@@ -83,75 +95,154 @@ class _LoginScreenState extends State<LoginScreen> {
                       duration: 350.ms,
                       curve: Curves.easeOut,
                     ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  'TRAVEL WORLD ONLINE',
-                  style: AppTypography.displayMd.copyWith(
-                    color: colors.ink900,
-                    letterSpacing: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
+
+                const SizedBox(height: 16),
+
+                // — App name: "TRAVEL WORLD" + small "ONLINE"
+                Column(
+                  children: [
+                    Text(
+                      'TRAVEL WORLD',
+                      style: AppTypography.displayMd.copyWith(
+                        color: colors.ink900,
+                        fontSize: 18,
+                        letterSpacing: 0.06 * 18,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'ONLINE',
+                      style: AppTypography.caption.copyWith(
+                        fontFamily: 'DMSans',
+                        fontSize: 9,
+                        letterSpacing: 0.32 * 9,
+                        color: colors.ink400,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 )
                     .animate()
                     .fadeIn(delay: 120.ms, duration: 400.ms)
-                    .slideY(begin: 0.08, end: 0, delay: 120.ms, duration: 400.ms, curve: Curves.easeOut),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Welcome back',
-                  style: AppTypography.displayLg.copyWith(color: colors.ink900),
-                )
-                    .animate()
-                    .fadeIn(delay: 200.ms, duration: 400.ms)
-                    .slideY(begin: 0.08, end: 0, delay: 200.ms, duration: 400.ms, curve: Curves.easeOut),
-                const SizedBox(height: AppSpacing.xl),
-                // Mobile number field
-                TextFormField(
-                  focusNode: _mobileFocus,
-                  keyboardType: TextInputType.phone,
-                  textInputAction: TextInputAction.next,
-                  onFieldSubmitted: (_) =>
-                      FocusScope.of(context).requestFocus(_passwordFocus),
-                  decoration: const InputDecoration(
-                    labelText: 'Mobile Number',
-                    prefixText: '+91  ',
-                  ),
-                  validator: (v) =>
-                      (v == null || v.trim().length < 10)
-                          ? 'Enter a valid 10-digit mobile number'
-                          : null,
-                )
-                    .animate()
-                    .fadeIn(delay: 280.ms, duration: 400.ms)
-                    .slideY(begin: 0.06, end: 0, delay: 280.ms, duration: 400.ms, curve: Curves.easeOut),
-                const SizedBox(height: AppSpacing.md),
-                // Password field
-                TextFormField(
-                  focusNode: _passwordFocus,
-                  obscureText: _obscurePassword,
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) => _submit(),
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        size: 20,
-                        color: colors.ink400,
-                      ),
-                      onPressed: () =>
-                          setState(() => _obscurePassword = !_obscurePassword),
+                    .slideY(
+                      begin: 0.08,
+                      end: 0,
+                      delay: 120.ms,
+                      duration: 400.ms,
+                      curve: Curves.easeOut,
                     ),
-                  ),
-                  validator: (v) =>
-                      (v == null || v.isEmpty) ? 'Enter your password' : null,
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // — Page heading
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome back',
+                      style: AppTypography.displayLg.copyWith(
+                        color: colors.ink900,
+                        fontSize: 28,
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Sign in to continue to your travel business.',
+                      style: AppTypography.body.copyWith(
+                        color: colors.ink600,
+                        height: 1.55,
+                      ),
+                    ),
+                  ],
                 )
                     .animate()
-                    .fadeIn(delay: 340.ms, duration: 400.ms)
-                    .slideY(begin: 0.06, end: 0, delay: 340.ms, duration: 400.ms, curve: Curves.easeOut),
-                const SizedBox(height: AppSpacing.md),
-                // Remember me + Forgot password row
+                    .fadeIn(delay: 190.ms, duration: 400.ms)
+                    .slideY(
+                      begin: 0.08,
+                      end: 0,
+                      delay: 190.ms,
+                      duration: 400.ms,
+                      curve: Curves.easeOut,
+                    ),
+
+                const SizedBox(height: 28),
+
+                // — Mobile number field
+                _LabeledField(
+                  label: 'Mobile Number',
+                  child: TextFormField(
+                    focusNode: _mobileFocus,
+                    keyboardType: TextInputType.phone,
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: (_) =>
+                        FocusScope.of(context).requestFocus(_passwordFocus),
+                    style: AppTypography.body.copyWith(color: colors.ink900),
+                    decoration: _fieldDecoration(
+                      colors: colors,
+                      hintText: '+91 98765 43210',
+                    ),
+                    validator: (v) =>
+                        (v == null || v.trim().length < 10)
+                            ? 'Enter a valid 10-digit mobile number'
+                            : null,
+                  ),
+                )
+                    .animate()
+                    .fadeIn(delay: 260.ms, duration: 380.ms)
+                    .slideY(
+                      begin: 0.06,
+                      end: 0,
+                      delay: 260.ms,
+                      duration: 380.ms,
+                      curve: Curves.easeOut,
+                    ),
+
+                const SizedBox(height: 16),
+
+                // — Password field
+                _LabeledField(
+                  label: 'Password',
+                  child: TextFormField(
+                    focusNode: _passwordFocus,
+                    obscureText: _obscurePassword,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _submit(),
+                    style: AppTypography.body.copyWith(color: colors.ink900),
+                    decoration: _fieldDecoration(
+                      colors: colors,
+                      hintText: '••••••••••',
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          size: 20,
+                          color: colors.ink400,
+                        ),
+                        onPressed: () =>
+                            setState(() => _obscurePassword = !_obscurePassword),
+                      ),
+                    ),
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? 'Enter your password' : null,
+                  ),
+                )
+                    .animate()
+                    .fadeIn(delay: 320.ms, duration: 380.ms)
+                    .slideY(
+                      begin: 0.06,
+                      end: 0,
+                      delay: 320.ms,
+                      duration: 380.ms,
+                      curve: Curves.easeOut,
+                    ),
+
+                const SizedBox(height: 20),
+
+                // — Remember me + Forgot password
                 Row(
                   children: [
                     GestureDetector(
@@ -161,8 +252,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           AnimatedContainer(
                             duration: const Duration(milliseconds: 150),
-                            width: 20,
-                            height: 20,
+                            width: 18,
+                            height: 18,
                             decoration: BoxDecoration(
                               color: _rememberMe
                                   ? colors.goldPrimary
@@ -171,39 +262,46 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: _rememberMe
                                     ? colors.goldPrimary
                                     : colors.ink400,
+                                width: 1.5,
                               ),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: _rememberMe
                                 ? const Icon(
                                     Icons.check,
-                                    size: 14,
+                                    size: 12,
                                     color: Colors.white,
                                   )
                                 : null,
                           ),
-                          const SizedBox(width: AppSpacing.sm),
+                          const SizedBox(width: 8),
                           Text(
                             'Remember Me',
-                            style: AppTypography.body
-                                .copyWith(color: colors.ink600),
+                            style: AppTypography.body.copyWith(
+                              color: colors.ink900,
+                              fontSize: 13,
+                            ),
                           ),
                         ],
                       ),
                     ),
                     const Spacer(),
-                    TextButton(
-                      onPressed: () {},
+                    GestureDetector(
+                      onTap: () {},
                       child: Text(
                         'Forgot Password?',
-                        style: AppTypography.label
-                            .copyWith(color: colors.goldPrimary),
+                        style: AppTypography.label.copyWith(
+                          color: colors.goldPrimary,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ],
-                ).animate().fadeIn(delay: 400.ms, duration: 350.ms),
-                const SizedBox(height: AppSpacing.lg),
-                // Gold primary CTA with scale press
+                ).animate().fadeIn(delay: 370.ms, duration: 350.ms),
+
+                const SizedBox(height: 24),
+
+                // — Gold login CTA
                 _PressableButton(
                   onTap: _submit,
                   child: Container(
@@ -211,90 +309,46 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 52,
                     decoration: BoxDecoration(
                       color: colors.goldPrimary,
-                      borderRadius: AppRadius.smAll,
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: Center(
                       child: Text(
                         'Login',
                         style: AppTypography.label.copyWith(
                           color: AppColors.navyDeep,
-                          fontSize: 15,
+                          fontSize: 14,
+                          letterSpacing: 0.4,
                         ),
                       ),
                     ),
                   ),
-                ).animate().fadeIn(delay: 460.ms, duration: 350.ms),
-                const SizedBox(height: AppSpacing.lg),
-                // Divider
-                Row(
-                  children: [
-                    Expanded(child: Divider(color: colors.lineSoft)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                      ),
-                      child: Text(
-                        'or continue with',
-                        style: AppTypography.caption
-                            .copyWith(color: colors.ink400),
-                      ),
-                    ),
-                    Expanded(child: Divider(color: colors.lineSoft)),
-                  ],
-                ).animate().fadeIn(delay: 500.ms, duration: 350.ms),
-                const SizedBox(height: AppSpacing.lg),
-                // Social login buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SocialLoginButton(
-                      icon: const Icon(
-                        Icons.g_mobiledata,
-                        size: 30,
-                        color: Color(0xFF4285F4),
-                      ),
-                      onTap: () {},
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    SocialLoginButton(
-                      icon: Icon(
-                        Icons.apple,
-                        size: 28,
-                        color: colors.ink900,
-                      ),
-                      onTap: () {},
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    SocialLoginButton(
-                      icon: const Icon(
-                        Icons.window,
-                        size: 24,
-                        color: Color(0xFF00A4EF),
-                      ),
-                      onTap: () {},
-                    ),
-                  ],
-                ).animate().fadeIn(delay: 540.ms, duration: 350.ms),
+                ).animate().fadeIn(delay: 420.ms, duration: 350.ms),
+
                 const SizedBox(height: AppSpacing.xl),
-                // Sign up link
+
+                // — Sign up link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       "Don't have an account? ",
-                      style: AppTypography.body.copyWith(color: colors.ink600),
+                      style: AppTypography.body.copyWith(
+                        color: colors.ink600,
+                        fontSize: 13,
+                      ),
                     ),
                     GestureDetector(
                       onTap: () => context.push(RouteNames.register),
                       child: Text(
                         'Sign Up',
-                        style: AppTypography.label
-                            .copyWith(color: colors.goldPrimary),
+                        style: AppTypography.label.copyWith(
+                          color: colors.goldPrimary,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ],
-                ).animate().fadeIn(delay: 580.ms, duration: 350.ms),
-                const SizedBox(height: AppSpacing.xl),
+                ).animate().fadeIn(delay: 460.ms, duration: 350.ms),
               ],
             ),
           ),
@@ -302,8 +356,72 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+
+  // Input decoration factory — 12px radius, lineSoft border, gold focus
+  InputDecoration _fieldDecoration({
+    required AppColorScheme colors,
+    required String hintText,
+    Widget? suffixIcon,
+  }) {
+    const radius = BorderRadius.all(Radius.circular(12));
+    final baseBorder = OutlineInputBorder(
+      borderRadius: radius,
+      borderSide: BorderSide(color: colors.lineSoft),
+    );
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: AppTypography.body.copyWith(color: colors.ink400),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      border: baseBorder,
+      enabledBorder: baseBorder,
+      focusedBorder: OutlineInputBorder(
+        borderRadius: radius,
+        borderSide: BorderSide(color: colors.goldPrimary, width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: radius,
+        borderSide: BorderSide(color: colors.error),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: radius,
+        borderSide: BorderSide(color: colors.error, width: 1.5),
+      ),
+      suffixIcon: suffixIcon,
+    );
+  }
 }
 
+// — Static label above a field
+class _LabeledField extends StatelessWidget {
+  const _LabeledField({required this.label, required this.child});
+
+  final String label;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppColorScheme>()!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTypography.label.copyWith(
+            color: colors.ink600,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        child,
+      ],
+    );
+  }
+}
+
+// — Scale micro-interaction wrapper
 class _PressableButton extends StatefulWidget {
   const _PressableButton({required this.onTap, required this.child});
 
