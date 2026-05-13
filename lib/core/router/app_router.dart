@@ -6,9 +6,19 @@ import '../../features/auth/presentation/screens/onboarding_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/verify_email_screen.dart';
+import '../../features/auth/presentation/providers/auth_providers.dart';
+import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/discover/presentation/screens/discover_screen.dart';
+import '../../features/discover/presentation/screens/deal_detail_screen.dart';
+import '../../features/discover/presentation/screens/deal_enquiry_screen.dart';
+import '../../features/my_space/presentation/screens/my_space_screen.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
 import 'route_names.dart';
 
-// Fade + subtle scale — used for major screen changes (splash, onboarding)
+// ── Transition helpers ────────────────────────────────────────────────────────
+
 Page<void> _fadeScalePage(Widget child) => CustomTransitionPage(
       child: child,
       transitionDuration: const Duration(milliseconds: 500),
@@ -24,7 +34,6 @@ Page<void> _fadeScalePage(Widget child) => CustomTransitionPage(
       ),
     );
 
-// Slide up from bottom — used for auth entry screens (onboarding → login)
 Page<void> _slideUpPage(Widget child) => CustomTransitionPage(
       child: child,
       transitionDuration: const Duration(milliseconds: 400),
@@ -38,7 +47,6 @@ Page<void> _slideUpPage(Widget child) => CustomTransitionPage(
       ),
     );
 
-// Slide from right — used for sibling screens (login → register)
 Page<void> _slideLeftPage(Widget child) => CustomTransitionPage(
       child: child,
       transitionDuration: const Duration(milliseconds: 300),
@@ -52,14 +60,53 @@ Page<void> _slideLeftPage(Widget child) => CustomTransitionPage(
       ),
     );
 
-// Plain Provider — GoRouter has no reactive dependencies in this phase.
-// Replace with @riverpod when the router needs to watch auth state.
-final appRouterProvider = Provider<GoRouter>((ref) => _buildRouter());
+// ── ChangeNotifier that bridges Riverpod auth state → GoRouter refresh ────────
 
-GoRouter _buildRouter() {
+class _RouterNotifier extends ChangeNotifier {
+  _RouterNotifier(this._ref) {
+    _ref.listen<AsyncValue<bool>>(isLoggedInProvider, (_, __) {
+      notifyListeners();
+    });
+    _ref.listen<AuthState>(authNotifierProvider, (_, __) {
+      notifyListeners();
+    });
+  }
+  final Ref _ref;
+}
+
+// ── Router provider — created ONCE, refresh driven by notifier ────────────────
+
+final appRouterProvider = Provider<GoRouter>((ref) {
+  final notifier = _RouterNotifier(ref);
+  ref.onDispose(notifier.dispose);
+
   return GoRouter(
     initialLocation: RouteNames.splash,
     debugLogDiagnostics: false,
+    refreshListenable: notifier,
+    redirect: (context, state) {
+      final asyncLoggedIn = ref.read(isLoggedInProvider);
+      final authState = ref.read(authNotifierProvider);
+
+      // While the initial storage check is still running, don't redirect.
+      if (asyncLoggedIn.isLoading) return null;
+
+      // After a login action the AuthNotifier holds the truth;
+      // on cold start fall back to the stored token check.
+      final loggedIn = authState is AuthSuccess ||
+          (asyncLoggedIn.valueOrNull ?? false);
+
+      final location = state.matchedLocation;
+      final onAuthScreen = location == RouteNames.login ||
+          location == RouteNames.register ||
+          location == RouteNames.verifyEmail ||
+          location == RouteNames.onboarding ||
+          location == RouteNames.splash;
+
+      if (loggedIn && onAuthScreen) return RouteNames.home;
+      if (!loggedIn && !onAuthScreen) return RouteNames.login;
+      return null;
+    },
     routes: [
       GoRoute(
         path: RouteNames.splash,
@@ -81,14 +128,172 @@ GoRouter _buildRouter() {
         path: RouteNames.verifyEmail,
         pageBuilder: (_, __) => _slideLeftPage(const VerifyEmailScreen()),
       ),
-      // Home shell route (bottom nav) added in Phase 2
+
+      // — Full-screen deal screens (no bottom nav)
       GoRoute(
-        path: RouteNames.home,
-        pageBuilder: (_, __) => _fadeScalePage(
-          const Scaffold(body: Center(child: Text('Home — Phase 2'))),
-        ),
+        path: RouteNames.dealDetail,
+        pageBuilder: (_, __) => _slideLeftPage(const DealDetailScreen()),
+      ),
+      GoRoute(
+        path: RouteNames.dealEnquiry,
+        pageBuilder: (_, __) => _slideLeftPage(const DealEnquiryScreen()),
+      ),
+
+      // — Main shell (bottom nav, 4 tabs)
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            _ShellScaffold(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: RouteNames.home,
+              pageBuilder: (_, __) =>
+                  const NoTransitionPage(child: HomeScreen()),
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: RouteNames.discover,
+              pageBuilder: (_, __) =>
+                  const NoTransitionPage(child: DiscoverScreen()),
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: RouteNames.mySpace,
+              pageBuilder: (_, __) =>
+                  const NoTransitionPage(child: MySpaceScreen()),
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: RouteNames.profile,
+              pageBuilder: (_, __) =>
+                  const NoTransitionPage(child: ProfileScreen()),
+            ),
+          ]),
+        ],
       ),
     ],
   );
+});
+
+// ── Shell scaffold with 4-tab bottom nav ─────────────────────────────────────
+
+class _ShellScaffold extends StatelessWidget {
+  const _ShellScaffold({required this.navigationShell});
+  final StatefulNavigationShell navigationShell;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppColorScheme>()!;
+
+    return Scaffold(
+      body: navigationShell,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: colors.surfaceCard,
+          border: Border(top: BorderSide(color: colors.lineSoft)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Row(
+            children: [
+              _NavItem(
+                icon: Icons.home_outlined,
+                activeIcon: Icons.home_rounded,
+                label: 'Home',
+                isActive: navigationShell.currentIndex == 0,
+                onTap: () => navigationShell.goBranch(0,
+                    initialLocation: navigationShell.currentIndex == 0),
+                colors: colors,
+              ),
+              _NavItem(
+                icon: Icons.search_rounded,
+                activeIcon: Icons.search_rounded,
+                label: 'Discover',
+                isActive: navigationShell.currentIndex == 1,
+                onTap: () => navigationShell.goBranch(1,
+                    initialLocation: navigationShell.currentIndex == 1),
+                colors: colors,
+              ),
+              _NavItem(
+                icon: Icons.grid_view_outlined,
+                activeIcon: Icons.grid_view_rounded,
+                label: 'My Space',
+                isActive: navigationShell.currentIndex == 2,
+                onTap: () => navigationShell.goBranch(2,
+                    initialLocation: navigationShell.currentIndex == 2),
+                colors: colors,
+              ),
+              _NavItem(
+                icon: Icons.person_outline_rounded,
+                activeIcon: Icons.person_rounded,
+                label: 'Profile',
+                isActive: navigationShell.currentIndex == 3,
+                onTap: () => navigationShell.goBranch(3,
+                    initialLocation: navigationShell.currentIndex == 3),
+                colors: colors,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+    required this.colors,
+  });
+
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+  final AppColorScheme colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Icon(
+                  isActive ? activeIcon : icon,
+                  key: ValueKey(isActive),
+                  size: 22,
+                  color: isActive ? colors.goldPrimary : colors.ink400,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: AppTypography.overline.copyWith(
+                  color: isActive ? colors.goldPrimary : colors.ink400,
+                  fontSize: 10,
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                  letterSpacing: 0,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

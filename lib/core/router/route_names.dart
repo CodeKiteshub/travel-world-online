@@ -8,4 +8,6 @@ abstract final class RouteNames {
   static const discover = '/discover';
   static const mySpace = '/my-space';
   static const profile = '/profile';
+  static const dealDetail = '/deal-detail';
+  static const dealEnquiry = '/deal-enquiry';
 }

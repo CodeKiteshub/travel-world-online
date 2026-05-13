@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/router/route_names.dart';
+import '../providers/auth_providers.dart';
 
-// Globe SVG from the HTML mockup (exact paths)
 const _globeSvg = '''
 <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
   <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1.5"/>
@@ -17,15 +18,17 @@ const _globeSvg = '''
 </svg>
 ''';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _form = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _mobileFocus = FocusNode();
   final _passwordFocus = FocusNode();
   bool _obscurePassword = true;
@@ -39,21 +42,47 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
     _mobileFocus.dispose();
     _passwordFocus.dispose();
     super.dispose();
   }
 
-  void _submit() {
-    if (_form.currentState?.validate() ?? false) {
-      HapticFeedback.mediumImpact();
-      // Auth logic wired via AuthNotifier in future task
+  Future<void> _submit() async {
+    if (!(_form.currentState?.validate() ?? false)) return;
+    HapticFeedback.mediumImpact();
+
+    final success = await ref.read(authNotifierProvider.notifier).login(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+
+    if (!mounted) return;
+    if (success) {
+      HapticFeedback.heavyImpact();
+      context.go(RouteNames.home);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColorScheme>()!;
+    final authState = ref.watch(authNotifierProvider);
+    final isLoading = authState is AuthLoading;
+
+    // Show error snackbar when state changes to error
+    ref.listen<AuthState>(authNotifierProvider, (_, next) {
+      if (next is AuthError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.message),
+            backgroundColor: colors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    });
 
     return Scaffold(
       backgroundColor: colors.surfacePrimary,
@@ -67,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const SizedBox(height: AppSpacing.xl),
 
-                // — Globe logo (56×56, gold border + SVG)
+                // — Globe logo
                 Container(
                   width: 56,
                   height: 56,
@@ -98,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 16),
 
-                // — App name: "TRAVEL WORLD" + small "ONLINE"
+                // — App name
                 Column(
                   children: [
                     Text(
@@ -170,24 +199,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 28),
 
-                // — Mobile number field
+                // — Email / Mobile field
                 _LabeledField(
-                  label: 'Mobile Number',
+                  label: 'Email / Mobile',
                   child: TextFormField(
+                    controller: _emailController,
                     focusNode: _mobileFocus,
-                    keyboardType: TextInputType.phone,
+                    keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
                     onFieldSubmitted: (_) =>
                         FocusScope.of(context).requestFocus(_passwordFocus),
                     style: AppTypography.body.copyWith(color: colors.ink900),
                     decoration: _fieldDecoration(
                       colors: colors,
-                      hintText: '+91 98765 43210',
+                      hintText: 'email@example.com or mobile',
                     ),
-                    validator: (v) =>
-                        (v == null || v.trim().length < 10)
-                            ? 'Enter a valid 10-digit mobile number'
-                            : null,
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? 'Enter your email or mobile'
+                        : null,
                   ),
                 )
                     .animate()
@@ -206,6 +235,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 _LabeledField(
                   label: 'Password',
                   child: TextFormField(
+                    controller: _passwordController,
                     focusNode: _passwordFocus,
                     obscureText: _obscurePassword,
                     textInputAction: TextInputAction.done,
@@ -222,8 +252,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           size: 20,
                           color: colors.ink400,
                         ),
-                        onPressed: () =>
-                            setState(() => _obscurePassword = !_obscurePassword),
+                        onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword),
                       ),
                     ),
                     validator: (v) =>
@@ -267,11 +297,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: _rememberMe
-                                ? const Icon(
-                                    Icons.check,
-                                    size: 12,
-                                    color: Colors.white,
-                                  )
+                                ? const Icon(Icons.check,
+                                    size: 12, color: Colors.white)
                                 : null,
                           ),
                           const SizedBox(width: 8),
@@ -303,23 +330,34 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // — Gold login CTA
                 _PressableButton(
-                  onTap: _submit,
+                  onTap: isLoading ? null : _submit,
                   child: Container(
                     width: double.infinity,
                     height: 52,
                     decoration: BoxDecoration(
-                      color: colors.goldPrimary,
+                      color: isLoading
+                          ? colors.goldPrimary.withValues(alpha: 0.7)
+                          : colors.goldPrimary,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Center(
-                      child: Text(
-                        'Login',
-                        style: AppTypography.label.copyWith(
-                          color: AppColors.navyDeep,
-                          fontSize: 14,
-                          letterSpacing: 0.4,
-                        ),
-                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              'Login',
+                              style: AppTypography.label.copyWith(
+                                color: AppColors.navyDeep,
+                                fontSize: 14,
+                                letterSpacing: 0.4,
+                              ),
+                            ),
                     ),
                   ),
                 ).animate().fadeIn(delay: 420.ms, duration: 350.ms),
@@ -357,7 +395,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Input decoration factory — 12px radius, lineSoft border, gold focus
   InputDecoration _fieldDecoration({
     required AppColorScheme colors,
     required String hintText,
@@ -373,7 +410,8 @@ class _LoginScreenState extends State<LoginScreen> {
       hintStyle: AppTypography.body.copyWith(color: colors.ink400),
       filled: true,
       fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: baseBorder,
       enabledBorder: baseBorder,
       focusedBorder: OutlineInputBorder(
@@ -393,7 +431,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// — Static label above a field
 class _LabeledField extends StatelessWidget {
   const _LabeledField({required this.label, required this.child});
 
@@ -421,11 +458,10 @@ class _LabeledField extends StatelessWidget {
   }
 }
 
-// — Scale micro-interaction wrapper
 class _PressableButton extends StatefulWidget {
   const _PressableButton({required this.onTap, required this.child});
 
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final Widget child;
 
   @override
@@ -437,12 +473,17 @@ class _PressableButtonState extends State<_PressableButton> {
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        onTapDown: (_) => setState(() => _scale = 0.97),
-        onTapUp: (_) {
-          setState(() => _scale = 1.0);
-          widget.onTap();
-        },
-        onTapCancel: () => setState(() => _scale = 1.0),
+        onTapDown:
+            widget.onTap != null ? (_) => setState(() => _scale = 0.97) : null,
+        onTapUp: widget.onTap != null
+            ? (_) {
+                setState(() => _scale = 1.0);
+                widget.onTap!();
+              }
+            : null,
+        onTapCancel: widget.onTap != null
+            ? () => setState(() => _scale = 1.0)
+            : null,
         child: AnimatedScale(
           scale: _scale,
           duration: const Duration(milliseconds: 150),
