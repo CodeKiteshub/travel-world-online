@@ -12,6 +12,7 @@ import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/discover/presentation/screens/discover_screen.dart';
 import '../../features/discover/presentation/screens/deal_detail_screen.dart';
 import '../../features/discover/presentation/screens/deal_enquiry_screen.dart';
+import '../../features/discover/data/models/deal_model.dart';
 import '../../features/my_space/presentation/screens/my_space_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../theme/app_colors.dart';
@@ -141,11 +142,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // — Full-screen deal screens (no bottom nav)
       GoRoute(
         path: RouteNames.dealDetail,
-        pageBuilder: (_, __) => _slideLeftPage(const DealDetailScreen()),
+        pageBuilder: (_, state) =>
+            _slideLeftPage(DealDetailScreen(deal: state.extra as Deal)),
       ),
       GoRoute(
         path: RouteNames.dealEnquiry,
-        pageBuilder: (_, __) => _slideLeftPage(const DealEnquiryScreen()),
+        pageBuilder: (_, state) =>
+            _slideLeftPage(DealEnquiryScreen(deal: state.extra as Deal)),
       ),
 
       // — Main shell (bottom nav, 4 tabs)

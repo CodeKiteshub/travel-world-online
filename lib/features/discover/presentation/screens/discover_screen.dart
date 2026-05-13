@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/router/route_names.dart';
+import '../../data/models/deal_model.dart';
+import '../providers/discover_providers.dart';
 
-class DiscoverScreen extends StatefulWidget {
+class DiscoverScreen extends ConsumerStatefulWidget {
   const DiscoverScreen({super.key});
 
   @override
-  State<DiscoverScreen> createState() => _DiscoverScreenState();
+  ConsumerState<DiscoverScreen> createState() => _DiscoverScreenState();
 }
 
-class _DiscoverScreenState extends State<DiscoverScreen> {
+class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   int _activeChip = 0;
 
   static const _chips = [
@@ -25,27 +28,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     'DMC',
   ];
 
-  static const _smallDeals = [
-    (
-      title: 'Dubai Holiday Package',
-      price: '₹24,500',
-      imageUrl:
-          'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=400&q=80',
-    ),
-    (
-      title: 'Kerala Backwaters',
-      price: '₹12,099',
-      imageUrl:
-          'https://images.unsplash.com/photo-1602002418082-a4443e081dd1?w=400&q=80',
-    ),
-    (
-      title: 'Bali Paradise',
-      price: '₹38,500',
-      imageUrl:
-          'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400&q=80',
-    ),
-  ];
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -55,22 +37,30 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
+  List<Deal> _filtered(List<Deal> deals) {
+    if (_activeChip == 0) return deals;
+    final chip = _chips[_activeChip].toLowerCase();
+    return deals.where((d) {
+      final type = (d.dealType ?? d.hotelCategory ?? '').toLowerCase();
+      return type.contains(chip);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColorScheme>()!;
     final topPad = MediaQuery.paddingOf(context).top;
+    final dealsAsync = ref.watch(featuredDealsProvider);
 
     return Scaffold(
       backgroundColor: colors.surfacePrimary,
       body: Stack(
         children: [
-          // — Scrollable content
           SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(20, topPad + 76, 20, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Search bar
                 _B2bSearchBar(colors: colors),
                 const SizedBox(height: 18),
 
@@ -93,48 +83,65 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 ),
                 const SizedBox(height: 22),
 
-                // Featured Deals section
-                _B2bSectionRow(
-                    heading: 'Featured Deals',
-                    colors: colors,
-                    onViewAll: () {}),
-                const SizedBox(height: 12),
-
-                // Featured card
-                _FeaturedCard(
-                  colors: colors,
-                  onTap: () => context.push(RouteNames.dealDetail),
-                ),
-                const SizedBox(height: 4),
-
-                // Best Offers section
-                _B2bSectionRow(
-                    heading: 'Best Offers for You',
-                    colors: colors,
-                    onViewAll: () {}),
-                const SizedBox(height: 12),
-
-                // Horizontal scroll of small cards
-                SizedBox(
-                  height: 190,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _smallDeals.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
-                    itemBuilder: (_, i) => _SmallDealCard(
-                      title: _smallDeals[i].title,
-                      price: _smallDeals[i].price,
-                      imageUrl: _smallDeals[i].imageUrl,
-                      colors: colors,
-                      onTap: () => context.push(RouteNames.dealDetail),
-                    ),
-                  ),
+                dealsAsync.when(
+                  loading: () => _DealsSkeletonBody(colors: colors),
+                  error: (_, __) => _DealsError(colors: colors),
+                  data: (all) {
+                    final deals = _filtered(all);
+                    if (deals.isEmpty) {
+                      return _DealsError(
+                          colors: colors, message: 'No deals found');
+                    }
+                    final featured = deals.first;
+                    final rest = deals.skip(1).toList();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _B2bSectionRow(
+                            heading: 'Featured Deals',
+                            colors: colors,
+                            onViewAll: () {}),
+                        const SizedBox(height: 12),
+                        _FeaturedCard(
+                          deal: featured,
+                          colors: colors,
+                          onTap: () => context.push(
+                              RouteNames.dealDetail,
+                              extra: featured),
+                        ),
+                        if (rest.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          _B2bSectionRow(
+                              heading: 'Best Offers for You',
+                              colors: colors,
+                              onViewAll: () {}),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            height: 190,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: rest.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(width: 12),
+                              itemBuilder: (_, i) => _SmallDealCard(
+                                deal: rest[i],
+                                colors: colors,
+                                onTap: () => context.push(
+                                    RouteNames.dealDetail,
+                                    extra: rest[i]),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    );
+                  },
                 ),
               ],
             ),
           ),
 
-          // — App bar overlay
+          // App bar overlay
           Positioned(
             top: 0,
             left: 0,
@@ -144,7 +151,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               padding: EdgeInsets.fromLTRB(20, topPad + 12, 20, 12),
               child: Row(
                 children: [
-                  // Back-style icon (rounded square)
                   Container(
                     width: 42,
                     height: 42,
@@ -167,7 +173,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                     ),
                   ),
                   const Spacer(),
-                  // Wishlist icon (rounded square)
                   Container(
                     width: 42,
                     height: 42,
@@ -190,6 +195,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _B2bSearchBar extends StatelessWidget {
   const _B2bSearchBar({required this.colors});
@@ -222,8 +229,7 @@ class _B2bSearchBar extends StatelessWidget {
               color: colors.goldPrimary,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(Icons.tune_rounded,
-                size: 14, color: colors.navyDeep),
+            child: Icon(Icons.tune_rounded, size: 14, color: colors.navyDeep),
           ),
         ],
       ),
@@ -232,11 +238,8 @@ class _B2bSearchBar extends StatelessWidget {
 }
 
 class _CategoryChip extends StatelessWidget {
-  const _CategoryChip({
-    required this.label,
-    required this.isActive,
-    required this.colors,
-  });
+  const _CategoryChip(
+      {required this.label, required this.isActive, required this.colors});
   final String label;
   final bool isActive;
   final AppColorScheme colors;
@@ -250,8 +253,7 @@ class _CategoryChip extends StatelessWidget {
         color: isActive ? colors.goldPrimary : Colors.transparent,
         borderRadius: BorderRadius.circular(999),
         border: Border.all(
-          color: isActive ? colors.goldPrimary : colors.lineSoft,
-        ),
+            color: isActive ? colors.goldPrimary : colors.lineSoft),
       ),
       child: Text(
         label,
@@ -266,11 +268,8 @@ class _CategoryChip extends StatelessWidget {
 }
 
 class _B2bSectionRow extends StatelessWidget {
-  const _B2bSectionRow({
-    required this.heading,
-    required this.colors,
-    required this.onViewAll,
-  });
+  const _B2bSectionRow(
+      {required this.heading, required this.colors, required this.onViewAll});
   final String heading;
   final AppColorScheme colors;
   final VoidCallback onViewAll;
@@ -282,18 +281,14 @@ class _B2bSectionRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
       children: [
-        Text(
-          heading,
-          style:
-              AppTypography.displayMd.copyWith(color: colors.ink900, fontSize: 19),
-        ),
+        Text(heading,
+            style: AppTypography.displayMd
+                .copyWith(color: colors.ink900, fontSize: 19)),
         GestureDetector(
           onTap: onViewAll,
-          child: Text(
-            'View All',
-            style: AppTypography.label
-                .copyWith(color: colors.goldPrimary, fontSize: 12),
-          ),
+          child: Text('View All',
+              style: AppTypography.label
+                  .copyWith(color: colors.goldPrimary, fontSize: 12)),
         ),
       ],
     );
@@ -301,7 +296,9 @@ class _B2bSectionRow extends StatelessWidget {
 }
 
 class _FeaturedCard extends StatelessWidget {
-  const _FeaturedCard({required this.colors, required this.onTap});
+  const _FeaturedCard(
+      {required this.deal, required this.colors, required this.onTap});
+  final Deal deal;
   final AppColorScheme colors;
   final VoidCallback onTap;
 
@@ -319,23 +316,19 @@ class _FeaturedCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image area
             SizedBox(
               height: 180,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
-                    'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=900&q=80',
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [AppColors.navyDeep, const Color(0xFF1A3550)],
-                        ),
-                      ),
-                    ),
-                  ),
+                  deal.firstImage.isNotEmpty
+                      ? Image.network(
+                          deal.firstImage,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              _imgFallback(colors),
+                        )
+                      : _imgFallback(colors),
                   Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
@@ -346,7 +339,6 @@ class _FeaturedCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // HOTEL tag
                   Positioned(
                     top: 14,
                     left: 14,
@@ -358,7 +350,7 @@ class _FeaturedCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(
-                        'HOTEL',
+                        deal.displayTag,
                         style: AppTypography.overline.copyWith(
                           color: Colors.white,
                           fontSize: 10,
@@ -367,7 +359,6 @@ class _FeaturedCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Heart icon
                   Positioned(
                     top: 14,
                     right: 14,
@@ -379,7 +370,7 @@ class _FeaturedCard extends StatelessWidget {
                         shape: BoxShape.circle,
                       ),
                       child: Center(
-                        child: Icon(Icons.favorite_rounded,
+                        child: Icon(Icons.favorite_border_rounded,
                             size: 16, color: colors.goldPrimary),
                       ),
                     ),
@@ -387,22 +378,25 @@ class _FeaturedCard extends StatelessWidget {
                 ],
               ),
             ),
-            // Body
             Padding(
               padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Luxury Goa Getaway',
-                    style: AppTypography.displayMd.copyWith(
-                      color: colors.ink900,
-                      fontSize: 19,
-                    ),
+                    deal.dealName,
+                    style: AppTypography.displayMd
+                        .copyWith(color: colors.ink900, fontSize: 19),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '5★ Resort · 3D/2N · Goa, India',
+                    [
+                      if (deal.hotelCategory?.isNotEmpty == true)
+                        deal.hotelCategory!,
+                      if (deal.duration?.isNotEmpty == true) deal.duration!,
+                      if (deal.destination?.isNotEmpty == true)
+                        deal.destination!,
+                    ].join(' · '),
                     style: AppTypography.body
                         .copyWith(color: colors.ink600, fontSize: 12),
                   ),
@@ -412,16 +406,18 @@ class _FeaturedCard extends StatelessWidget {
                     textBaseline: TextBaseline.alphabetic,
                     children: [
                       Text(
-                        '₹16,999',
+                        deal.priceForSame?.isNotEmpty == true
+                            ? '₹${deal.priceForSame}'
+                            : 'On Request',
                         style: AppTypography.body.copyWith(
                           color: colors.goldPrimary,
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       Text(
-                        '/ person · 4.8 ★ (128)',
+                        '/ person',
                         style: AppTypography.body
                             .copyWith(color: colors.ink600, fontSize: 11),
                       ),
@@ -435,19 +431,20 @@ class _FeaturedCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _imgFallback(AppColorScheme colors) => Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.navyDeep, const Color(0xFF1A3550)],
+          ),
+        ),
+      );
 }
 
 class _SmallDealCard extends StatelessWidget {
-  const _SmallDealCard({
-    required this.title,
-    required this.price,
-    required this.imageUrl,
-    required this.colors,
-    required this.onTap,
-  });
-  final String title;
-  final String price;
-  final String imageUrl;
+  const _SmallDealCard(
+      {required this.deal, required this.colors, required this.onTap});
+  final Deal deal;
   final AppColorScheme colors;
   final VoidCallback onTap;
 
@@ -466,26 +463,25 @@ class _SmallDealCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
             SizedBox(
               height: 110,
-              child: Image.network(
-                imageUrl,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  color: colors.surfaceTertiary,
-                ),
-              ),
+              child: deal.firstImage.isNotEmpty
+                  ? Image.network(
+                      deal.firstImage,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          Container(color: colors.surfaceTertiary),
+                    )
+                  : Container(color: colors.surfaceTertiary),
             ),
-            // Body
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    deal.dealName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.body.copyWith(
@@ -496,7 +492,9 @@ class _SmallDealCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    price,
+                    deal.priceForSame?.isNotEmpty == true
+                        ? '₹${deal.priceForSame}'
+                        : 'On Request',
                     style: AppTypography.body.copyWith(
                       color: colors.goldPrimary,
                       fontSize: 14,
@@ -508,6 +506,77 @@ class _SmallDealCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _DealsSkeletonBody extends StatelessWidget {
+  const _DealsSkeletonBody({required this.colors});
+  final AppColorScheme colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+            height: 16, width: 120, color: colors.surfaceTertiary),
+        const SizedBox(height: 12),
+        Container(
+          height: 280,
+          decoration: BoxDecoration(
+            color: colors.surfaceTertiary,
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Container(
+            height: 16, width: 160, color: colors.surfaceTertiary),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 190,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: 3,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (_, __) => Container(
+              width: 160,
+              decoration: BoxDecoration(
+                color: colors.surfaceTertiary,
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DealsError extends StatelessWidget {
+  const _DealsError({required this.colors, this.message});
+  final AppColorScheme colors;
+  final String? message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: colors.surfaceCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.lineSoft),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.wifi_off_rounded, size: 32, color: colors.ink400),
+          const SizedBox(height: 8),
+          Text(
+            message ?? 'Could not load deals',
+            style: AppTypography.body.copyWith(color: colors.ink600),
+          ),
+        ],
       ),
     );
   }

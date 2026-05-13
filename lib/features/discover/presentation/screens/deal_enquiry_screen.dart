@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../data/models/deal_model.dart';
 
 class DealEnquiryScreen extends StatefulWidget {
-  const DealEnquiryScreen({super.key});
+  const DealEnquiryScreen({super.key, required this.deal});
+
+  final Deal deal;
 
   @override
   State<DealEnquiryScreen> createState() => _DealEnquiryScreenState();
@@ -31,6 +34,7 @@ class _DealEnquiryScreenState extends State<DealEnquiryScreen> {
   Widget build(BuildContext context) {
     final topPad = MediaQuery.paddingOf(context).top;
     final botPad = MediaQuery.paddingOf(context).bottom;
+    final deal = widget.deal;
 
     const bg = Color(0xFFFAF8F3);
     const ink900 = Color(0xFF1A1A1A);
@@ -42,7 +46,7 @@ class _DealEnquiryScreenState extends State<DealEnquiryScreen> {
       backgroundColor: bg,
       body: Stack(
         children: [
-          // — Scrollable form body
+          // Scrollable form body
           SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(20, topPad + 80, 20, botPad + 100),
             child: Column(
@@ -60,31 +64,27 @@ class _DealEnquiryScreenState extends State<DealEnquiryScreen> {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
-                          'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=200&q=80',
-                          width: 56,
-                          height: 56,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            width: 56,
-                            height: 56,
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(colors: [
-                                AppColors.navyDeep,
-                                Color(0xFF1A3550)
-                              ]),
-                            ),
-                          ),
-                        ),
+                        child: deal.firstImage.isNotEmpty
+                            ? Image.network(
+                                deal.firstImage,
+                                width: 56,
+                                height: 56,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    _thumbFallback(),
+                              )
+                            : _thumbFallback(),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Luxury Goa Getaway',
-                              style: TextStyle(
+                            Text(
+                              deal.dealName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
                                 fontFamily: 'DMSans',
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
@@ -92,9 +92,18 @@ class _DealEnquiryScreenState extends State<DealEnquiryScreen> {
                               ),
                             ),
                             const SizedBox(height: 2),
-                            const Text(
-                              '5★ Resort · 3D/2N · Goa',
-                              style: TextStyle(
+                            Text(
+                              [
+                                if (deal.hotelCategory?.isNotEmpty == true)
+                                  deal.hotelCategory!,
+                                if (deal.duration?.isNotEmpty == true)
+                                  deal.duration!,
+                                if (deal.destination?.isNotEmpty == true)
+                                  deal.destination!,
+                              ].join(' · '),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
                                   fontFamily: 'DMSans',
                                   fontSize: 11,
                                   color: ink600),
@@ -103,24 +112,28 @@ class _DealEnquiryScreenState extends State<DealEnquiryScreen> {
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.baseline,
                               textBaseline: TextBaseline.alphabetic,
-                              children: const [
+                              children: [
                                 Text(
-                                  '₹16,999',
-                                  style: TextStyle(
+                                  deal.priceForSame?.isNotEmpty == true
+                                      ? '₹${deal.priceForSame}'
+                                      : 'On Request',
+                                  style: const TextStyle(
                                     fontFamily: 'DMSans',
                                     fontWeight: FontWeight.w700,
                                     fontSize: 14,
                                     color: gold,
                                   ),
                                 ),
-                                SizedBox(width: 4),
-                                Text(
-                                  '/ person',
-                                  style: TextStyle(
-                                      fontFamily: 'DMSans',
-                                      fontSize: 10,
-                                      color: ink600),
-                                ),
+                                if (deal.priceForSame?.isNotEmpty == true) ...[
+                                  const SizedBox(width: 4),
+                                  const Text(
+                                    '/ person',
+                                    style: TextStyle(
+                                        fontFamily: 'DMSans',
+                                        fontSize: 10,
+                                        color: ink600),
+                                  ),
+                                ],
                               ],
                             ),
                           ],
@@ -131,7 +144,6 @@ class _DealEnquiryScreenState extends State<DealEnquiryScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Enquiry For
                 _EnqLabel(label: 'Enquiry For'),
                 const SizedBox(height: 8),
                 _EnqDropdown(
@@ -143,30 +155,23 @@ class _DealEnquiryScreenState extends State<DealEnquiryScreen> {
                 ),
                 const SizedBox(height: 18),
 
-                // Travel Date
-                _EnqLabel(label: 'Travel Date'),
+                const _EnqLabel(label: 'Travel Date'),
                 const SizedBox(height: 8),
                 _DateField(lineSoft: lineSoft, ink900: ink900, ink600: ink600),
                 const SizedBox(height: 18),
 
-                // Travellers
                 _EnqLabel(label: 'Travellers'),
                 const SizedBox(height: 8),
                 _EnqDropdown(
                   value: _travellers,
-                  items: const [
-                    '2 Adults',
-                    '2 Adults, 1 Child',
-                    '1 Adult',
-                  ],
+                  items: const ['2 Adults', '2 Adults, 1 Child', '1 Adult'],
                   onChanged: (v) => setState(() => _travellers = v!),
                   lineSoft: lineSoft,
                   ink900: ink900,
                 ),
                 const SizedBox(height: 18),
 
-                // Message
-                _EnqLabel(label: 'Your Message'),
+                const _EnqLabel(label: 'Your Message'),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _messageController,
@@ -192,8 +197,7 @@ class _DealEnquiryScreenState extends State<DealEnquiryScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide:
-                          const BorderSide(color: gold, width: 1.5),
+                      borderSide: const BorderSide(color: gold, width: 1.5),
                     ),
                   ),
                 ),
@@ -201,7 +205,7 @@ class _DealEnquiryScreenState extends State<DealEnquiryScreen> {
             ),
           ),
 
-          // — Fixed header
+          // Fixed header
           Positioned(
             top: 0,
             left: 0,
@@ -242,15 +246,14 @@ class _DealEnquiryScreenState extends State<DealEnquiryScreen> {
             ),
           ),
 
-          // — Fixed bottom CTA
+          // Fixed bottom CTA
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
               color: Colors.white,
-              padding:
-                  EdgeInsets.fromLTRB(20, 14, 20, botPad + 14),
+              padding: EdgeInsets.fromLTRB(20, 14, 20, botPad + 14),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 border: Border(top: BorderSide(color: lineSoft)),
@@ -260,8 +263,10 @@ class _DealEnquiryScreenState extends State<DealEnquiryScreen> {
                   HapticFeedback.mediumImpact();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content: Text(
-                            'Enquiry sent! The seller will contact you soon.')),
+                      content:
+                          Text('Enquiry sent! The seller will contact you soon.'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
                   );
                   context.pop();
                 },
@@ -272,9 +277,9 @@ class _DealEnquiryScreenState extends State<DealEnquiryScreen> {
                     color: gold,
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
+                    children: [
                       Text(
                         'Send Enquiry',
                         style: TextStyle(
@@ -297,6 +302,16 @@ class _DealEnquiryScreenState extends State<DealEnquiryScreen> {
       ),
     );
   }
+
+  Widget _thumbFallback() => Container(
+        width: 56,
+        height: 56,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.navyDeep, Color(0xFF1A3550)],
+          ),
+        ),
+      );
 }
 
 class _EnqLabel extends StatelessWidget {
@@ -345,10 +360,9 @@ class _EnqDropdown extends StatelessWidget {
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
-          icon: Icon(Icons.keyboard_arrow_down_rounded,
-              color: const Color(0xFF5E5E5E), size: 18),
-          style: TextStyle(
-              fontFamily: 'DMSans', fontSize: 14, color: ink900),
+          icon: const Icon(Icons.keyboard_arrow_down_rounded,
+              color: Color(0xFF5E5E5E), size: 18),
+          style: TextStyle(fontFamily: 'DMSans', fontSize: 14, color: ink900),
           onChanged: onChanged,
           items: items
               .map((e) => DropdownMenuItem(value: e, child: Text(e)))
@@ -384,8 +398,8 @@ class _DateField extends StatelessWidget {
           Expanded(
             child: Text(
               '24 May 2025',
-              style: TextStyle(
-                  fontFamily: 'DMSans', fontSize: 14, color: ink900),
+              style:
+                  TextStyle(fontFamily: 'DMSans', fontSize: 14, color: ink900),
             ),
           ),
           Icon(Icons.calendar_month_outlined, size: 18, color: ink600),

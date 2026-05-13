@@ -2,18 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
 import '../../../../core/router/route_names.dart';
+import '../../data/models/deal_model.dart';
 
 class DealDetailScreen extends StatelessWidget {
-  const DealDetailScreen({super.key});
+  const DealDetailScreen({super.key, required this.deal});
 
-  static const _includes = [
-    '2 Nights stay in a 5★ Resort',
-    'Daily Breakfast & Dinner',
-    'Airport pickup & drop transfers',
-    'Free access to resort activities',
-  ];
+  final Deal deal;
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +21,18 @@ class DealDetailScreen extends StatelessWidget {
     const success = Color(0xFF2D7A4F);
     const successBg = Color(0x1F2D7A4F);
 
+    final images = deal.images;
+    final inclusions = deal.inclusionsList;
+    final initials = (deal.contactName ?? 'TW')
+        .split(' ')
+        .take(2)
+        .map((w) => w.isNotEmpty ? w[0].toUpperCase() : '')
+        .join();
+
     return Scaffold(
       backgroundColor: bg,
       body: Stack(
         children: [
-          // — Scrollable content
           SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: 100),
             child: Column(
@@ -42,18 +44,13 @@ class DealDetailScreen extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Image.network(
-                        'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=900&q=80',
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [AppColors.navyDeep, Color(0xFF1A3550)],
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Subtle top gradient for icons readability
+                      images.isNotEmpty
+                          ? Image.network(
+                              images.first,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => _heroFallback(),
+                            )
+                          : _heroFallback(),
                       Container(
                         decoration: const BoxDecoration(
                           gradient: LinearGradient(
@@ -91,35 +88,33 @@ class DealDetailScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      // HOTEL tag
-                      const Positioned(
-                        bottom: 20,
-                        left: 20,
-                        child: _GoldTag(label: 'HOTEL'),
-                      ),
-                      // Pagination dots
                       Positioned(
                         bottom: 20,
-                        left: 0,
-                        right: 0,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _heroDot(active: true),
-                            const SizedBox(width: 5),
-                            _heroDot(active: false),
-                            const SizedBox(width: 5),
-                            _heroDot(active: false),
-                            const SizedBox(width: 5),
-                            _heroDot(active: false),
-                          ],
-                        ),
+                        left: 20,
+                        child: _GoldTag(label: deal.displayTag),
                       ),
+                      if (images.length > 1)
+                        Positioned(
+                          bottom: 20,
+                          left: 0,
+                          right: 0,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(
+                              images.length.clamp(1, 5),
+                              (i) => Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 3),
+                                child: _heroDot(active: i == 0),
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
 
-                // — White body card (overlaps hero by 28px)
+                // White body card
                 Transform.translate(
                   offset: const Offset(0, -28),
                   child: Container(
@@ -132,10 +127,9 @@ class DealDetailScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Title + sub
-                        const Text(
-                          'Luxury Goa Getaway',
-                          style: TextStyle(
+                        Text(
+                          deal.dealName,
+                          style: const TextStyle(
                             fontFamily: 'PlayfairDisplay',
                             fontWeight: FontWeight.w700,
                             fontSize: 26,
@@ -144,65 +138,59 @@ class DealDetailScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 6),
-                        const Text(
-                          '5★ Resort · 3 Days 2 Nights',
-                          style: TextStyle(
+                        Text(
+                          [
+                            if (deal.hotelCategory?.isNotEmpty == true)
+                              deal.hotelCategory!,
+                            if (deal.duration?.isNotEmpty == true)
+                              deal.duration!,
+                          ].join(' · '),
+                          style: const TextStyle(
                               fontFamily: 'DMSans',
                               fontSize: 13,
                               color: ink600),
                         ),
                         const SizedBox(height: 12),
 
-                        // Meta row: location + rating
+                        // Location + rating row
                         Row(
                           children: [
                             const Icon(Icons.location_on_outlined,
                                 size: 14, color: gold),
                             const SizedBox(width: 5),
-                            const Text('Goa, India',
-                                style: TextStyle(
-                                    fontFamily: 'DMSans',
-                                    fontSize: 13,
-                                    color: ink600)),
-                            const SizedBox(width: 16),
-                            const Icon(Icons.star_rounded,
-                                size: 14, color: gold),
-                            const SizedBox(width: 4),
-                            const Text(
-                              '4.8',
-                              style: TextStyle(
-                                  fontFamily: 'DMSans',
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
-                                  color: ink900),
-                            ),
-                            const SizedBox(width: 4),
                             Text(
-                              '(128)',
-                              style: AppTypography.caption.copyWith(
-                                  color: const Color(0xFF9E9E9E), fontSize: 12),
+                              [
+                                deal.destination,
+                                deal.countryOrState,
+                              ]
+                                  .where((s) => s?.isNotEmpty == true)
+                                  .join(', '),
+                              style: const TextStyle(
+                                  fontFamily: 'DMSans',
+                                  fontSize: 13,
+                                  color: ink600),
                             ),
                           ],
                         ),
                         const SizedBox(height: 20),
 
-                        // Price row (bordered)
+                        // Price row
                         Container(
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 18),
+                          padding: const EdgeInsets.symmetric(vertical: 18),
                           decoration: const BoxDecoration(
                             border: Border.symmetric(
-                              horizontal:
-                                  BorderSide(color: lineSoft),
+                              horizontal: BorderSide(color: lineSoft),
                             ),
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.baseline,
                             textBaseline: TextBaseline.alphabetic,
                             children: [
-                              const Text(
-                                '₹16,999',
-                                style: TextStyle(
+                              Text(
+                                deal.priceForSame?.isNotEmpty == true
+                                    ? '₹${deal.priceForSame}'
+                                    : 'On Request',
+                                style: const TextStyle(
                                   fontFamily: 'DMSans',
                                   fontWeight: FontWeight.w700,
                                   fontSize: 28,
@@ -218,182 +206,177 @@ class DealDetailScreen extends StatelessWidget {
                                     fontSize: 13,
                                     color: ink600),
                               ),
-                              const SizedBox(width: 10),
-                              const Text(
-                                '₹22,999',
-                                style: TextStyle(
-                                  fontFamily: 'DMSans',
-                                  fontSize: 14,
-                                  color: Color(0xFF9E9E9E),
-                                  decoration: TextDecoration.lineThrough,
-                                ),
-                              ),
-                              const Spacer(),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: successBg,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: const Text(
-                                  '26% OFF',
-                                  style: TextStyle(
+                              if (deal.priceForOther?.isNotEmpty == true &&
+                                  deal.priceForOther != deal.priceForSame) ...[
+                                const SizedBox(width: 10),
+                                Text(
+                                  '₹${deal.priceForOther}',
+                                  style: const TextStyle(
                                     fontFamily: 'DMSans',
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 11,
-                                    color: success,
+                                    fontSize: 14,
+                                    color: Color(0xFF9E9E9E),
+                                    decoration: TextDecoration.lineThrough,
                                   ),
                                 ),
-                              ),
+                              ],
                             ],
                           ),
                         ),
                         const SizedBox(height: 20),
 
                         // Deal Includes
-                        const Text(
-                          'Deal Includes',
-                          style: TextStyle(
-                            fontFamily: 'DMSans',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                            color: ink900,
+                        if (inclusions.isNotEmpty) ...[
+                          const Text(
+                            'Deal Includes',
+                            style: TextStyle(
+                              fontFamily: 'DMSans',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                              color: ink900,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        ..._includes.map((item) => Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 22,
-                                    height: 22,
-                                    decoration: const BoxDecoration(
-                                      color: successBg,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Center(
-                                      child: Icon(Icons.check_rounded,
-                                          size: 12, color: success),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      item,
-                                      style: const TextStyle(
-                                          fontFamily: 'DMSans',
-                                          fontSize: 13,
-                                          color: ink900),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )),
-                        const SizedBox(height: 12),
-
-                        // About
-                        const Text(
-                          'About this property',
-                          style: TextStyle(
-                            fontFamily: 'DMSans',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                            color: ink900,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Set on a private stretch of Vagator Beach, the resort offers panoramic Arabian Sea views, two infinity pools, and an award-winning spa. Ideal for honeymooners and high-value leisure clients.',
-                          style: TextStyle(
-                            fontFamily: 'DMSans',
-                            fontSize: 13,
-                            height: 1.7,
-                            color: ink600,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Seller card
-                        const Text(
-                          'Seller',
-                          style: TextStyle(
-                            fontFamily: 'DMSans',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                            color: ink900,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: lineSoft),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 44,
-                                height: 44,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [gold, Color(0xFF8B6914)],
-                                  ),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    'SS',
-                                    style: TextStyle(
-                                      fontFamily: 'DMSans',
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                      color: ink900,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                          const SizedBox(height: 12),
+                          ...inclusions.map((item) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Row(
                                   children: [
-                                    Row(
-                                      children: const [
-                                        Text(
-                                          'Sunset Stays Pvt Ltd',
-                                          style: TextStyle(
-                                            fontFamily: 'DMSans',
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 13,
-                                            color: ink900,
-                                          ),
-                                        ),
-                                        SizedBox(width: 6),
-                                        Icon(Icons.verified_rounded,
-                                            size: 14, color: gold),
-                                      ],
+                                    Container(
+                                      width: 22,
+                                      height: 22,
+                                      decoration: const BoxDecoration(
+                                        color: successBg,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Center(
+                                        child: Icon(Icons.check_rounded,
+                                            size: 12, color: success),
+                                      ),
                                     ),
-                                    const SizedBox(height: 2),
-                                    const Text(
-                                      'DMC · Goa · TAAI Verified · 42 deals',
-                                      style: TextStyle(
-                                          fontFamily: 'DMSans',
-                                          fontSize: 11,
-                                          color: ink600),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        item,
+                                        style: const TextStyle(
+                                            fontFamily: 'DMSans',
+                                            fontSize: 13,
+                                            color: ink900),
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
+                              )),
+                          const SizedBox(height: 12),
+                        ],
+
+                        // About
+                        if (deal.description?.isNotEmpty == true) ...[
+                          const Text(
+                            'About this deal',
+                            style: TextStyle(
+                              fontFamily: 'DMSans',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                              color: ink900,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 28),
+                          const SizedBox(height: 8),
+                          Text(
+                            deal.description!,
+                            style: const TextStyle(
+                              fontFamily: 'DMSans',
+                              fontSize: 13,
+                              height: 1.7,
+                              color: ink600,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // Seller card
+                        if (deal.contactName?.isNotEmpty == true) ...[
+                          const Text(
+                            'Seller',
+                            style: TextStyle(
+                              fontFamily: 'DMSans',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                              color: ink900,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: lineSoft),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [gold, Color(0xFF8B6914)],
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      initials,
+                                      style: const TextStyle(
+                                        fontFamily: 'DMSans',
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                        color: ink900,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              deal.contactName!,
+                                              style: const TextStyle(
+                                                fontFamily: 'DMSans',
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 13,
+                                                color: ink900,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          const Icon(Icons.verified_rounded,
+                                              size: 14, color: gold),
+                                        ],
+                                      ),
+                                      if (deal.contactEmail?.isNotEmpty ==
+                                          true)
+                                        Text(
+                                          deal.contactEmail!,
+                                          style: const TextStyle(
+                                              fontFamily: 'DMSans',
+                                              fontSize: 11,
+                                              color: ink600),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 28),
+                        ],
                       ],
                     ),
                   ),
@@ -402,7 +385,7 @@ class DealDetailScreen extends StatelessWidget {
             ),
           ),
 
-          // — Fixed bottom action bar
+          // Fixed bottom action bar
           Positioned(
             bottom: 0,
             left: 0,
@@ -417,19 +400,14 @@ class DealDetailScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  _ActionIcon(
-                    icon: Icons.chat_bubble_outline_rounded,
-                    onTap: () {},
-                  ),
+                  _ActionIcon(icon: Icons.chat_bubble_outline_rounded, onTap: () {}),
                   const SizedBox(width: 10),
-                  _ActionIcon(
-                    icon: Icons.phone_outlined,
-                    onTap: () {},
-                  ),
+                  _ActionIcon(icon: Icons.phone_outlined, onTap: () {}),
                   const SizedBox(width: 10),
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => context.push(RouteNames.dealEnquiry),
+                      onTap: () =>
+                          context.push(RouteNames.dealEnquiry, extra: deal),
                       child: Container(
                         height: 52,
                         decoration: BoxDecoration(
@@ -460,14 +438,20 @@ class DealDetailScreen extends StatelessWidget {
     );
   }
 
+  Widget _heroFallback() => Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.navyDeep, Color(0xFF1A3550)],
+          ),
+        ),
+      );
+
   Widget _heroDot({required bool active}) => AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         width: active ? 20 : 6,
         height: 6,
         decoration: BoxDecoration(
-          color: active
-              ? Colors.white
-              : Colors.white.withValues(alpha: 0.5),
+          color: active ? Colors.white : Colors.white.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(999),
         ),
       );

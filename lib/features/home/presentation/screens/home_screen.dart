@@ -1,41 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../providers/home_providers.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    SystemChrome.setSystemUIOverlayStyle(
-      isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-    );
-  }
-
-  static const _newsItems = [
-    (
-      eyebrow: 'INDUSTRY',
-      title: 'Ministry of Tourism Announces New Incredible India 2.0 Campaign',
-      meta: 'Travel World · 2h ago',
-      imageUrl:
-          'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=300&q=80',
-    ),
-    (
-      eyebrow: 'AVIATION',
-      title: 'Air India Orders 470 Aircraft from Airbus & Boeing',
-      meta: 'Reuters · 5h ago',
-      imageUrl:
-          'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=300&q=80',
-    ),
-  ];
 
   static const _quickTiles = [
     (icon: Icons.menu_book_outlined, label: 'B2B Deals'),
@@ -46,29 +18,32 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<AppColorScheme>()!;
     final topPad = MediaQuery.paddingOf(context).top;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    SystemChrome.setSystemUIOverlayStyle(
+      isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+    );
+
+    final user = FirebaseAuth.instance.currentUser;
+    final firstName = (user?.displayName ?? '').split(' ').first;
+    final greeting = _greeting();
+    final newsAsync = ref.watch(newsProvider);
 
     return Scaffold(
       backgroundColor: colors.surfacePrimary,
       body: Stack(
         children: [
-          // — Scrollable content
           SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(20, topPad + 88, 20, 112),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Search bar
                 _SearchBar(colors: colors),
                 const SizedBox(height: 20),
-
-                // Hero deal card
                 _HeroDealCard(colors: colors),
                 const SizedBox(height: 24),
-
-                // Quick tiles (5-column)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: _quickTiles
@@ -80,30 +55,38 @@ class _HomeScreenState extends State<HomeScreen> {
                       .toList(),
                 ),
                 const SizedBox(height: 24),
-
-                // Top Stories section
                 _SectionRow(
                   heading: 'Top Stories',
                   colors: colors,
                   onViewAll: () {},
                 ),
                 const SizedBox(height: 14),
-
-                ..._newsItems.map((n) => Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: _NewsCard(
-                        eyebrow: n.eyebrow,
-                        title: n.title,
-                        meta: n.meta,
-                        imageUrl: n.imageUrl,
-                        colors: colors,
-                      ),
-                    )),
+                newsAsync.when(
+                  loading: () => const _NewsSkeletonList(),
+                  error: (e, _) => _NewsError(colors: colors),
+                  data: (articles) => articles.isEmpty
+                      ? _NewsError(colors: colors)
+                      : Column(
+                          children: articles
+                              .take(8)
+                              .map((a) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    child: _NewsCard(
+                                      eyebrow: a.category.name.toUpperCase(),
+                                      title: a.title,
+                                      meta: a.sourceMeta,
+                                      imageUrl: a.firstImage,
+                                      colors: colors,
+                                    ),
+                                  ))
+                              .toList(),
+                        ),
+                ),
               ],
             ),
           ),
 
-          // — App bar overlay
+          // App bar overlay
           Positioned(
             top: 0,
             left: 0,
@@ -118,14 +101,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Hello, Rakesh 👋',
+                        firstName.isNotEmpty
+                            ? 'Hello, $firstName 👋'
+                            : 'Welcome 👋',
                         style: AppTypography.heading.copyWith(
                           color: colors.ink900,
                           fontSize: 17,
                         ),
                       ),
                       Text(
-                        'Good Morning',
+                        greeting,
                         style: AppTypography.caption
                             .copyWith(color: colors.ink600),
                       ),
@@ -138,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // — Miniplayer (floating above bottom nav)
+          // Miniplayer
           Positioned(
             bottom: 12,
             left: 16,
@@ -149,7 +134,16 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  String _greeting() {
+    final h = DateTime.now().hour;
+    if (h < 12) return 'Good Morning';
+    if (h < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _BellButton extends StatelessWidget {
   const _BellButton({required this.colors});
@@ -212,8 +206,7 @@ class _SearchBar extends StatelessWidget {
           Expanded(
             child: Text(
               'Search deals, news, people...',
-              style:
-                  AppTypography.body.copyWith(color: colors.ink400),
+              style: AppTypography.body.copyWith(color: colors.ink400),
             ),
           ),
           Container(
@@ -245,7 +238,6 @@ class _HeroDealCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Background image
             Image.network(
               'https://images.unsplash.com/photo-1602002418082-a4443e081dd1?w=800&q=80',
               fit: BoxFit.cover,
@@ -254,29 +246,21 @@ class _HeroDealCard extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.navyDeep,
-                      const Color(0xFF1A3550),
-                    ],
+                    colors: [AppColors.navyDeep, const Color(0xFF1A3550)],
                   ),
                 ),
               ),
             ),
-            // Gradient overlay
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   stops: [0.0, 1.0],
-                  colors: [
-                    Color(0x1A0D1B2A),
-                    Color(0xBF0D1B2A),
-                  ],
+                  colors: [Color(0x1A0D1B2A), Color(0xBF0D1B2A)],
                 ),
               ),
             ),
-            // Content
             Positioned(
               left: 24,
               right: 24,
@@ -286,8 +270,8 @@ class _HeroDealCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(999),
@@ -295,8 +279,7 @@ class _HeroDealCard extends StatelessWidget {
                     child: Text(
                       'TAAI CONVENTION · GOA 2025',
                       style: AppTypography.overline.copyWith(
-                        color:
-                            Colors.white.withValues(alpha: 0.85),
+                        color: Colors.white.withValues(alpha: 0.85),
                         fontSize: 10,
                         letterSpacing: 1.6,
                       ),
@@ -315,8 +298,7 @@ class _HeroDealCard extends StatelessWidget {
                   Text(
                     '28–30 November · Taj Aguada, Goa',
                     style: AppTypography.body.copyWith(
-                      color:
-                          Colors.white.withValues(alpha: 0.85),
+                      color: Colors.white.withValues(alpha: 0.85),
                       fontSize: 12,
                     ),
                   ),
@@ -340,15 +322,13 @@ class _HeroDealCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         const Icon(Icons.arrow_forward_rounded,
-                            size: 12,
-                            color: AppColors.navyDeep),
+                            size: 12, color: AppColors.navyDeep),
                       ],
                     ),
                   ),
                 ],
               ),
             ),
-            // Pagination dots
             Positioned(
               bottom: 20,
               right: 24,
@@ -382,11 +362,8 @@ class _HeroDealCard extends StatelessWidget {
 }
 
 class _QuickTile extends StatelessWidget {
-  const _QuickTile({
-    required this.icon,
-    required this.label,
-    required this.colors,
-  });
+  const _QuickTile(
+      {required this.icon, required this.label, required this.colors});
   final IconData icon;
   final String label;
   final AppColorScheme colors;
@@ -403,10 +380,7 @@ class _QuickTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: colors.lineSoft),
           ),
-          child: Center(
-            child:
-                Icon(icon, size: 22, color: colors.navyDeep),
-          ),
+          child: Center(child: Icon(icon, size: 22, color: colors.navyDeep)),
         ),
         const SizedBox(height: 6),
         Text(
@@ -425,11 +399,8 @@ class _QuickTile extends StatelessWidget {
 }
 
 class _SectionRow extends StatelessWidget {
-  const _SectionRow({
-    required this.heading,
-    required this.colors,
-    required this.onViewAll,
-  });
+  const _SectionRow(
+      {required this.heading, required this.colors, required this.onViewAll});
   final String heading;
   final AppColorScheme colors;
   final VoidCallback onViewAll;
@@ -452,10 +423,8 @@ class _SectionRow extends StatelessWidget {
           onTap: onViewAll,
           child: Text(
             'View All',
-            style: AppTypography.label.copyWith(
-              color: colors.goldPrimary,
-              fontSize: 12,
-            ),
+            style: AppTypography.label
+                .copyWith(color: colors.goldPrimary, fontSize: 12),
           ),
         ),
       ],
@@ -488,23 +457,20 @@ class _NewsCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Thumbnail
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: Image.network(
-              imageUrl,
-              width: 88,
-              height: 76,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                width: 88,
-                height: 76,
-                color: colors.surfaceTertiary,
-              ),
-            ),
+            child: imageUrl.isNotEmpty
+                ? Image.network(
+                    imageUrl,
+                    width: 88,
+                    height: 76,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) =>
+                        _imagePlaceholder(colors),
+                  )
+                : _imagePlaceholder(colors),
           ),
           const SizedBox(width: 12),
-          // Text body
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -542,6 +508,109 @@ class _NewsCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _imagePlaceholder(AppColorScheme colors) => Container(
+        width: 88,
+        height: 76,
+        color: colors.surfaceTertiary,
+        child: Center(
+          child: Icon(Icons.image_outlined, size: 24, color: colors.ink400),
+        ),
+      );
+}
+
+class _NewsSkeletonList extends StatelessWidget {
+  const _NewsSkeletonList();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: List.generate(
+        3,
+        (_) => const Padding(
+          padding: EdgeInsets.only(bottom: 10),
+          child: _NewsSkeleton(),
+        ),
+      ),
+    );
+  }
+}
+
+class _NewsSkeleton extends StatelessWidget {
+  const _NewsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppColorScheme>()!;
+    return Container(
+      height: 100,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colors.surfaceCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: colors.lineSoft),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 88,
+            height: 76,
+            decoration: BoxDecoration(
+              color: colors.surfaceTertiary,
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                    height: 10, width: 60, color: colors.surfaceTertiary),
+                const SizedBox(height: 8),
+                Container(
+                    height: 12, width: double.infinity, color: colors.surfaceTertiary),
+                const SizedBox(height: 4),
+                Container(
+                    height: 12, width: 160, color: colors.surfaceTertiary),
+                const SizedBox(height: 8),
+                Container(
+                    height: 10, width: 80, color: colors.surfaceTertiary),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NewsError extends StatelessWidget {
+  const _NewsError({required this.colors});
+  final AppColorScheme colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: colors.surfaceCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: colors.lineSoft),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.wifi_off_rounded, size: 32, color: colors.ink400),
+          const SizedBox(height: 8),
+          Text(
+            'Could not load stories',
+            style: AppTypography.body.copyWith(color: colors.ink600),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _Miniplayer extends StatelessWidget {
@@ -557,14 +626,11 @@ class _Miniplayer extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: const [
           BoxShadow(
-              color: Color(0x400D1B2A),
-              blurRadius: 24,
-              offset: Offset(0, 8)),
+              color: Color(0x400D1B2A), blurRadius: 24, offset: Offset(0, 8)),
         ],
       ),
       child: Row(
         children: [
-          // Thumb
           Container(
             width: 40,
             height: 40,
@@ -582,7 +648,6 @@ class _Miniplayer extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          // Text
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -624,7 +689,6 @@ class _Miniplayer extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          // Play button
           Container(
             width: 36,
             height: 36,
