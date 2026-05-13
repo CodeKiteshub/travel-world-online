@@ -1,0 +1,106 @@
+{
+  "project_info": {
+    "project_number": "934066571770",
+    "project_id": "travel-world-online",
+    "storage_bucket": "travel-world-online.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:934066571770:android:aa9a8028cb68b440cebc43",
+        "android_client_info": {
+          "package_name": "com.shukill.twocampus"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "934066571770-6d6hjigf33iioi55gumln71m3fgkdetk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.shukill.twocampus",
+            "certificate_hash": "1046460022dea2afc498d370de38a44cc3981a7e"
+          }
+        },
+        {
+          "client_id": "934066571770-36ug8shu9ilqqucnftatio9jfhpdr0kj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCOUfdtjOn4O_YfA9-bBdLERFI-F_NOj0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "934066571770-36ug8shu9ilqqucnftatio9jfhpdr0kj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "934066571770-4adp800kpo5hpq24fg71bta24el9h1cl.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.travelworldonline.twoapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:934066571770:android:703ba20f189bf48dcebc43",
+        "android_client_info": {
+          "package_name": "com.travel.travelworldonline"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "934066571770-2prguerl8ahc9ossc5t2qha03ofmb0n6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.travel.travelworldonline",
+            "certificate_hash": "39b20b34e07962796ad1df87d1279f3e40298775"
+          }
+        },
+        {
+          "client_id": "934066571770-j46n2jvrf71nppjj0nf5a9vtrpql9p5h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.travel.travelworldonline",
+            "certificate_hash": "1046460022dea2afc498d370de38a44cc3981a7e"
+          }
+        },
+        {
+          "client_id": "934066571770-36ug8shu9ilqqucnftatio9jfhpdr0kj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCOUfdtjOn4O_YfA9-bBdLERFI-F_NOj0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "934066571770-36ug8shu9ilqqucnftatio9jfhpdr0kj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "934066571770-4adp800kpo5hpq24fg71bta24el9h1cl.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.travelworldonline.twoapp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,4 +1,4 @@
-package com.example.new_travel
+package com.travel.travelworldonline
 
 import io.flutter.embedding.android.FlutterActivity
 
