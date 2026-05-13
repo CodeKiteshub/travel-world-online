@@ -1,18 +1,18 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/router/route_names.dart';
+import '../providers/auth_providers.dart';
 
 const _envelopeSvg = '''
 <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Dashed circle ring -->
   <circle cx="100" cy="100" r="88" stroke="#E8E5DC" stroke-width="1.5" stroke-dasharray="6,4"/>
-
-  <!-- Decorative star crosses -->
   <line x1="28" y1="44" x2="28" y2="52" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
   <line x1="24" y1="48" x2="32" y2="48" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
   <line x1="172" y1="40" x2="172" y2="48" stroke="#1A1A1A" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
@@ -21,39 +21,74 @@ const _envelopeSvg = '''
   <line x1="18" y1="152" x2="26" y2="152" stroke="#1A1A1A" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
   <line x1="174" y1="154" x2="174" y2="162" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
   <line x1="170" y1="158" x2="178" y2="158" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
-
-  <!-- Envelope body -->
   <rect x="38" y="88" width="124" height="84" rx="4" fill="white" stroke="#1A1A1A" stroke-width="1.5"/>
-
-  <!-- Envelope V-flap -->
   <path d="M38 92 L100 138 L162 92" stroke="#1A1A1A" stroke-width="1.5" stroke-linejoin="round" fill="none"/>
-
-  <!-- Letter rectangle -->
   <rect x="62" y="58" width="76" height="60" rx="2" fill="#FAF8F3" stroke="#1A1A1A" stroke-width="1.5"/>
-
-  <!-- Lines on letter -->
   <line x1="76" y1="76" x2="124" y2="76" stroke="#1A1A1A" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
   <line x1="76" y1="88" x2="124" y2="88" stroke="#1A1A1A" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
   <line x1="76" y1="100" x2="108" y2="100" stroke="#1A1A1A" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
-
-  <!-- Gold checkmark badge -->
   <circle cx="138" cy="62" r="14" fill="#C9A84C"/>
   <path d="M131 62 L136 68 L145 55" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 </svg>
 ''';
 
-class VerifyEmailScreen extends StatefulWidget {
+class VerifyEmailScreen extends ConsumerStatefulWidget {
   const VerifyEmailScreen({super.key});
 
   @override
-  State<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
+  ConsumerState<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
 }
 
-class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
-  @override
-  void initState() {
-    super.initState();
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
+  bool _checking = false;
+  bool _resending = false;
+
+  String get _email =>
+      FirebaseAuth.instance.currentUser?.email ?? 'your email';
+
+  Future<void> _checkVerification() async {
+    setState(() => _checking = true);
+    HapticFeedback.lightImpact();
+
+    final verified =
+        await ref.read(authNotifierProvider.notifier).reloadAndCheckVerified();
+
+    if (!mounted) return;
+    setState(() => _checking = false);
+
+    if (verified) {
+      HapticFeedback.heavyImpact();
+      context.go(RouteNames.home);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+              'Email not verified yet. Check your inbox and tap the link.'),
+          backgroundColor: Theme.of(context).extension<AppColorScheme>()!.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Future<void> _resend() async {
+    setState(() => _resending = true);
+    HapticFeedback.lightImpact();
+    await ref.read(authNotifierProvider.notifier).sendEmailVerification();
+    if (!mounted) return;
+    setState(() => _resending = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Verification email resent. Check your inbox.'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _signOut() async {
+    await ref.read(authNotifierProvider.notifier).signOut();
+    if (!mounted) return;
+    context.go(RouteNames.login);
   }
 
   @override
@@ -70,7 +105,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
             children: [
               const SizedBox(height: 16),
 
-              // — Back button (40×40 circle, white bg, lineSoft border)
+              // — Back button
               GestureDetector(
                 onTap: () => context.pop(),
                 child: Container(
@@ -82,24 +117,18 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                     border: Border.all(color: colors.lineSoft),
                   ),
                   child: Center(
-                    child: Icon(
-                      Icons.arrow_back_rounded,
-                      size: 18,
-                      color: colors.ink900,
-                    ),
+                    child: Icon(Icons.arrow_back_rounded,
+                        size: 18, color: colors.ink900),
                   ),
                 ),
               ),
 
               const SizedBox(height: 40),
 
-              // — Envelope SVG illustration (centered)
+              // — Envelope illustration
               Center(
-                child: SvgPicture.string(
-                  _envelopeSvg,
-                  width: 180,
-                  height: 180,
-                ),
+                child: SvgPicture.string(_envelopeSvg,
+                    width: 180, height: 180),
               )
                   .animate()
                   .scale(
@@ -117,43 +146,36 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 child: Text(
                   'Check your inbox',
                   style: AppTypography.displayLg.copyWith(
-                    color: colors.ink900,
-                    fontSize: 26,
-                    height: 1.2,
-                  ),
+                      color: colors.ink900, fontSize: 26, height: 1.2),
                   textAlign: TextAlign.center,
                 ),
               )
                   .animate()
                   .fadeIn(delay: 200.ms, duration: 400.ms)
                   .slideY(
-                    begin: 0.08,
-                    end: 0,
-                    delay: 200.ms,
-                    duration: 400.ms,
-                    curve: Curves.easeOut,
-                  ),
+                      begin: 0.08,
+                      end: 0,
+                      delay: 200.ms,
+                      duration: 400.ms,
+                      curve: Curves.easeOut),
 
               const SizedBox(height: 16),
 
-              // — Body text: "We've sent ... to" + bold email + continuation
+              // — Body text with dynamic email
               Center(
                 child: RichText(
                   textAlign: TextAlign.center,
                   text: TextSpan(
-                    style: AppTypography.body.copyWith(
-                      color: colors.ink600,
-                      height: 1.55,
-                    ),
+                    style: AppTypography.body
+                        .copyWith(color: colors.ink600, height: 1.55),
                     children: [
                       const TextSpan(
                           text: "We've sent a verification link to\n"),
                       TextSpan(
-                        text: 'rakesh@sharmatravels.com',
+                        text: _email,
                         style: TextStyle(
-                          color: colors.ink900,
-                          fontWeight: FontWeight.w600,
-                        ),
+                            color: colors.ink900,
+                            fontWeight: FontWeight.w600),
                       ),
                       const TextSpan(
                         text:
@@ -162,49 +184,47 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                     ],
                   ),
                 ),
-              )
-                  .animate()
-                  .fadeIn(delay: 280.ms, duration: 400.ms),
+              ).animate().fadeIn(delay: 280.ms, duration: 400.ms),
 
               const SizedBox(height: 36),
 
-              // — Gold CTA: "I Have Verified"
+              // — Gold CTA: I Have Verified
               _PressableButton(
-                onTap: () {
-                  HapticFeedback.heavyImpact();
-                  context.go(RouteNames.home);
-                },
+                onTap: _checking ? null : _checkVerification,
                 child: Container(
                   width: double.infinity,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: colors.goldPrimary,
+                    color: _checking
+                        ? colors.goldPrimary.withValues(alpha: 0.7)
+                        : colors.goldPrimary,
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Center(
-                    child: Text(
-                      'I Have Verified',
-                      style: AppTypography.label.copyWith(
-                        color: AppColors.navyDeep,
-                        fontSize: 14,
-                        letterSpacing: 0.4,
-                      ),
-                    ),
+                    child: _checking
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2.5, color: Colors.white),
+                          )
+                        : Text(
+                            'I Have Verified',
+                            style: AppTypography.label.copyWith(
+                              color: AppColors.navyDeep,
+                              fontSize: 14,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
                   ),
                 ),
               ).animate().fadeIn(delay: 360.ms, duration: 350.ms),
 
               const SizedBox(height: 12),
 
-              // — Resend Email outlined button (dark border, btn-secondary-light)
+              // — Resend Email
               _PressableButton(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Verification email resent.')),
-                  );
-                },
+                onTap: _resending ? null : _resend,
                 child: Container(
                   width: double.infinity,
                   height: 52,
@@ -214,30 +234,36 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                     border: Border.all(color: colors.ink900, width: 1.5),
                   ),
                   child: Center(
-                    child: Text(
-                      'Resend Email',
-                      style: AppTypography.label.copyWith(
-                        color: colors.ink900,
-                        fontSize: 14,
-                        letterSpacing: 0.4,
-                      ),
-                    ),
+                    child: _resending
+                        ? SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: colors.ink900),
+                          )
+                        : Text(
+                            'Resend Email',
+                            style: AppTypography.label.copyWith(
+                              color: colors.ink900,
+                              fontSize: 14,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
                   ),
                 ),
               ).animate().fadeIn(delay: 410.ms, duration: 350.ms),
 
               const SizedBox(height: 24),
 
-              // — Sign out text link
+              // — Sign out link
               Center(
                 child: GestureDetector(
-                  onTap: () => context.go(RouteNames.login),
+                  onTap: _signOut,
                   child: Text(
                     'Wrong account? Sign Out',
-                    style: AppTypography.body.copyWith(
-                      color: colors.ink400,
-                      fontSize: 13,
-                    ),
+                    style: AppTypography.body
+                        .copyWith(color: colors.ink400, fontSize: 13),
                   ),
                 ),
               ).animate().fadeIn(delay: 460.ms, duration: 350.ms),
@@ -251,8 +277,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
 class _PressableButton extends StatefulWidget {
   const _PressableButton({required this.onTap, required this.child});
-
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final Widget child;
 
   @override
@@ -264,12 +289,18 @@ class _PressableButtonState extends State<_PressableButton> {
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        onTapDown: (_) => setState(() => _scale = 0.97),
-        onTapUp: (_) {
-          setState(() => _scale = 1.0);
-          widget.onTap();
-        },
-        onTapCancel: () => setState(() => _scale = 1.0),
+        onTapDown: widget.onTap != null
+            ? (_) => setState(() => _scale = 0.97)
+            : null,
+        onTapUp: widget.onTap != null
+            ? (_) {
+                setState(() => _scale = 1.0);
+                widget.onTap!();
+              }
+            : null,
+        onTapCancel: widget.onTap != null
+            ? () => setState(() => _scale = 1.0)
+            : null,
         child: AnimatedScale(
           scale: _scale,
           duration: const Duration(milliseconds: 150),

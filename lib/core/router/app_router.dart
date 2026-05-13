@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -64,7 +65,7 @@ Page<void> _slideLeftPage(Widget child) => CustomTransitionPage(
 
 class _RouterNotifier extends ChangeNotifier {
   _RouterNotifier(this._ref) {
-    _ref.listen<AsyncValue<bool>>(isLoggedInProvider, (_, __) {
+    _ref.listen<AsyncValue<User?>>(authStateChangesProvider, (_, __) {
       notifyListeners();
     });
     _ref.listen<AuthState>(authNotifierProvider, (_, __) {
@@ -85,26 +86,34 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: false,
     refreshListenable: notifier,
     redirect: (context, state) {
-      final asyncLoggedIn = ref.read(isLoggedInProvider);
-      final authState = ref.read(authNotifierProvider);
+      final asyncUser = ref.read(authStateChangesProvider);
 
-      // While the initial storage check is still running, don't redirect.
-      if (asyncLoggedIn.isLoading) return null;
+      // While Firebase auth state is resolving, stay put.
+      if (asyncUser.isLoading) return null;
 
-      // After a login action the AuthNotifier holds the truth;
-      // on cold start fall back to the stored token check.
-      final loggedIn = authState is AuthSuccess ||
-          (asyncLoggedIn.valueOrNull ?? false);
-
+      final user = asyncUser.valueOrNull;
       final location = state.matchedLocation;
+
       final onAuthScreen = location == RouteNames.login ||
           location == RouteNames.register ||
-          location == RouteNames.verifyEmail ||
           location == RouteNames.onboarding ||
           location == RouteNames.splash;
+      final onVerifyScreen = location == RouteNames.verifyEmail;
 
-      if (loggedIn && onAuthScreen) return RouteNames.home;
-      if (!loggedIn && !onAuthScreen) return RouteNames.login;
+      // No user → ensure they can only reach auth screens.
+      if (user == null) {
+        if (onAuthScreen) return null;
+        return RouteNames.login;
+      }
+
+      // User exists but email not verified → only verifyEmail is allowed.
+      if (!user.emailVerified) {
+        if (onVerifyScreen) return null;
+        return RouteNames.verifyEmail;
+      }
+
+      // Fully verified → bounce away from all auth-related screens.
+      if (onAuthScreen || onVerifyScreen) return RouteNames.home;
       return null;
     },
     routes: [

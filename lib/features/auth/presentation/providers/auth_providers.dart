@@ -1,27 +1,30 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/network/dio_client.dart';
 import '../../../../core/network/api_result.dart';
-import '../../data/datasources/auth_remote_datasource.dart';
+import '../../data/datasources/auth_firebase_datasource.dart';
 import '../../data/models/auth_models.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/auth_repository.dart';
 
 // ── Datasource ────────────────────────────────────────────────────────────────
 
-final authRemoteDatasourceProvider = Provider<AuthRemoteDatasource>(
-  (ref) => AuthRemoteDatasource(ref.watch(dioProvider)),
+final authFirebaseDatasourceProvider = Provider<AuthFirebaseDatasource>(
+  (ref) => AuthFirebaseDatasource(FirebaseAuth.instance),
 );
 
 // ── Repository ────────────────────────────────────────────────────────────────
 
 final authRepositoryProvider = Provider<AuthRepository>(
-  (ref) => AuthRepositoryImpl(
-    ref.watch(authRemoteDatasourceProvider),
-    ref.watch(secureStorageProvider),
-  ),
+  (ref) => AuthRepositoryImpl(ref.watch(authFirebaseDatasourceProvider)),
 );
 
-// ── Auth state ────────────────────────────────────────────────────────────────
+// ── Firebase auth state stream (drives router redirect) ───────────────────────
+
+final authStateChangesProvider = StreamProvider<User?>((ref) {
+  return FirebaseAuth.instance.authStateChanges();
+});
+
+// ── Auth action state ─────────────────────────────────────────────────────────
 
 sealed class AuthState {
   const AuthState();
@@ -36,8 +39,8 @@ final class AuthLoading extends AuthState {
 }
 
 final class AuthSuccess extends AuthState {
-  const AuthSuccess(this.response);
-  final LoginResponse response;
+  const AuthSuccess(this.profile);
+  final UserProfile profile;
 }
 
 final class AuthError extends AuthState {
@@ -53,42 +56,44 @@ class AuthNotifier extends Notifier<AuthState> {
 
   AuthRepository get _repo => ref.read(authRepositoryProvider);
 
-  Future<bool> login({
-    required String email,
-    required String password,
-    String? associationId,
-    String? fcmToken,
-  }) async {
+  Future<bool> signIn(String email, String password) async {
     state = const AuthLoading();
-    final result = await _repo.login(
-      email: email,
-      password: password,
-      associationId: associationId,
-      fcmToken: fcmToken,
-    );
+    final result = await _repo.signIn(email, password);
+    return _handleResult(result);
+  }
+
+  Future<bool> register(RegisterRequest req) async {
+    state = const AuthLoading();
+    final result = await _repo.register(req);
+    return _handleResult(result);
+  }
+
+  Future<void> signOut() async {
+    await _repo.signOut();
+    state = const AuthIdle();
+  }
+
+  Future<ApiResult<void>> sendPasswordResetEmail(String email) {
+    return _repo.sendPasswordResetEmail(email);
+  }
+
+  Future<void> sendEmailVerification() => _repo.sendEmailVerification();
+
+  Future<bool> reloadAndCheckVerified() => _repo.reloadAndCheckVerified();
+
+  bool _handleResult(ApiResult<UserProfile> result) {
     return result.fold(
       (msg) {
         state = AuthError(msg);
         return false;
       },
-      (data) {
-        state = AuthSuccess(data);
+      (profile) {
+        state = AuthSuccess(profile);
         return true;
       },
     );
-  }
-
-  Future<void> logout() async {
-    await _repo.logout();
-    state = const AuthIdle();
   }
 }
 
 final authNotifierProvider =
     NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
-
-// ── isLoggedIn stream (for router redirect) ───────────────────────────────────
-
-final isLoggedInProvider = FutureProvider<bool>((ref) async {
-  return ref.watch(authRepositoryProvider).isLoggedIn;
-});

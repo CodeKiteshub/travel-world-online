@@ -1,15 +1,19 @@
-import '../../../core/network/api_result.dart';
+import '../../../../core/network/api_result.dart';
 import '../data/models/auth_models.dart';
 
 abstract interface class AuthRepository {
-  Future<ApiResult<LoginResponse>> login({
-    required String email,
-    required String password,
-    String? associationId,
-    String? fcmToken,
-  });
+  Future<ApiResult<UserProfile>> signIn(String email, String password);
 
-  Future<void> logout();
+  Future<ApiResult<UserProfile>> register(RegisterRequest req);
 
-  Future<bool> get isLoggedIn;
+  Future<void> signOut();
+
+  Future<ApiResult<void>> sendPasswordResetEmail(String email);
+
+  Future<void> sendEmailVerification();
+
+  /// Reloads the Firebase user and returns whether email is now verified.
+  Future<bool> reloadAndCheckVerified();
+
+  Stream<UserProfile?> authStateChanges();
 }

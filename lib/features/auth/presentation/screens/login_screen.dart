@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/network/api_result.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -29,7 +30,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _form = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _mobileFocus = FocusNode();
+  final _emailFocus = FocusNode();
   final _passwordFocus = FocusNode();
   bool _obscurePassword = true;
   bool _rememberMe = true;
@@ -44,7 +45,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _mobileFocus.dispose();
+    _emailFocus.dispose();
     _passwordFocus.dispose();
     super.dispose();
   }
@@ -53,9 +54,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!(_form.currentState?.validate() ?? false)) return;
     HapticFeedback.mediumImpact();
 
-    final success = await ref.read(authNotifierProvider.notifier).login(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
+    final success = await ref.read(authNotifierProvider.notifier).signIn(
+          _emailController.text.trim(),
+          _passwordController.text,
         );
 
     if (!mounted) return;
@@ -65,13 +66,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _forgotPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter your email above first.')),
+      );
+      return;
+    }
+    final result = await ref
+        .read(authNotifierProvider.notifier)
+        .sendPasswordResetEmail(email);
+    if (!mounted) return;
+    result.fold(
+      (msg) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: Colors.red),
+      ),
+      (_) => ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password reset email sent. Check your inbox.'),
+          backgroundColor: Colors.green,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColorScheme>()!;
     final authState = ref.watch(authNotifierProvider);
     final isLoading = authState is AuthLoading;
 
-    // Show error snackbar when state changes to error
     ref.listen<AuthState>(authNotifierProvider, (_, next) {
       if (next is AuthError) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -108,9 +133,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: SvgPicture.string(
                       _globeSvg,
                       colorFilter: ColorFilter.mode(
-                        colors.goldPrimary,
-                        BlendMode.srcIn,
-                      ),
+                          colors.goldPrimary, BlendMode.srcIn),
                       width: 30,
                       height: 30,
                     ),
@@ -156,12 +179,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     .animate()
                     .fadeIn(delay: 120.ms, duration: 400.ms)
                     .slideY(
-                      begin: 0.08,
-                      end: 0,
-                      delay: 120.ms,
-                      duration: 400.ms,
-                      curve: Curves.easeOut,
-                    ),
+                        begin: 0.08,
+                        end: 0,
+                        delay: 120.ms,
+                        duration: 400.ms,
+                        curve: Curves.easeOut),
 
                 const SizedBox(height: AppSpacing.lg),
 
@@ -172,62 +194,58 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Text(
                       'Welcome back',
                       style: AppTypography.displayLg.copyWith(
-                        color: colors.ink900,
-                        fontSize: 28,
-                        height: 1.2,
-                      ),
+                          color: colors.ink900, fontSize: 28, height: 1.2),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'Sign in to continue to your travel business.',
-                      style: AppTypography.body.copyWith(
-                        color: colors.ink600,
-                        height: 1.55,
-                      ),
+                      style: AppTypography.body
+                          .copyWith(color: colors.ink600, height: 1.55),
                     ),
                   ],
                 )
                     .animate()
                     .fadeIn(delay: 190.ms, duration: 400.ms)
                     .slideY(
-                      begin: 0.08,
-                      end: 0,
-                      delay: 190.ms,
-                      duration: 400.ms,
-                      curve: Curves.easeOut,
-                    ),
+                        begin: 0.08,
+                        end: 0,
+                        delay: 190.ms,
+                        duration: 400.ms,
+                        curve: Curves.easeOut),
 
                 const SizedBox(height: 28),
 
-                // — Email / Mobile field
+                // — Email field
                 _LabeledField(
-                  label: 'Email / Mobile',
+                  label: 'Email Address',
                   child: TextFormField(
                     controller: _emailController,
-                    focusNode: _mobileFocus,
+                    focusNode: _emailFocus,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
                     onFieldSubmitted: (_) =>
                         FocusScope.of(context).requestFocus(_passwordFocus),
-                    style: AppTypography.body.copyWith(color: colors.ink900),
+                    style:
+                        AppTypography.body.copyWith(color: colors.ink900),
                     decoration: _fieldDecoration(
-                      colors: colors,
-                      hintText: 'email@example.com or mobile',
-                    ),
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? 'Enter your email or mobile'
-                        : null,
+                        colors: colors, hintText: 'you@example.com'),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return 'Enter your email address';
+                      }
+                      if (!v.contains('@')) return 'Enter a valid email';
+                      return null;
+                    },
                   ),
                 )
                     .animate()
                     .fadeIn(delay: 260.ms, duration: 380.ms)
                     .slideY(
-                      begin: 0.06,
-                      end: 0,
-                      delay: 260.ms,
-                      duration: 380.ms,
-                      curve: Curves.easeOut,
-                    ),
+                        begin: 0.06,
+                        end: 0,
+                        delay: 260.ms,
+                        duration: 380.ms,
+                        curve: Curves.easeOut),
 
                 const SizedBox(height: 16),
 
@@ -240,7 +258,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     obscureText: _obscurePassword,
                     textInputAction: TextInputAction.done,
                     onFieldSubmitted: (_) => _submit(),
-                    style: AppTypography.body.copyWith(color: colors.ink900),
+                    style:
+                        AppTypography.body.copyWith(color: colors.ink900),
                     decoration: _fieldDecoration(
                       colors: colors,
                       hintText: '••••••••••',
@@ -263,12 +282,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     .animate()
                     .fadeIn(delay: 320.ms, duration: 380.ms)
                     .slideY(
-                      begin: 0.06,
-                      end: 0,
-                      delay: 320.ms,
-                      duration: 380.ms,
-                      curve: Curves.easeOut,
-                    ),
+                        begin: 0.06,
+                        end: 0,
+                        delay: 320.ms,
+                        duration: 380.ms,
+                        curve: Curves.easeOut),
 
                 const SizedBox(height: 20),
 
@@ -305,22 +323,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           Text(
                             'Remember Me',
                             style: AppTypography.body.copyWith(
-                              color: colors.ink900,
-                              fontSize: 13,
-                            ),
+                                color: colors.ink900, fontSize: 13),
                           ),
                         ],
                       ),
                     ),
                     const Spacer(),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: _forgotPassword,
                       child: Text(
                         'Forgot Password?',
                         style: AppTypography.label.copyWith(
-                          color: colors.goldPrimary,
-                          fontSize: 13,
-                        ),
+                            color: colors.goldPrimary, fontSize: 13),
                       ),
                     ),
                   ],
@@ -346,12 +360,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               width: 22,
                               height: 22,
                               child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: Colors.white,
-                              ),
+                                  strokeWidth: 2.5,
+                                  color: Colors.white),
                             )
                           : Text(
-                              'Login',
+                              'Sign In',
                               style: AppTypography.label.copyWith(
                                 color: AppColors.navyDeep,
                                 fontSize: 14,
@@ -370,19 +383,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     Text(
                       "Don't have an account? ",
-                      style: AppTypography.body.copyWith(
-                        color: colors.ink600,
-                        fontSize: 13,
-                      ),
+                      style: AppTypography.body
+                          .copyWith(color: colors.ink600, fontSize: 13),
                     ),
                     GestureDetector(
                       onTap: () => context.push(RouteNames.register),
                       child: Text(
                         'Sign Up',
                         style: AppTypography.label.copyWith(
-                          color: colors.goldPrimary,
-                          fontSize: 13,
-                        ),
+                            color: colors.goldPrimary, fontSize: 13),
                       ),
                     ),
                   ],
@@ -402,9 +411,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }) {
     const radius = BorderRadius.all(Radius.circular(12));
     final baseBorder = OutlineInputBorder(
-      borderRadius: radius,
-      borderSide: BorderSide(color: colors.lineSoft),
-    );
+        borderRadius: radius,
+        borderSide: BorderSide(color: colors.lineSoft));
     return InputDecoration(
       hintText: hintText,
       hintStyle: AppTypography.body.copyWith(color: colors.ink400),
@@ -415,17 +423,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       border: baseBorder,
       enabledBorder: baseBorder,
       focusedBorder: OutlineInputBorder(
-        borderRadius: radius,
-        borderSide: BorderSide(color: colors.goldPrimary, width: 1.5),
-      ),
+          borderRadius: radius,
+          borderSide: BorderSide(color: colors.goldPrimary, width: 1.5)),
       errorBorder: OutlineInputBorder(
-        borderRadius: radius,
-        borderSide: BorderSide(color: colors.error),
-      ),
+          borderRadius: radius,
+          borderSide: BorderSide(color: colors.error)),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: radius,
-        borderSide: BorderSide(color: colors.error, width: 1.5),
-      ),
+          borderRadius: radius,
+          borderSide: BorderSide(color: colors.error, width: 1.5)),
       suffixIcon: suffixIcon,
     );
   }
@@ -433,7 +438,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
 class _LabeledField extends StatelessWidget {
   const _LabeledField({required this.label, required this.child});
-
   final String label;
   final Widget child;
 
@@ -443,14 +447,11 @@ class _LabeledField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: AppTypography.label.copyWith(
-            color: colors.ink600,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        Text(label,
+            style: AppTypography.label.copyWith(
+                color: colors.ink600,
+                fontSize: 12,
+                fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
         child,
       ],
@@ -460,7 +461,6 @@ class _LabeledField extends StatelessWidget {
 
 class _PressableButton extends StatefulWidget {
   const _PressableButton({required this.onTap, required this.child});
-
   final VoidCallback? onTap;
   final Widget child;
 
@@ -473,8 +473,9 @@ class _PressableButtonState extends State<_PressableButton> {
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        onTapDown:
-            widget.onTap != null ? (_) => setState(() => _scale = 0.97) : null,
+        onTapDown: widget.onTap != null
+            ? (_) => setState(() => _scale = 0.97)
+            : null,
         onTapUp: widget.onTap != null
             ? (_) {
                 setState(() => _scale = 1.0);

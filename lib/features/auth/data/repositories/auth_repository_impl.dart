@@ -1,59 +1,77 @@
-import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/network/api_result.dart';
-import '../../../../core/storage/secure_storage.dart';
 import '../../domain/auth_repository.dart';
-import '../datasources/auth_remote_datasource.dart';
+import '../datasources/auth_firebase_datasource.dart';
 import '../models/auth_models.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  AuthRepositoryImpl(this._datasource, this._storage);
+  AuthRepositoryImpl(this._datasource);
 
-  final AuthRemoteDatasource _datasource;
-  final SecureStorageService _storage;
+  final AuthFirebaseDatasource _datasource;
 
   @override
-  Future<ApiResult<LoginResponse>> login({
-    required String email,
-    required String password,
-    String? associationId,
-    String? fcmToken,
-  }) async {
+  Future<ApiResult<UserProfile>> signIn(String email, String password) async {
     try {
-      final response = await _datasource.login(
-        LoginRequest(
-          email: email,
-          password: password,
-          associationId: associationId,
-          fcmToken: fcmToken,
-        ),
+      final profile = await _datasource.signIn(email, password);
+      return ApiResult.success(profile);
+    } on EmailNotVerifiedException {
+      return const ApiResult.failure(
+        'Please verify your email before signing in. We\'ve resent the verification link.',
       );
-      await _storage.saveSession(
-        token: response.token,
-        memberId: response.member.id,
-        associationId: response.member.associationId,
-      );
-      return ApiResult.success(response);
-    } on DioException catch (e) {
-      final status = e.response?.statusCode;
-      final msg = switch (status) {
-        400 => 'Invalid credentials. Please check your details.',
-        401 => 'Unauthorized. Please check your credentials.',
-        404 => 'Account not found.',
-        500 => 'Server error. Please try again later.',
-        _ => e.message ?? 'Network error. Please check your connection.',
-      };
-      return ApiResult.failure(msg, statusCode: status);
-    } catch (e) {
-      return ApiResult.failure('Something went wrong. Please try again.');
+    } on FirebaseAuthException catch (e) {
+      return ApiResult.failure(_messageFromCode(e.code));
+    } catch (_) {
+      return const ApiResult.failure('Something went wrong. Please try again.');
     }
   }
 
   @override
-  Future<void> logout() => _storage.clearSession();
+  Future<ApiResult<UserProfile>> register(RegisterRequest req) async {
+    try {
+      final profile = await _datasource.register(req);
+      return ApiResult.success(profile);
+    } on FirebaseAuthException catch (e) {
+      return ApiResult.failure(_messageFromCode(e.code));
+    } catch (_) {
+      return const ApiResult.failure('Something went wrong. Please try again.');
+    }
+  }
 
   @override
-  Future<bool> get isLoggedIn async {
-    final token = await _storage.accessToken;
-    return token != null && token.isNotEmpty;
+  Future<void> signOut() => _datasource.signOut();
+
+  @override
+  Future<ApiResult<void>> sendPasswordResetEmail(String email) async {
+    try {
+      await _datasource.sendPasswordResetEmail(email);
+      return const ApiResult.success(null);
+    } on FirebaseAuthException catch (e) {
+      return ApiResult.failure(_messageFromCode(e.code));
+    } catch (_) {
+      return const ApiResult.failure('Could not send reset email. Try again.');
+    }
   }
+
+  @override
+  Future<void> sendEmailVerification() => _datasource.sendEmailVerification();
+
+  @override
+  Future<bool> reloadAndCheckVerified() => _datasource.reloadAndCheckVerified();
+
+  @override
+  Stream<UserProfile?> authStateChanges() => _datasource.authStateChanges.map(
+        (user) => user == null ? null : UserProfile.fromFirebaseUser(user),
+      );
+
+  String _messageFromCode(String code) => switch (code) {
+        'user-not-found' => 'No account found with this email.',
+        'wrong-password' => 'Incorrect password.',
+        'invalid-credential' => 'Invalid email or password.',
+        'invalid-email' => 'Please enter a valid email address.',
+        'email-already-in-use' => 'An account already exists with this email.',
+        'weak-password' => 'Password must be at least 6 characters.',
+        'too-many-requests' => 'Too many attempts. Please try again later.',
+        'network-request-failed' => 'Network error. Check your connection.',
+        _ => 'Authentication failed. Please try again.',
+      };
 }
