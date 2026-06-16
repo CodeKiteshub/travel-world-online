@@ -3,6 +3,13 @@ import 'package:flutter/material.dart';
 // Playfair Display: display styles ONLY (18px minimum — strict rule from design system v1.1)
 // DM Sans: all UI text (buttons, body, labels, captions)
 abstract final class AppTypography {
+  // Added missing getter used in UI code
+  static const TextStyle titleMedium = TextStyle(
+    fontFamily: 'DMSans',
+    fontWeight: FontWeight.w600,
+    fontSize: 16,
+    height: 1.4,
+  );
   // — Display (Playfair Display only) —
 
   static const TextStyle displayXl = TextStyle(

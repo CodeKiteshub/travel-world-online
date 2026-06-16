@@ -48,6 +48,11 @@ abstract final class AppColors {
 /// Access via: `Theme.of(context).extension<AppColorScheme>()!.goldPrimary`
 @immutable
 class AppColorScheme extends ThemeExtension<AppColorScheme> {
+  // Added missing color getters to match UI code
+  final Color surfaceSecondary;
+  final Color infoBg;
+  final Color warningBg;
+  final Color themeBackground;
   const AppColorScheme({
     required this.surfacePrimary,
     required this.surfaceCard,
@@ -62,6 +67,10 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
     required this.success,
     required this.warning,
     required this.error,
+    required this.surfaceSecondary,
+    required this.infoBg,
+    required this.warningBg,
+    required this.themeBackground,
   });
 
   final Color surfacePrimary;
@@ -92,6 +101,10 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
     success: AppColors.success,
     warning: AppColors.warning,
     error: AppColors.error,
+    surfaceSecondary: AppColors.surfaceCard,
+    infoBg: AppColors.goldPrimary,
+    warningBg: AppColors.warning,
+    themeBackground: AppColors.surfacePrimary,
   );
 
   static const dark = AppColorScheme(
@@ -108,6 +121,10 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
     success: AppColors.success,
     warning: AppColors.warning,
     error: AppColors.error,
+    surfaceSecondary: AppColors.darkSurfaceCard,
+    infoBg: AppColors.darkGoldPrimary,
+    warningBg: AppColors.warning,
+    themeBackground: AppColors.darkSurfacePrimary,
   );
 
   @override
@@ -125,6 +142,10 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
     Color? success,
     Color? warning,
     Color? error,
+    Color? surfaceSecondary,
+    Color? infoBg,
+    Color? warningBg,
+    Color? themeBackground,
   }) {
     return AppColorScheme(
       surfacePrimary: surfacePrimary ?? this.surfacePrimary,
@@ -140,6 +161,10 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
       success: success ?? this.success,
       warning: warning ?? this.warning,
       error: error ?? this.error,
+      surfaceSecondary: surfaceSecondary ?? this.surfaceSecondary,
+      infoBg: infoBg ?? this.infoBg,
+      warningBg: warningBg ?? this.warningBg,
+      themeBackground: themeBackground ?? this.themeBackground,
     );
   }
 
