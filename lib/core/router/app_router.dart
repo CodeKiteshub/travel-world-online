@@ -9,12 +9,19 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/verify_email_screen.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
-import '../../features/discover/presentation/screens/discover_screen.dart';
+import '../../features/marketplace/presentation/screens/marketplace_screen.dart';
+import '../../features/associations/presentation/screens/associations_screen.dart';
+import '../../features/services/presentation/screens/services_screen.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/discover/presentation/screens/deal_detail_screen.dart';
 import '../../features/discover/presentation/screens/deal_enquiry_screen.dart';
 import '../../features/discover/data/models/deal_model.dart';
-import '../../features/my_space/presentation/screens/my_space_screen.dart';
-import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/marketplace/presentation/screens/villa_search_screen.dart';
+import '../../features/marketplace/presentation/screens/villa_detail_screen.dart';
+import '../../features/marketplace/presentation/screens/arosa_results_screen.dart';
+import '../../features/marketplace/presentation/screens/luxury_hotel_detail_screen.dart';
+import '../../features/marketplace/data/models/villa_rate_model.dart';
+import '../../features/marketplace/data/models/luxury_hotel_model.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'route_names.dart';
@@ -89,7 +96,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final asyncUser = ref.read(authStateChangesProvider);
 
-      // While Firebase auth state is resolving, stay put.
       if (asyncUser.isLoading) return null;
 
       final user = asyncUser.valueOrNull;
@@ -101,19 +107,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           location == RouteNames.splash;
       final onVerifyScreen = location == RouteNames.verifyEmail;
 
-      // No user → ensure they can only reach auth screens.
       if (user == null) {
         if (onAuthScreen) return null;
         return RouteNames.login;
       }
 
-      // User exists but email not verified → only verifyEmail is allowed.
       if (!user.emailVerified) {
         if (onVerifyScreen) return null;
         return RouteNames.verifyEmail;
       }
 
-      // Fully verified → bounce away from all auth-related screens.
       if (onAuthScreen || onVerifyScreen) return RouteNames.home;
       return null;
     },
@@ -139,7 +142,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (_, __) => _slideLeftPage(const VerifyEmailScreen()),
       ),
 
-      // — Full-screen deal screens (no bottom nav)
+      // — Full-screen deal flow (no bottom nav)
       GoRoute(
         path: RouteNames.dealDetail,
         pageBuilder: (_, state) =>
@@ -151,7 +154,31 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             _slideLeftPage(DealEnquiryScreen(deal: state.extra as Deal)),
       ),
 
-      // — Main shell (bottom nav, 4 tabs)
+      // — Luxury hotel detail (no bottom nav)
+      GoRoute(
+        path: RouteNames.hotelDetail,
+        pageBuilder: (_, state) => _slideLeftPage(
+            LuxuryHotelDetailScreen(hotel: state.extra as LuxuryHotelModel)),
+      ),
+
+      // — Villa flow (no bottom nav)
+      GoRoute(
+        path: RouteNames.villaSearch,
+        pageBuilder: (_, __) => _slideLeftPage(const VillaSearchScreen()),
+      ),
+      GoRoute(
+        path: RouteNames.villaDetail,
+        pageBuilder: (_, state) =>
+            _slideLeftPage(VillaDetailScreen(rate: state.extra as VillaRateModel)),
+      ),
+
+      // — A-ROSA cruise results (no bottom nav)
+      GoRoute(
+        path: RouteNames.arosaResults,
+        pageBuilder: (_, __) => _slideLeftPage(const ArosaResultsScreen()),
+      ),
+
+      // — Main shell (5-tab bottom nav)
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             _ShellScaffold(navigationShell: navigationShell),
@@ -165,21 +192,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
-              path: RouteNames.discover,
+              path: RouteNames.marketplace,
               pageBuilder: (_, __) =>
-                  const NoTransitionPage(child: DiscoverScreen()),
+                  const NoTransitionPage(child: MarketplaceScreen()),
             ),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
-              path: RouteNames.mySpace,
+              path: RouteNames.associations,
               pageBuilder: (_, __) =>
-                  const NoTransitionPage(child: MySpaceScreen()),
+                  const NoTransitionPage(child: AssociationsScreen()),
             ),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
-              path: RouteNames.profile,
+              path: RouteNames.services,
+              pageBuilder: (_, __) =>
+                  const NoTransitionPage(child: ServicesScreen()),
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: RouteNames.account,
               pageBuilder: (_, __) =>
                   const NoTransitionPage(child: ProfileScreen()),
             ),
@@ -190,7 +224,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-// ── Shell scaffold with 4-tab bottom nav ─────────────────────────────────────
+// ── Shell scaffold with 5-tab bottom nav ─────────────────────────────────────
 
 class _ShellScaffold extends StatelessWidget {
   const _ShellScaffold({required this.navigationShell});
@@ -221,30 +255,39 @@ class _ShellScaffold extends StatelessWidget {
                 colors: colors,
               ),
               _NavItem(
-                icon: Icons.search_rounded,
-                activeIcon: Icons.search_rounded,
-                label: 'Discover',
+                icon: Icons.shopping_cart_outlined,
+                activeIcon: Icons.shopping_cart_rounded,
+                label: 'Market',
                 isActive: navigationShell.currentIndex == 1,
                 onTap: () => navigationShell.goBranch(1,
                     initialLocation: navigationShell.currentIndex == 1),
                 colors: colors,
               ),
               _NavItem(
-                icon: Icons.grid_view_outlined,
-                activeIcon: Icons.grid_view_rounded,
-                label: 'My Space',
+                icon: Icons.people_outline_rounded,
+                activeIcon: Icons.people_rounded,
+                label: 'Assoc.',
                 isActive: navigationShell.currentIndex == 2,
                 onTap: () => navigationShell.goBranch(2,
                     initialLocation: navigationShell.currentIndex == 2),
                 colors: colors,
               ),
               _NavItem(
-                icon: Icons.person_outline_rounded,
-                activeIcon: Icons.person_rounded,
-                label: 'Profile',
+                icon: Icons.desktop_mac_outlined,
+                activeIcon: Icons.desktop_mac,
+                label: 'Services',
                 isActive: navigationShell.currentIndex == 3,
                 onTap: () => navigationShell.goBranch(3,
                     initialLocation: navigationShell.currentIndex == 3),
+                colors: colors,
+              ),
+              _NavItem(
+                icon: Icons.person_outline_rounded,
+                activeIcon: Icons.person_rounded,
+                label: 'Account',
+                isActive: navigationShell.currentIndex == 4,
+                onTap: () => navigationShell.goBranch(4,
+                    initialLocation: navigationShell.currentIndex == 4),
                 colors: colors,
               ),
             ],

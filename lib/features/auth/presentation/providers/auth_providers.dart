@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_result.dart';
+import '../../../../core/network/dio_client.dart';
 import '../../data/datasources/auth_firebase_datasource.dart';
 import '../../data/models/auth_models.dart';
 import '../../data/repositories/auth_repository_impl.dart';
@@ -9,7 +10,11 @@ import '../../domain/auth_repository.dart';
 // ── Datasource ────────────────────────────────────────────────────────────────
 
 final authFirebaseDatasourceProvider = Provider<AuthFirebaseDatasource>(
-  (ref) => AuthFirebaseDatasource(FirebaseAuth.instance),
+  (ref) => AuthFirebaseDatasource(
+    FirebaseAuth.instance,
+    ref.watch(dioProvider),
+    ref.watch(secureStorageProvider),
+  ),
 );
 
 // ── Repository ────────────────────────────────────────────────────────────────

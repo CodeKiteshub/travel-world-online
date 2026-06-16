@@ -1,21 +1,18 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../discover/data/models/deal_model.dart';
+import '../../../discover/presentation/providers/discover_providers.dart';
 import '../providers/home_providers.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
-
-  static const _quickTiles = [
-    (icon: Icons.menu_book_outlined, label: 'B2B Deals'),
-    (icon: Icons.group_outlined, label: 'Associations'),
-    (icon: Icons.bookmark_border, label: 'Bookings'),
-    (icon: Icons.school_outlined, label: 'Campus'),
-    (icon: Icons.work_outline, label: 'Jobs'),
-  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,7 +25,6 @@ class HomeScreen extends ConsumerWidget {
 
     final user = FirebaseAuth.instance.currentUser;
     final firstName = (user?.displayName ?? '').split(' ').first;
-    final greeting = _greeting();
     final newsAsync = ref.watch(newsProvider);
 
     return Scaffold(
@@ -36,51 +32,62 @@ class HomeScreen extends ConsumerWidget {
       body: Stack(
         children: [
           SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(20, topPad + 88, 20, 112),
+            padding: EdgeInsets.fromLTRB(0, topPad + 76, 0, 28),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _SearchBar(colors: colors),
+                // Deals carousel — full bleed with horizontal padding inside
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  child: _HeroCarousel(colors: colors),
+                ),
+                const SizedBox(height: 16),
+
+                // TV LIVE widget
+                _TvLiveWidget(colors: colors),
                 const SizedBox(height: 20),
-                _HeroDealCard(colors: colors),
+
+                // Icon row — secondary modules
+                _IconRow(colors: colors),
                 const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: _quickTiles
-                      .map((t) => _QuickTile(
-                            icon: t.icon,
-                            label: t.label,
-                            colors: colors,
-                          ))
-                      .toList(),
+
+                // Top Stories heading
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _SectionRow(
+                    heading: 'Top Stories',
+                    colors: colors,
+                    onViewAll: () {},
+                  ),
                 ),
-                const SizedBox(height: 24),
-                _SectionRow(
-                  heading: 'Top Stories',
-                  colors: colors,
-                  onViewAll: () {},
-                ),
-                const SizedBox(height: 14),
-                newsAsync.when(
-                  loading: () => const _NewsSkeletonList(),
-                  error: (e, _) => _NewsError(colors: colors),
-                  data: (articles) => articles.isEmpty
-                      ? _NewsError(colors: colors)
-                      : Column(
-                          children: articles
-                              .take(8)
-                              .map((a) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 10),
-                                    child: _NewsCard(
-                                      eyebrow: a.category.name.toUpperCase(),
-                                      title: a.title,
-                                      meta: a.sourceMeta,
-                                      imageUrl: a.firstImage,
-                                      colors: colors,
-                                    ),
-                                  ))
-                              .toList(),
-                        ),
+                const SizedBox(height: 12),
+
+                // News cards
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: newsAsync.when(
+                    loading: () => const _NewsSkeletonList(),
+                    error: (e, _) => _NewsError(colors: colors),
+                    data: (articles) => articles.isEmpty
+                        ? _NewsError(colors: colors)
+                        : Column(
+                            children: articles
+                                .take(8)
+                                .map((a) => Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 10),
+                                      child: _NewsCard(
+                                        eyebrow:
+                                            a.category.name.toUpperCase(),
+                                        title: a.title,
+                                        meta: a.sourceMeta,
+                                        imageUrl: a.firstImage,
+                                        colors: colors,
+                                      ),
+                                    ))
+                                .toList(),
+                          ),
+                  ),
                 ),
               ],
             ),
@@ -93,42 +100,41 @@ class HomeScreen extends ConsumerWidget {
             right: 0,
             child: Container(
               color: colors.surfacePrimary,
-              padding: EdgeInsets.fromLTRB(20, topPad + 12, 20, 12),
+              padding: EdgeInsets.fromLTRB(20, topPad + 10, 20, 10),
               child: Row(
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        firstName.isNotEmpty
-                            ? 'Hello, $firstName 👋'
-                            : 'Welcome 👋',
-                        style: AppTypography.heading.copyWith(
-                          color: colors.ink900,
-                          fontSize: 17,
+                  _AvatarButton(user: user, colors: colors),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _dateString(),
+                          style: AppTypography.overline.copyWith(
+                            color: colors.ink600,
+                            fontSize: 10,
+                            letterSpacing: 1.4,
+                          ),
                         ),
-                      ),
-                      Text(
-                        greeting,
-                        style: AppTypography.caption
-                            .copyWith(color: colors.ink600),
-                      ),
-                    ],
+                        Text(
+                          firstName.isNotEmpty
+                              ? '${_greeting()}, $firstName'
+                              : _greeting(),
+                          style: AppTypography.body.copyWith(
+                            color: colors.ink900,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const Spacer(),
                   _BellButton(colors: colors),
                 ],
               ),
             ),
-          ),
-
-          // Miniplayer
-          Positioned(
-            bottom: 12,
-            left: 16,
-            right: 16,
-            child: _Miniplayer(colors: colors),
           ),
         ],
       ),
@@ -141,9 +147,72 @@ class HomeScreen extends ConsumerWidget {
     if (h < 17) return 'Good Afternoon';
     return 'Good Evening';
   }
+
+  String _dateString() {
+    final now = DateTime.now();
+    const days = [
+      'Monday', 'Tuesday', 'Wednesday', 'Thursday',
+      'Friday', 'Saturday', 'Sunday',
+    ];
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ];
+    final day = days[now.weekday - 1];
+    final month = months[now.month - 1];
+    return '$day, ${now.day} $month'.toUpperCase();
+  }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Avatar button ─────────────────────────────────────────────────────────────
+
+class _AvatarButton extends StatelessWidget {
+  const _AvatarButton({required this.user, required this.colors});
+  final User? user;
+  final AppColorScheme colors;
+
+  @override
+  Widget build(BuildContext context) {
+    final photoUrl = user?.photoURL;
+    return GestureDetector(
+      onTap: () => context.go(RouteNames.account),
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: colors.goldPrimary, width: 2),
+          color: colors.surfaceTertiary,
+        ),
+        child: ClipOval(
+          child: photoUrl != null && photoUrl.isNotEmpty
+              ? Image.network(photoUrl, fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _initials(colors))
+              : _initials(colors),
+        ),
+      ),
+    );
+  }
+
+  Widget _initials(AppColorScheme colors) {
+    final name = user?.displayName ?? '';
+    final initials = name.isNotEmpty
+        ? name.trim().split(' ').map((w) => w[0]).take(2).join()
+        : '?';
+    return Center(
+      child: Text(
+        initials.toUpperCase(),
+        style: AppTypography.label.copyWith(
+          color: colors.ink900,
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+// ── Bell button ───────────────────────────────────────────────────────────────
 
 class _BellButton extends StatelessWidget {
   const _BellButton({required this.colors});
@@ -155,8 +224,8 @@ class _BellButton extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         Container(
-          width: 42,
-          height: 42,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: colors.surfaceCard,
@@ -169,7 +238,7 @@ class _BellButton extends StatelessWidget {
         ),
         Positioned(
           top: 8,
-          right: 10,
+          right: 9,
           child: Container(
             width: 8,
             height: 8,
@@ -185,168 +254,114 @@ class _BellButton extends StatelessWidget {
   }
 }
 
-class _SearchBar extends StatelessWidget {
-  const _SearchBar({required this.colors});
+// ── Hero Carousel — deals ─────────────────────────────────────────────────────
+
+class _HeroCarousel extends ConsumerStatefulWidget {
+  const _HeroCarousel({required this.colors});
   final AppColorScheme colors;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 52,
-      decoration: BoxDecoration(
-        color: colors.surfaceCard,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: colors.lineSoft),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          Icon(Icons.search_rounded, size: 18, color: colors.ink600),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Search deals, news, people...',
-              style: AppTypography.body.copyWith(color: colors.ink400),
-            ),
-          ),
-          Container(
-            width: 26,
-            height: 26,
-            decoration: BoxDecoration(
-              color: colors.ink900,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(Icons.tune_rounded,
-                size: 14, color: colors.surfacePrimary),
-          ),
-        ],
-      ),
-    );
-  }
+  ConsumerState<_HeroCarousel> createState() => _HeroCarouselState();
 }
 
-class _HeroDealCard extends StatelessWidget {
-  const _HeroDealCard({required this.colors});
-  final AppColorScheme colors;
+class _HeroCarouselState extends ConsumerState<_HeroCarousel> {
+  final PageController _controller = PageController();
+  Timer? _timer;
+  int _page = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 4), (_) {
+      final deals = ref.read(featuredDealsProvider).valueOrNull;
+      final count = (deals?.length ?? 0).clamp(0, 5);
+      if (count > 1 && _controller.hasClients) {
+        final next = (_page + 1) % count;
+        _controller.animateToPage(
+          next,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 16 / 10,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.network(
-              'https://images.unsplash.com/photo-1602002418082-a4443e081dd1?w=800&q=80',
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [AppColors.navyDeep, const Color(0xFF1A3550)],
-                  ),
+    final colors = widget.colors;
+    final dealsAsync = ref.watch(featuredDealsProvider);
+
+    return dealsAsync.when(
+      loading: () => _skeleton(colors),
+      error: (_, __) => _fallbackCard(colors),
+      data: (deals) {
+        if (deals.isEmpty) return _fallbackCard(colors);
+        final items = deals.take(5).toList();
+        return AspectRatio(
+          aspectRatio: 5 / 3,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                PageView.builder(
+                  controller: _controller,
+                  itemCount: items.length,
+                  onPageChanged: (p) => setState(() => _page = p),
+                  itemBuilder: (_, i) => _DealSlide(deal: items[i]),
                 ),
-              ),
-            ),
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  stops: [0.0, 1.0],
-                  colors: [Color(0x1A0D1B2A), Color(0xBF0D1B2A)],
-                ),
-              ),
-            ),
-            Positioned(
-              left: 24,
-              right: 24,
-              bottom: 24,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      'TAAI CONVENTION · GOA 2025',
-                      style: AppTypography.overline.copyWith(
-                        color: Colors.white.withValues(alpha: 0.85),
-                        fontSize: 10,
-                        letterSpacing: 1.6,
+                if (items.length > 1)
+                  Positioned(
+                    bottom: 16,
+                    right: 20,
+                    child: Row(
+                      children: List.generate(
+                        items.length,
+                        (i) => Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: _heroDot(active: i == _page),
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Annual Convention &\nTravel Awards',
-                    style: AppTypography.displayLg.copyWith(
-                      color: Colors.white,
-                      fontSize: 24,
-                      height: 1.15,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '28–30 November · Taj Aguada, Goa',
-                    style: AppTypography.body.copyWith(
-                      color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.goldPrimary,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Register Now',
-                          style: AppTypography.label.copyWith(
-                            color: AppColors.navyDeep,
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        const Icon(Icons.arrow_forward_rounded,
-                            size: 12, color: AppColors.navyDeep),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              ],
             ),
-            Positioned(
-              bottom: 20,
-              right: 24,
-              child: Row(
-                children: [
-                  _heroDot(active: true),
-                  const SizedBox(width: 4),
-                  _heroDot(active: false),
-                  const SizedBox(width: 4),
-                  _heroDot(active: false),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
+
+  Widget _skeleton(AppColorScheme colors) => AspectRatio(
+        aspectRatio: 5 / 3,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: Container(color: colors.surfaceTertiary),
+        ),
+      );
+
+  Widget _fallbackCard(AppColorScheme colors) => AspectRatio(
+        aspectRatio: 5 / 3,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppColors.navyDeep, Color(0xFF1A3550)],
+              ),
+            ),
+          ),
+        ),
+      );
 
   Widget _heroDot({required bool active}) => AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -361,9 +376,273 @@ class _HeroDealCard extends StatelessWidget {
       );
 }
 
-class _QuickTile extends StatelessWidget {
-  const _QuickTile(
-      {required this.icon, required this.label, required this.colors});
+class _DealSlide extends StatelessWidget {
+  const _DealSlide({required this.deal});
+  final Deal deal;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push(RouteNames.dealDetail, extra: deal),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          deal.firstImage.isNotEmpty
+              ? Image.network(
+                  deal.firstImage,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _imgFallback(),
+                )
+              : _imgFallback(),
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: [0.0, 1.0],
+                colors: [Color(0x1A0D1B2A), Color(0xCC0D1B2A)],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 14,
+            top: 14,
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.goldPrimary,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                'HOT DEAL',
+                style: AppTypography.overline.copyWith(
+                  color: AppColors.navyDeep,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.6,
+                ),
+              ),
+            ),
+          ),
+          if (deal.duration?.isNotEmpty == true)
+            Positioned(
+              top: 14,
+              right: 14,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  deal.duration!,
+                  style: AppTypography.overline.copyWith(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          Positioned(
+            left: 14,
+            right: 14,
+            bottom: 16,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  deal.dealName,
+                  style: AppTypography.displayMd.copyWith(
+                    color: Colors.white,
+                    fontSize: 18,
+                    height: 1.2,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (deal.priceForSame?.isNotEmpty == true) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    '₹${deal.priceForSame}',
+                    style: AppTypography.label.copyWith(
+                      color: const Color(0xFFE8D08A),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+                if (deal.destination?.isNotEmpty == true) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    deal.destination!,
+                    style: AppTypography.caption.copyWith(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _imgFallback() => Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.navyDeep, Color(0xFF1A3550)],
+          ),
+        ),
+      );
+}
+
+// ── TV LIVE widget ────────────────────────────────────────────────────────────
+
+class _TvLiveWidget extends StatefulWidget {
+  const _TvLiveWidget({required this.colors});
+  final AppColorScheme colors;
+
+  @override
+  State<_TvLiveWidget> createState() => _TvLiveWidgetState();
+}
+
+class _TvLiveWidgetState extends State<_TvLiveWidget>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseCtrl;
+  late final Animation<double> _pulseAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    _pulseAnim = Tween<double>(begin: 1.0, end: 0.3).animate(
+      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.navyDeep,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            AnimatedBuilder(
+              animation: _pulseAnim,
+              builder: (_, __) => Opacity(
+                opacity: _pulseAnim.value,
+                child: Container(
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF85149),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              'LIVE',
+              style: AppTypography.overline.copyWith(
+                color: const Color(0xFFF85149),
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.8,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Breaking News · TWO TV',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              width: 36,
+              height: 36,
+              decoration: const BoxDecoration(
+                color: AppColors.goldPrimary,
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Icon(Icons.play_arrow_rounded,
+                    size: 20, color: AppColors.navyDeep),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Icon row — secondary modules ──────────────────────────────────────────────
+
+class _IconRow extends StatelessWidget {
+  const _IconRow({required this.colors});
+  final AppColorScheme colors;
+
+  static const _items = [
+    (icon: Icons.feed_outlined, label: 'News'),
+    (icon: Icons.play_circle_outline_rounded, label: 'Video'),
+    (icon: Icons.school_outlined, label: 'Campus'),
+    (icon: Icons.apartment_outlined, label: 'PPP'),
+    (icon: Icons.work_outline, label: 'Jobs'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: _items
+            .map((item) => _IconTile(
+                  icon: item.icon,
+                  label: item.label,
+                  colors: colors,
+                ))
+            .toList(),
+      ),
+    );
+  }
+}
+
+class _IconTile extends StatelessWidget {
+  const _IconTile({
+    required this.icon,
+    required this.label,
+    required this.colors,
+  });
   final IconData icon;
   final String label;
   final AppColorScheme colors;
@@ -377,10 +656,10 @@ class _QuickTile extends StatelessWidget {
           height: 52,
           decoration: BoxDecoration(
             color: colors.surfaceCard,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: colors.lineSoft),
           ),
-          child: Center(child: Icon(icon, size: 22, color: colors.navyDeep)),
+          child: Center(child: Icon(icon, size: 22, color: colors.ink900)),
         ),
         const SizedBox(height: 6),
         Text(
@@ -388,7 +667,7 @@ class _QuickTile extends StatelessWidget {
           style: AppTypography.overline.copyWith(
             color: colors.ink900,
             fontSize: 10,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
             letterSpacing: 0,
           ),
           textAlign: TextAlign.center,
@@ -397,6 +676,8 @@ class _QuickTile extends StatelessWidget {
     );
   }
 }
+
+// ── Section heading row ───────────────────────────────────────────────────────
 
 class _SectionRow extends StatelessWidget {
   const _SectionRow(
@@ -422,7 +703,7 @@ class _SectionRow extends StatelessWidget {
         GestureDetector(
           onTap: onViewAll,
           child: Text(
-            'View All',
+            'See All →',
             style: AppTypography.label
                 .copyWith(color: colors.goldPrimary, fontSize: 12),
           ),
@@ -431,6 +712,8 @@ class _SectionRow extends StatelessWidget {
     );
   }
 }
+
+// ── News cards ────────────────────────────────────────────────────────────────
 
 class _NewsCard extends StatelessWidget {
   const _NewsCard({
@@ -462,11 +745,10 @@ class _NewsCard extends StatelessWidget {
             child: imageUrl.isNotEmpty
                 ? Image.network(
                     imageUrl,
-                    width: 88,
-                    height: 76,
+                    width: 76,
+                    height: 66,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                        _imagePlaceholder(colors),
+                    errorBuilder: (_, __, ___) => _imagePlaceholder(colors),
                   )
                 : _imagePlaceholder(colors),
           ),
@@ -483,19 +765,19 @@ class _NewsCard extends StatelessWidget {
                     letterSpacing: 1.2,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
                   title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: AppTypography.body.copyWith(
                     color: colors.ink900,
-                    fontSize: 13,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    height: 1.38,
+                    height: 1.35,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
                   meta,
                   style: AppTypography.caption
@@ -510,14 +792,16 @@ class _NewsCard extends StatelessWidget {
   }
 
   Widget _imagePlaceholder(AppColorScheme colors) => Container(
-        width: 88,
-        height: 76,
+        width: 76,
+        height: 66,
         color: colors.surfaceTertiary,
         child: Center(
-          child: Icon(Icons.image_outlined, size: 24, color: colors.ink400),
+          child: Icon(Icons.image_outlined, size: 22, color: colors.ink400),
         ),
       );
 }
+
+// ── News skeleton + error ─────────────────────────────────────────────────────
 
 class _NewsSkeletonList extends StatelessWidget {
   const _NewsSkeletonList();
@@ -543,7 +827,7 @@ class _NewsSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColorScheme>()!;
     return Container(
-      height: 100,
+      height: 90,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: colors.surfaceCard,
@@ -553,8 +837,8 @@ class _NewsSkeleton extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 88,
-            height: 76,
+            width: 76,
+            height: 66,
             decoration: BoxDecoration(
               color: colors.surfaceTertiary,
               borderRadius: BorderRadius.circular(10),
@@ -566,17 +850,17 @@ class _NewsSkeleton extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Container(height: 9, width: 56, color: colors.surfaceTertiary),
+                const SizedBox(height: 7),
                 Container(
-                    height: 10, width: 60, color: colors.surfaceTertiary),
-                const SizedBox(height: 8),
-                Container(
-                    height: 12, width: double.infinity, color: colors.surfaceTertiary),
+                    height: 12,
+                    width: double.infinity,
+                    color: colors.surfaceTertiary),
                 const SizedBox(height: 4),
                 Container(
-                    height: 12, width: 160, color: colors.surfaceTertiary),
-                const SizedBox(height: 8),
-                Container(
-                    height: 10, width: 80, color: colors.surfaceTertiary),
+                    height: 12, width: 140, color: colors.surfaceTertiary),
+                const SizedBox(height: 7),
+                Container(height: 9, width: 72, color: colors.surfaceTertiary),
               ],
             ),
           ),
@@ -606,100 +890,6 @@ class _NewsError extends StatelessWidget {
           Text(
             'Could not load stories',
             style: AppTypography.body.copyWith(color: colors.ink600),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Miniplayer extends StatelessWidget {
-  const _Miniplayer({required this.colors});
-  final AppColorScheme colors;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.navyDeep,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(
-              color: Color(0x400D1B2A), blurRadius: 24, offset: Offset(0, 8)),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppColors.goldPrimary, Color(0xFF8B6914)],
-              ),
-            ),
-            child: const Center(
-              child: Icon(Icons.videocam_outlined,
-                  size: 20, color: AppColors.navyDeep),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 5,
-                      height: 5,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF85149),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'LIVE',
-                      style: AppTypography.overline.copyWith(
-                        color: const Color(0xFFF85149),
-                        fontSize: 9,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'TWO Live · Travel World',
-                  style: AppTypography.body.copyWith(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Container(
-            width: 36,
-            height: 36,
-            decoration: const BoxDecoration(
-              color: AppColors.goldPrimary,
-              shape: BoxShape.circle,
-            ),
-            child: const Center(
-              child: Icon(Icons.play_arrow_rounded,
-                  size: 18, color: AppColors.navyDeep),
-            ),
           ),
         ],
       ),

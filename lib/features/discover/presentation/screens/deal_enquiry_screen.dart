@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/models/deal_model.dart';
 
@@ -28,6 +29,51 @@ class _DealEnquiryScreenState extends State<DealEnquiryScreen> {
   void dispose() {
     _messageController.dispose();
     super.dispose();
+  }
+
+  Future<void> _sendEnquiry(BuildContext context) async {
+    HapticFeedback.mediumImpact();
+    final deal = widget.deal;
+    final email = deal.contactEmail ?? '';
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No contact email available for this deal.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final message = _messageController.text.trim();
+    final body = [
+      'Deal: ${deal.dealName}',
+      'Enquiry For: $_enquiryFor',
+      'Travel Date: 24 May 2025',
+      'Travellers: $_travellers',
+      if (message.isNotEmpty) 'Message: $message',
+    ].join('\n');
+
+    final uri = Uri(
+      scheme: 'mailto',
+      path: email,
+      query: 'subject=Enquiry for deal: ${deal.dealName}&body=$body',
+    );
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+      if (context.mounted) context.pop();
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not open email client.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -252,24 +298,13 @@ class _DealEnquiryScreenState extends State<DealEnquiryScreen> {
             left: 0,
             right: 0,
             child: Container(
-              color: Colors.white,
               padding: EdgeInsets.fromLTRB(20, 14, 20, botPad + 14),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 border: Border(top: BorderSide(color: lineSoft)),
               ),
               child: GestureDetector(
-                onTap: () {
-                  HapticFeedback.mediumImpact();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content:
-                          Text('Enquiry sent! The seller will contact you soon.'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                  context.pop();
-                },
+                onTap: () => _sendEnquiry(context),
                 child: Container(
                   width: double.infinity,
                   height: 52,

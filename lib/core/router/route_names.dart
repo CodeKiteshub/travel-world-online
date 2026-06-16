@@ -5,9 +5,14 @@ abstract final class RouteNames {
   static const register = '/register';
   static const verifyEmail = '/verify-email';
   static const home = '/home';
-  static const discover = '/discover';
-  static const mySpace = '/my-space';
-  static const profile = '/profile';
+  static const marketplace = '/marketplace';
+  static const associations = '/associations';
+  static const services = '/services';
+  static const account = '/account';
   static const dealDetail = '/deal-detail';
   static const dealEnquiry = '/deal-enquiry';
+  static const hotelDetail = '/marketplace/hotel-detail';
+  static const villaSearch = '/marketplace/villa';
+  static const villaDetail = '/marketplace/villa-detail';
+  static const arosaResults = '/marketplace/arosa-results';
 }

@@ -1,6 +1,8 @@
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/router/route_names.dart';
 import '../../data/models/deal_model.dart';
@@ -391,7 +393,6 @@ class DealDetailScreen extends StatelessWidget {
             left: 0,
             right: 0,
             child: Container(
-              color: Colors.white,
               padding: EdgeInsets.fromLTRB(
                   20, 14, 20, MediaQuery.paddingOf(context).bottom + 14),
               decoration: const BoxDecoration(
@@ -400,9 +401,27 @@ class DealDetailScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  _ActionIcon(icon: Icons.chat_bubble_outline_rounded, onTap: () {}),
+                  _ActionIcon(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    onTap: () {
+                      final email = deal.contactEmail ?? '';
+                      if (email.isEmpty) return;
+                      launchUrl(Uri(
+                        scheme: 'mailto',
+                        path: email,
+                        query: 'subject=Enquiry: ${deal.dealName}',
+                      ));
+                    },
+                  ),
                   const SizedBox(width: 10),
-                  _ActionIcon(icon: Icons.phone_outlined, onTap: () {}),
+                  _ActionIcon(
+                    icon: Icons.phone_outlined,
+                    onTap: () {
+                      final phone = deal.contactNumber ?? '';
+                      if (phone.isEmpty) return;
+                      launchUrl(Uri(scheme: 'tel', path: phone));
+                    },
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: GestureDetector(
@@ -466,14 +485,23 @@ class _GlassIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.white.withValues(alpha: 0.85),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(999),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(999),
+              color: Colors.white.withValues(alpha: 0.18),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.35),
+              ),
+            ),
+            child: Center(child: child),
+          ),
         ),
-        child: Center(child: child),
       ),
     );
   }
