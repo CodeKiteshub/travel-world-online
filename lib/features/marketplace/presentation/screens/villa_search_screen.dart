@@ -25,13 +25,15 @@ class _VillaSearchScreenState extends ConsumerState<VillaSearchScreen> {
   int _units = 1;
 
   VillaSearchParams? _activeSearch;
+  bool _autoLoaded = false;
 
   Future<void> _pickDate({required bool isCheckin}) async {
     final now = DateTime.now();
-    final initial = isCheckin
+    final first = isCheckin ? now : (_checkin?.add(const Duration(days: 1)) ?? now);
+    final preferred = isCheckin
         ? (_checkin ?? now.add(const Duration(days: 1)))
         : (_checkout ?? now.add(const Duration(days: 3)));
-    final first = isCheckin ? now : (_checkin?.add(const Duration(days: 1)) ?? now);
+    final initial = preferred.isBefore(first) ? first : preferred;
 
     final picked = await showDatePicker(
       context: context,
@@ -52,26 +54,19 @@ class _VillaSearchScreenState extends ConsumerState<VillaSearchScreen> {
     });
   }
 
-  void _search() {
-    if (_selectedCity == null) {
+  void _search({VillaCityModel? cityOverride}) {
+    final city = cityOverride ?? _selectedCity;
+    if (city == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a city')),
       );
       return;
     }
-    if (_checkin == null || _checkout == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select check-in and check-out dates')),
-      );
-      return;
-    }
     setState(() {
       _activeSearch = (
-        city: _selectedCity!.slug.isNotEmpty
-            ? _selectedCity!.slug
-            : _selectedCity!.name,
-        checkin: _formatDate(_checkin!),
-        checkout: _formatDate(_checkout!),
+        city: city.slug.isNotEmpty ? city.slug : city.name,
+        checkin: _checkin != null ? _formatDate(_checkin!) : '',
+        checkout: _checkout != null ? _formatDate(_checkout!) : '',
         adults: _adults,
         children: _children,
       );
@@ -94,6 +89,16 @@ class _VillaSearchScreenState extends ConsumerState<VillaSearchScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColorScheme>()!;
     final citiesAsync = ref.watch(villaCitiesProvider);
+
+    // Auto-load suggestions with first city when cities arrive
+    citiesAsync.whenData((cities) {
+      if (cities.isNotEmpty && !_autoLoaded) {
+        _autoLoaded = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _search(cityOverride: cities.first);
+        });
+      }
+    });
 
     return Scaffold(
       backgroundColor: colors.surfacePrimary,
@@ -232,6 +237,7 @@ class _VillaSearchScreenState extends ConsumerState<VillaSearchScreen> {
                 ? _EmptyState(colors: colors)
                 : _VillaResults(
                     params: _activeSearch!,
+                    isSuggestion: _selectedCity == null,
                     colors: colors,
                   ),
           ),
@@ -266,9 +272,14 @@ class _VillaSearchScreenState extends ConsumerState<VillaSearchScreen> {
 // ── Results list ──────────────────────────────────────────────────────────────
 
 class _VillaResults extends ConsumerWidget {
-  const _VillaResults({required this.params, required this.colors});
+  const _VillaResults({
+    required this.params,
+    required this.colors,
+    this.isSuggestion = false,
+  });
   final VillaSearchParams params;
   final AppColorScheme colors;
+  final bool isSuggestion;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -310,10 +321,22 @@ class _VillaResults extends ConsumerWidget {
           );
         }
         return ListView.separated(
-          padding: const EdgeInsets.all(16),
-          itemCount: rates.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
-          itemBuilder: (_, i) => _VillaCard(rate: rates[i], colors: colors),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          itemCount: rates.length + 1,
+          separatorBuilder: (_, i) =>
+              i == 0 ? const SizedBox(height: 12) : const SizedBox(height: 12),
+          itemBuilder: (_, i) {
+            if (i == 0) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  isSuggestion ? 'Suggested Villas' : '${rates.length} villa${rates.length != 1 ? 's' : ''} found',
+                  style: AppTypography.heading.copyWith(color: colors.ink900),
+                ),
+              );
+            }
+            return _VillaCard(rate: rates[i - 1], colors: colors);
+          },
         );
       },
     );

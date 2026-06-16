@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Travel World Online — v1.3 IA Foundation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================ TOKENS ============================================ */
+[data-theme="light"]{--s-primary:#FAF8F3;--s-card:#FFFFFF;--s-tertiary:#EFEDE6;--gold:#C9A84C;--gold-accent:#E8D08A;--ink-900:#1A1A1A;--ink-600:#5E5E5E;--ink-400:#9E9E9E;--navy:#0D1B2A;--success:#2D7A4F;--success-bg:rgba(45,122,79,.12);--warn:#B45309;--warn-bg:rgba(180,83,9,.12);--error:#C0392B;--error-bg:rgba(192,57,43,.12);--line:#E8E5DC;--tint-blue:#E8EEF5;--tint-blue-t:#2A4A6B;--gold-on:#1A1A1A}
+[data-theme="dark"]{--s-primary:#0D1117;--s-card:#161B22;--s-tertiary:#21262D;--gold:#D4AF37;--gold-accent:#8B6914;--ink-900:#E6EDF3;--ink-600:#8B949E;--ink-400:#484F58;--navy:#E6EDF3;--success:#3FB950;--success-bg:rgba(63,185,80,.15);--warn:#D29922;--error:#F85149;--error-bg:rgba(248,81,73,.15);--line:#30363D;--tint-blue:rgba(88,166,255,.12);--tint-blue-t:#58A6FF;--gold-on:#0D1117}
+
+/* ============================================ GALLERY ============================================ */
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:#111;color:#fff;padding:48px 20px 80px;-webkit-font-smoothing:antialiased}
+.gh{text-align:center;margin-bottom:56px;max-width:720px;margin-left:auto;margin-right:auto}
+.gh-eye{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#C9A84C;font-weight:500;margin-bottom:16px}
+.gh-title{font-family:'Playfair Display',serif;font-weight:700;font-size:40px;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}
+.gh-sub{font-size:15px;line-height:24px;color:#9E9E9E;max-width:620px;margin:0 auto}
+
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:32px;max-width:880px;margin:0 auto 56px;padding:32px 0;border-top:1px solid rgba(255,255,255,.06);justify-items:center}
+.solo{display:flex;flex-direction:column;align-items:center;margin:0 auto 56px;padding:32px 0;border-top:1px solid rgba(255,255,255,.06)}
+.row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:32px;max-width:1280px;margin:0 auto 56px;padding:32px 0;border-top:1px solid rgba(255,255,255,.06);justify-items:center}
+.ph{display:flex;align-items:baseline;gap:14px;margin-bottom:24px}.pair .ph,.row3 .ph{grid-column:1/-1;margin-bottom:8px}
+.ph h2{font-family:'Playfair Display',serif;font-weight:700;font-size:22px}
+.ph span{font-size:12px;color:#9E9E9E;letter-spacing:.04em}
+.fb{display:flex;flex-direction:column;align-items:center}
+.fl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.fl .d{width:8px;height:8px;border-radius:999px}
+.fl.lt .d{background:#FAF8F3}.fl.lt{color:#FAF8F3}
+.fl.dk .d{background:#0D1117;border:1px solid #30363D}.fl.dk{color:#8B949E}
+
+/* ============================================ PHONE ============================================ */
+.phone{width:380px;height:800px;background:#000;border-radius:44px;padding:8px;box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.06);position:relative;flex-shrink:0}
+.scr{width:100%;height:100%;border-radius:36px;overflow:hidden;position:relative;background:var(--s-primary);color:var(--ink-900);font-family:'DM Sans',sans-serif}
+.notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:110px;height:28px;background:#000;border-radius:16px;z-index:100}
+.sb{position:absolute;top:0;left:0;right:0;height:44px;padding:14px 28px 0;display:flex;justify-content:space-between;align-items:center;z-index:50;font-size:14px;font-weight:600;color:var(--ink-900)}
+.si{display:flex;gap:5px;align-items:center}
+
+/* ============================================ BOTTOM NAV — 5 tabs ============================================ */
+.bnav{position:absolute;bottom:0;left:0;right:0;background:var(--s-card);border-top:1px solid var(--line);padding:6px 4px 14px;display:grid;grid-template-columns:repeat(5,1fr);z-index:20}
+.bn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px;color:var(--ink-400);font-size:9px;font-weight:500}
+.bn.a{color:var(--gold);font-weight:600}
+
+/* ============================================ HOME ============================================ */
+.home{width:100%;height:100%;overflow-y:auto;position:relative;padding-bottom:140px;background:var(--s-primary)}
+.home-c{padding:100px 0 20px}
+
+/* App bar — Home style */
+.appbar-home{position:absolute;top:44px;left:0;right:0;padding:10px 20px;display:flex;align-items:center;gap:12px;background:var(--s-primary);z-index:10}
+.av-sm{width:40px;height:40px;border-radius:999px;background-size:cover;background-position:center;border:2px solid var(--gold);flex-shrink:0}
+.ab-text{flex:1}
+.ab-date{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-600);font-weight:500}
+.ab-greet{font-size:16px;font-weight:600;color:var(--ink-900)}
+.ab-bell{width:40px;height:40px;border-radius:999px;background:var(--s-card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink-900);position:relative}
+.ab-bell::after{content:'';position:absolute;top:8px;right:9px;width:8px;height:8px;background:var(--error);border-radius:999px;border:2px solid var(--s-card)}
+
+/* Deals carousel */
+.deals-row{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:0 20px;margin-bottom:20px;scroll-snap-type:x mandatory}
+.deals-row::-webkit-scrollbar{display:none}
+.deal-card{flex-shrink:0;width:260px;aspect-ratio:5/3;border-radius:18px;position:relative;overflow:hidden;background-size:cover;background-position:center;scroll-snap-align:start;display:flex;flex-direction:column;justify-content:space-between;padding:14px;color:#fff}
+.deal-card::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,27,42,0) 0%,rgba(13,27,42,.75) 100%)}
+.deal-card>*{position:relative;z-index:2}
+.dc-top{display:flex;justify-content:space-between;align-items:flex-start}
+.dc-tag{background:#C9A84C;color:#1A1A1A;padding:4px 10px;border-radius:999px;font-weight:600;font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.dc-days{background:rgba(255,255,255,.15);backdrop-filter:blur(10px);padding:4px 10px;border-radius:999px;font-weight:600;font-size:10px}
+.dc-name{font-family:'Playfair Display',serif;font-weight:700;font-size:17px;line-height:1.2;margin-bottom:3px}
+.dc-price{font-weight:700;font-size:14px;color:#E8D08A}
+.dc-loc{font-size:11px;color:rgba(255,255,255,.85);margin-top:2px}
+
+/* TV LIVE widget */
+.tv-live{margin:0 20px 20px;background:var(--navy);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;color:#fff}
+[data-theme="dark"] .tv-live{background:#1A2A3F}
+.tv-live-dot{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:600;letter-spacing:.08em;color:#F85149}
+.tv-live-dot .ld{width:6px;height:6px;border-radius:999px;background:#F85149;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.tv-live-title{flex:1;font-weight:600;font-size:13px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tv-play{width:36px;height:36px;border-radius:999px;background:#C9A84C;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* Icon row */
+.icon-row{display:flex;justify-content:space-between;padding:0 20px;margin-bottom:24px}
+.ir-tile{display:flex;flex-direction:column;align-items:center;gap:6px;width:56px}
+.ir-icon{width:52px;height:52px;border-radius:14px;background:var(--s-card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink-900)}
+.ir-label{font-size:10px;font-weight:600;color:var(--ink-900);text-align:center;letter-spacing:.02em}
+
+/* Section heading */
+.sec-row{display:flex;justify-content:space-between;align-items:baseline;padding:0 20px;margin-bottom:14px}
+.sec-h{font-family:'Playfair Display',serif;font-weight:700;font-size:19px;color:var(--ink-900)}
+.sec-all{font-weight:600;font-size:12px;color:var(--gold)}
+
+/* News cards */
+.nc-hero{margin:0 20px 12px;border-radius:16px;background:var(--s-card);border:1px solid var(--line);overflow:hidden}
+.nc-hero-img{width:100%;aspect-ratio:16/10;background-size:cover;background-position:center;position:relative}
+.nc-hero-img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(0,0,0,.35) 100%)}
+.nc-tag{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);color:#fff;padding:4px 10px;border-radius:999px;font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;z-index:2}
+.nc-hero-body{padding:14px 16px}
+.nc-hero-title{font-weight:600;font-size:14px;line-height:20px;color:var(--ink-900);margin-bottom:6px}
+.nc-meta{font-size:11px;color:var(--ink-400)}
+.nc-compact{display:flex;gap:12px;padding:12px;background:var(--s-card);border:1px solid var(--line);border-radius:14px;margin:0 20px 10px;align-items:center}
+.nc-thumb{width:76px;height:66px;border-radius:10px;background-size:cover;background-position:center;flex-shrink:0}
+.nc-body{flex:1;min-width:0}
+.nc-eye{font-weight:500;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:3px}
+.nc-title{font-weight:600;font-size:12px;line-height:17px;color:var(--ink-900);margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Radio mini-player */
+.rmp{position:absolute;bottom:78px;left:14px;right:14px;background:#0D1B2A;color:#fff;padding:10px 14px;border-radius:14px;display:flex;align-items:center;gap:10px;z-index:15;box-shadow:0 8px 24px rgba(13,27,42,.3)}
+[data-theme="dark"] .rmp{background:#1A2A3F;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.rmp-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#C9A84C,#8B6914);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rmp-text{flex:1;min-width:0}
+.rmp-live{display:flex;align-items:center;gap:4px;font-weight:600;font-size:9px;letter-spacing:.08em;color:#F85149;margin-bottom:1px}
+.rmp-live .ld{width:5px;height:5px;border-radius:999px;background:#F85149;animation:pulse 1.5s ease-in-out infinite}
+.rmp-name{font-weight:600;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rmp-play{width:32px;height:32px;border-radius:999px;background:#C9A84C;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* ============================================ MARKETPLACE ============================================ */
+.mkt{width:100%;height:100%;overflow-y:auto;position:relative;padding-bottom:100px;background:var(--s-primary)}
+.mkt-c{padding:110px 0 20px}
+.appbar-sub{position:absolute;top:44px;left:0;right:0;padding:12px 20px;display:flex;align-items:center;gap:14px;background:var(--s-primary);z-index:10}
+.ab-back{width:42px;height:42px;border-radius:999px;background:var(--s-card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink-900)}
+.ab-title{font-family:'Playfair Display',serif;font-weight:700;font-size:22px;color:var(--ink-900);flex:1}
+.ab-action{width:42px;height:42px;border-radius:999px;background:var(--s-card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink-900)}
+
+/* Filter pills */
+.pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 20px;margin-bottom:16px}
+.pills::-webkit-scrollbar{display:none}
+.pill{padding:8px 16px;border-radius:999px;font-weight:500;font-size:12px;color:var(--ink-600);border:1px solid var(--line);background:transparent;white-space:nowrap;flex-shrink:0}
+.pill.a{background:var(--ink-900);color:var(--s-primary);border-color:var(--ink-900);font-weight:600}
+
+/* Search bar */
+.sbar{display:flex;align-items:center;gap:12px;background:var(--s-card);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:0 20px 18px}
+.sbar input{flex:1;border:none;background:transparent;outline:none;font-size:13px;color:var(--ink-900)}
+.sbar input::placeholder{color:var(--ink-400)}
+.sbar svg{color:var(--ink-600);flex-shrink:0}
+
+/* Deal cards in marketplace */
+.mkt-card{margin:0 20px 12px;border-radius:16px;background:var(--s-card);border:1px solid var(--line);overflow:hidden}
+.mkt-card-img{width:100%;aspect-ratio:16/9;background-size:cover;background-position:center;position:relative}
+.mkt-card-dest{position:absolute;top:12px;left:12px;font-weight:700;font-size:14px;color:#fff;letter-spacing:.06em;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.mkt-card-rating{position:absolute;top:12px;right:12px;display:flex;gap:2px}
+.mkt-card-rating svg{width:14px;height:14px}
+.mkt-card-nights{position:absolute;bottom:12px;left:12px;font-weight:600;font-size:11px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+.mkt-card-price{position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);padding:4px 10px;border-radius:8px;font-weight:700;font-size:13px;color:#fff}
+.mkt-card-body{padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.mkt-card-seller{font-size:12px;color:var(--ink-600)}
+.mkt-card-action{font-weight:600;font-size:12px;color:var(--gold)}
+
+/* FAB */
+.fab{position:absolute;bottom:96px;right:20px;display:flex;align-items:center;gap:6px;padding:12px 16px;background:var(--gold);color:var(--gold-on);border-radius:999px;font-weight:600;font-size:13px;box-shadow:0 8px 24px rgba(201,168,76,.4);z-index:15}
+
+/* ============================================ ASSOCIATIONS ============================================ */
+.assoc{width:100%;height:100%;overflow-y:auto;position:relative;padding-bottom:100px;background:var(--s-primary)}
+.assoc-c{padding:110px 0 20px}
+.assoc-row{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line)}
+.assoc-logo{width:52px;height:52px;border-radius:14px;background:var(--s-card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:12px;color:var(--ink-900);flex-shrink:0;overflow:hidden}
+.assoc-logo img{width:100%;height:100%;object-fit:contain}
+.assoc-info{flex:1;min-width:0}
+.assoc-name{font-weight:600;font-size:14px;color:var(--ink-900)}
+.assoc-full{font-size:11px;color:var(--ink-600);margin-top:1px}
+.assoc-btn{padding:8px 16px;border-radius:999px;font-weight:600;font-size:11px;letter-spacing:.02em;border:1px solid var(--line);background:transparent;color:var(--ink-900);flex-shrink:0}
+.assoc-btn.signed{border-color:var(--error);color:var(--error);background:var(--error-bg)}
+
+/* ============================================ SERVICES ============================================ */
+.serv{width:100%;height:100%;overflow-y:auto;position:relative;padding-bottom:100px;background:var(--s-primary)}
+.serv-c{padding:110px 20px 20px}
+.serv-card{background:var(--s-card);border:1px solid var(--line);border-radius:20px;padding:22px;margin-bottom:14px;display:flex;gap:16px;align-items:flex-start}
+.serv-icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.serv-icon.ins{background:rgba(45,122,79,.12);color:var(--success)}
+.serv-icon.visa{background:var(--tint-blue);color:var(--tint-blue-t)}
+.serv-icon.forex{background:var(--warn-bg);color:var(--warn)}
+.serv-text{flex:1}
+.serv-title{font-family:'Playfair Display',serif;font-weight:700;font-size:18px;color:var(--ink-900);margin-bottom:4px}
+.serv-desc{font-size:12px;line-height:18px;color:var(--ink-600);margin-bottom:10px}
+.serv-link{font-weight:600;font-size:13px;color:var(--gold)}
+.serv-badge{display:inline-block;background:var(--warn-bg);color:var(--warn);font-weight:600;font-size:10px;padding:3px 8px;border-radius:999px;letter-spacing:.04em}
+
+/* ============================================ ACCOUNT ============================================ */
+.acct{width:100%;height:100%;overflow-y:auto;position:relative;padding-bottom:100px;background:var(--s-primary)}
+.acct-c{padding:110px 0 20px}
+.prof-card{display:flex;align-items:center;gap:14px;padding:18px;margin:0 20px 16px;background:var(--s-card);border:1px solid var(--line);border-radius:18px}
+.prof-av{width:60px;height:60px;border-radius:999px;background-size:cover;background-position:center;border:2px solid var(--gold);flex-shrink:0}
+.prof-text{flex:1;min-width:0}
+.prof-name{font-family:'Playfair Display',serif;font-weight:700;font-size:18px;color:var(--ink-900);margin-bottom:2px}
+.prof-email{font-size:11px;color:var(--ink-600)}
+.prof-edit{width:36px;height:36px;border-radius:10px;background:var(--s-primary);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink-900)}
+
+.mem-card{margin:0 20px 20px;padding:16px 18px;background:linear-gradient(135deg,#0D1B2A,#1A3850);color:#fff;border-radius:16px;position:relative;overflow:hidden}
+.mem-card::after{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(201,168,76,.2),transparent 70%)}
+.mem-row{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2}
+.mem-info{flex:1}
+.mem-label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:4px}
+.mem-org{font-family:'Playfair Display',serif;font-weight:700;font-size:17px;margin-bottom:2px}
+.mem-id{font-size:11px;color:rgba(255,255,255,.7)}
+.mem-status{background:#2D7A4F;color:#fff;font-weight:600;font-size:10px;padding:4px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:5px}
+.mem-status .d{width:5px;height:5px;border-radius:999px;background:#fff}
+
+.menu-sec{margin:0 20px 14px}
+.menu-sec-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-400);font-weight:600;margin-bottom:8px;padding-left:4px}
+.menu-list{background:var(--s-card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.menu-r{display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--line)}
+.menu-r:last-child{border-bottom:none}
+.menu-ic{width:34px;height:34px;border-radius:10px;background:var(--s-primary);display:flex;align-items:center;justify-content:center;color:var(--ink-900);flex-shrink:0}
+.menu-r-label{flex:1;font-weight:500;font-size:13px;color:var(--ink-900)}
+.menu-r-sub{font-size:11px;color:var(--ink-600);margin-top:1px}
+.menu-r-meta{font-size:11px;color:var(--ink-400)}
+.menu-chev{color:var(--ink-400)}
+.toggle-track{width:42px;height:24px;border-radius:999px;background:var(--line);position:relative;flex-shrink:0}
+.toggle-track::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle-track.on{background:var(--gold)}
+.toggle-track.on::after{left:auto;right:3px}
+.menu-r.danger .menu-r-label{color:var(--error)}
+.menu-r.danger .menu-ic{background:var(--error-bg);color:var(--error)}
+
+/* SVG helper */
+svg{display:block}
+</style>
+</head>
+<body>
+
+<div class="gh">
+  <div class="gh-eye">V1.3 · LOCKED ARCHITECTURE</div>
+  <h1 class="gh-title">Five tabs. Zero confusion.</h1>
+  <p class="gh-sub">Home / Marketplace / Associations / Services / Account. No "B2B." No drawer. No Browse. Every module has exactly one home.</p>
+</div>
+
+<!-- ============================================ 1 · HOME — both modes ============================================ -->
+<div class="pair">
+  <div class="ph"><h2>01 · Home</h2><span>· Both modes · Deals + TV LIVE + Icon Row + News</span></div>
+
+  <!-- HOME LIGHT -->
+  <div class="fb">
+    <div class="fl lt"><span class="d"></span>LIGHT</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+
+      <div class="home">
+        <div class="appbar-home">
+          <div class="av-sm" style="background-image:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80')"></div>
+          <div class="ab-text">
+            <div class="ab-date">Wednesday, 10 June</div>
+            <div class="ab-greet">Good Morning, Rakesh</div>
+          </div>
+          <div class="ab-bell"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+        </div>
+
+        <div class="home-c">
+          <!-- Deals carousel -->
+          <div class="deals-row">
+            <div class="deal-card" style="background-image:url('https://images.unsplash.com/photo-1602002418082-a4443e081dd1?w=600&q=80')">
+              <div class="dc-top"><span class="dc-tag">Hot Deal</span><span class="dc-days">5 Day</span></div>
+              <div><div class="dc-name">Andaman Packages</div><div class="dc-price">₹14,999</div><div class="dc-loc">Indian · Andaman Islands</div></div>
+            </div>
+            <div class="deal-card" style="background-image:url('https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600&q=80')">
+              <div class="dc-top"><span class="dc-tag">Hot Deal</span><span class="dc-days">3 Day</span></div>
+              <div><div class="dc-name">Luxury Goa Getaway</div><div class="dc-price">₹16,999</div><div class="dc-loc">Goa, India</div></div>
+            </div>
+            <div class="deal-card" style="background-image:url('https://images.unsplash.com/photo-1545158535-c3f7168c28b6?w=600&q=80')">
+              <div class="dc-top"><span class="dc-tag">Hot Deal</span><span class="dc-days">4 Day</span></div>
+              <div><div class="dc-name">Kerala Backwaters</div><div class="dc-price">₹12,099</div><div class="dc-loc">Alleppey · India</div></div>
+            </div>
+          </div>
+
+          <!-- TV LIVE widget -->
+          <div class="tv-live">
+            <div class="tv-live-dot"><span class="ld"></span>LIVE</div>
+            <div class="tv-live-title">Breaking News · TWO TV</div>
+            <div class="tv-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="#1A1A1A"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+          </div>
+
+          <!-- Icon row -->
+          <div class="icon-row">
+            <div class="ir-tile"><div class="ir-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5"/><path d="M10 6h8v4h-8V6z"/></svg></div><div class="ir-label">News</div></div>
+            <div class="ir-tile"><div class="ir-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div><div class="ir-label">Video</div></div>
+            <div class="ir-tile"><div class="ir-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div><div class="ir-label">Campus</div></div>
+            <div class="ir-tile"><div class="ir-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 21h18M5 21V8l7-5 7 5v13"/><path d="M9 21v-7h6v7"/></svg></div><div class="ir-label">PPP</div></div>
+            <div class="ir-tile"><div class="ir-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="ir-label">Jobs</div></div>
+          </div>
+
+          <!-- Top Stories -->
+          <div class="sec-row"><h3 class="sec-h">Top Stories</h3><a class="sec-all" href="#">See All →</a></div>
+          <div class="nc-hero">
+            <div class="nc-hero-img" style="background-image:url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=900&q=80')"><span class="nc-tag">AVIATION</span></div>
+            <div class="nc-hero-body">
+              <div class="nc-hero-title">Air India Unveils First Signature Maharaja Lounge at San Francisco Airport</div>
+              <div class="nc-meta">GNN Bureau · 2h ago · 4 min read</div>
+            </div>
+          </div>
+          <div class="nc-compact">
+            <div class="nc-thumb" style="background-image:url('https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=300&q=80')"></div>
+            <div class="nc-body"><div class="nc-eye">INDUSTRY</div><div class="nc-title">Ministry of Tourism Announces New Incredible India 2.0 Campaign</div><div class="nc-meta">Travel World · 5h ago</div></div>
+          </div>
+          <div class="nc-compact">
+            <div class="nc-thumb" style="background-image:url('https://images.unsplash.com/photo-1542039940-04e2c4e2b14e?w=300&q=80')"></div>
+            <div class="nc-body"><div class="nc-eye">HOTELS</div><div class="nc-title">Booking.com Rolls Out AI-Powered Car Rental Tools as Demand Surges</div><div class="nc-meta">GNN Bureau · 1d ago</div></div>
+          </div>
+        </div>
+
+        <!-- Radio mini-player -->
+        <div class="rmp">
+          <div class="rmp-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="2"><path d="M4.93 19.07A10 10 0 0 1 4.93 4.93"/><path d="M7.76 16.24a6 6 0 0 1 0-8.48"/><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.48"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></div>
+          <div class="rmp-text"><div class="rmp-live"><span class="ld"></span>LIVE</div><div class="rmp-name">Travel Maska Radio</div></div>
+          <div class="rmp-play"><svg width="12" height="12" viewBox="0 0 24 24" fill="#1A1A1A"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></div>
+        </div>
+
+        <div class="bnav">
+          <div class="bn a"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Market</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Assoc.</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Services</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Account</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- HOME DARK -->
+  <div class="fb">
+    <div class="fl dk"><span class="d"></span>DARK</div>
+    <div class="phone"><div class="scr" data-theme="dark">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+
+      <div class="home">
+        <div class="appbar-home">
+          <div class="av-sm" style="background-image:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80')"></div>
+          <div class="ab-text"><div class="ab-date">Wednesday, 10 June</div><div class="ab-greet">Good Morning, Rakesh</div></div>
+          <div class="ab-bell"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+        </div>
+        <div class="home-c">
+          <div class="deals-row">
+            <div class="deal-card" style="background-image:url('https://images.unsplash.com/photo-1602002418082-a4443e081dd1?w=600&q=80')"><div class="dc-top"><span class="dc-tag">Hot Deal</span><span class="dc-days">5 Day</span></div><div><div class="dc-name">Andaman Packages</div><div class="dc-price">₹14,999</div><div class="dc-loc">Indian · Andaman Islands</div></div></div>
+            <div class="deal-card" style="background-image:url('https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600&q=80')"><div class="dc-top"><span class="dc-tag">Hot Deal</span><span class="dc-days">3 Day</span></div><div><div class="dc-name">Luxury Goa Getaway</div><div class="dc-price">₹16,999</div><div class="dc-loc">Goa, India</div></div></div>
+            <div class="deal-card" style="background-image:url('https://images.unsplash.com/photo-1545158535-c3f7168c28b6?w=600&q=80')"><div class="dc-top"><span class="dc-tag">Hot Deal</span><span class="dc-days">4 Day</span></div><div><div class="dc-name">Kerala Backwaters</div><div class="dc-price">₹12,099</div><div class="dc-loc">Alleppey · India</div></div></div>
+          </div>
+          <div class="tv-live"><div class="tv-live-dot"><span class="ld"></span>LIVE</div><div class="tv-live-title">Breaking News · TWO TV</div><div class="tv-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="#1A1A1A"><polygon points="5 3 19 12 5 21 5 3"/></svg></div></div>
+          <div class="icon-row">
+            <div class="ir-tile"><div class="ir-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5"/><path d="M10 6h8v4h-8V6z"/></svg></div><div class="ir-label">News</div></div>
+            <div class="ir-tile"><div class="ir-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div><div class="ir-label">Video</div></div>
+            <div class="ir-tile"><div class="ir-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div><div class="ir-label">Campus</div></div>
+            <div class="ir-tile"><div class="ir-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 21h18M5 21V8l7-5 7 5v13"/><path d="M9 21v-7h6v7"/></svg></div><div class="ir-label">PPP</div></div>
+            <div class="ir-tile"><div class="ir-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="ir-label">Jobs</div></div>
+          </div>
+          <div class="sec-row"><h3 class="sec-h">Top Stories</h3><a class="sec-all" href="#">See All →</a></div>
+          <div class="nc-hero"><div class="nc-hero-img" style="background-image:url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=900&q=80')"><span class="nc-tag">AVIATION</span></div><div class="nc-hero-body"><div class="nc-hero-title">Air India Unveils First Signature Maharaja Lounge at San Francisco Airport</div><div class="nc-meta">GNN Bureau · 2h ago · 4 min read</div></div></div>
+          <div class="nc-compact"><div class="nc-thumb" style="background-image:url('https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=300&q=80')"></div><div class="nc-body"><div class="nc-eye">INDUSTRY</div><div class="nc-title">Ministry of Tourism Announces New Incredible India 2.0 Campaign</div><div class="nc-meta">Travel World · 5h ago</div></div></div>
+        </div>
+        <div class="rmp"><div class="rmp-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="2"><path d="M4.93 19.07A10 10 0 0 1 4.93 4.93"/><path d="M7.76 16.24a6 6 0 0 1 0-8.48"/><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.48"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></div><div class="rmp-text"><div class="rmp-live"><span class="ld"></span>LIVE</div><div class="rmp-name">Travel Maska Radio</div></div><div class="rmp-play"><svg width="12" height="12" viewBox="0 0 24 24" fill="#1A1A1A"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></div></div>
+        <div class="bnav">
+          <div class="bn a"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Market</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Assoc.</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Services</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Account</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ============================================ 2 · MARKETPLACE ============================================ -->
+<div class="solo">
+  <div class="ph"><h2>02 · Marketplace</h2><span>· Light · Holiday deals with filter pills + Post a Deal FAB</span></div>
+  <div class="fb">
+    <div class="fl lt"><span class="d"></span>LIGHT</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+
+      <div class="mkt">
+        <div class="appbar-sub">
+          <div class="ab-title">Marketplace</div>
+          <div class="ab-action"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        </div>
+        <div class="mkt-c">
+          <div class="pills">
+            <div class="pill a">Package</div><div class="pill">Hotel</div><div class="pill">Trains</div><div class="pill">Cruise</div><div class="pill">Cabs</div><div class="pill">Flights</div>
+          </div>
+          <div class="sbar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search deals, destinations..."></div>
+
+          <div class="mkt-card">
+            <div class="mkt-card-img" style="background-image:url('https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80')">
+              <div class="mkt-card-dest">BALI</div>
+              <div class="mkt-card-rating"><svg viewBox="0 0 24 24" fill="#C9A84C" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#C9A84C" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#C9A84C" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#C9A84C" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="mkt-card-nights">6 NIGHTS, 7 DAYS</div>
+              <div class="mkt-card-price">INR 82,000/-</div>
+            </div>
+            <div class="mkt-card-body"><div class="mkt-card-seller">Tropical Escapes Pvt Ltd</div><div class="mkt-card-action">View Deal →</div></div>
+          </div>
+
+          <div class="mkt-card">
+            <div class="mkt-card-img" style="background-image:url('https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=800&q=80')">
+              <div class="mkt-card-dest">MALAYSIA</div>
+              <div class="mkt-card-rating"><svg viewBox="0 0 24 24" fill="#C9A84C" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#C9A84C" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg viewBox="0 0 24 24" fill="#C9A84C" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="mkt-card-nights">5 NIGHTS, 6 DAYS</div>
+              <div class="mkt-card-price">INR 21,500/-</div>
+            </div>
+            <div class="mkt-card-body"><div class="mkt-card-seller">Holiday Planet Tours</div><div class="mkt-card-action">View Deal →</div></div>
+          </div>
+        </div>
+
+        <div class="fab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Post Deal</div>
+
+        <div class="bnav">
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</div>
+          <div class="bn a"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Market</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Assoc.</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Services</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Account</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ============================================ 3 · ASSOCIATIONS + SERVICES + ACCOUNT (3-up row) ============================================ -->
+<div class="row3">
+  <div class="ph"><h2>03–05 · Associations · Services · Account</h2><span>· All light only · The other three tabs</span></div>
+
+  <!-- ASSOCIATIONS -->
+  <div class="fb">
+    <div class="fl lt"><span class="d"></span>ASSOCIATIONS</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+      <div class="assoc">
+        <div class="appbar-sub"><div class="ab-title">Associations</div><div class="ab-action"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div></div>
+        <div class="assoc-c">
+          <div class="pills"><div class="pill a">National</div><div class="pill">Regional</div><div class="pill">International</div><div class="pill">DMC</div></div>
+
+          <div class="assoc-row"><div class="assoc-logo" style="font-size:10px;color:#C0392B">TAAI</div><div class="assoc-info"><div class="assoc-name">TAAI</div><div class="assoc-full">Travel Agents Association of India</div></div><div class="assoc-btn signed">Sign Out</div></div>
+          <div class="assoc-row"><div class="assoc-logo" style="font-size:9px;color:#1A3850">TAFI</div><div class="assoc-info"><div class="assoc-name">TAFI</div><div class="assoc-full">Travel Agents Federation of India</div></div><div class="assoc-btn">Sign In</div></div>
+          <div class="assoc-row"><div class="assoc-logo" style="font-size:9px">ABTO</div><div class="assoc-info"><div class="assoc-name">ABTO</div><div class="assoc-full">Assoc. of Buddhist Tour Operators</div></div><div class="assoc-btn">Sign In</div></div>
+          <div class="assoc-row"><div class="assoc-logo" style="font-size:8px">GAEHP</div><div class="assoc-info"><div class="assoc-name">GAEHP</div><div class="assoc-full">Global Assoc. of Entrepreneurs</div></div><div class="assoc-btn">Sign In</div></div>
+          <div class="assoc-row"><div class="assoc-logo" style="font-size:8px">SKÅL</div><div class="assoc-info"><div class="assoc-name">SKÅL India</div><div class="assoc-full">International Tourism Organisation</div></div><div class="assoc-btn">Sign In</div></div>
+          <div class="assoc-row"><div class="assoc-logo" style="font-size:10px">IITP</div><div class="assoc-info"><div class="assoc-name">IITP</div><div class="assoc-full">Indian Inst. of Tourism & Travel</div></div><div class="assoc-btn">Sign In</div></div>
+          <div class="assoc-row"><div class="assoc-logo" style="font-size:9px">WITT</div><div class="assoc-info"><div class="assoc-name">WITT</div><div class="assoc-full">Women in Travel & Tourism</div></div><div class="assoc-btn">Sign In</div></div>
+          <div class="assoc-row"><div class="assoc-logo" style="font-size:10px">ITTA</div><div class="assoc-info"><div class="assoc-name">ITTA</div><div class="assoc-full">Indian Travel & Tourism Assoc.</div></div><div class="assoc-btn">Sign In</div></div>
+          <div class="assoc-row"><div class="assoc-logo" style="font-size:8px">UTEN</div><div class="assoc-info"><div class="assoc-name">UTEN</div><div class="assoc-full">United Travel Entrepreneurs Network</div></div><div class="assoc-btn">Sign In</div></div>
+        </div>
+        <div class="bnav">
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Market</div>
+          <div class="bn a"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Assoc.</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Services</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Account</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- SERVICES -->
+  <div class="fb">
+    <div class="fl lt"><span class="d"></span>SERVICES</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+      <div class="serv">
+        <div class="appbar-sub"><div class="ab-title">Services</div></div>
+        <div class="serv-c">
+          <div class="serv-card">
+            <div class="serv-icon ins"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div class="serv-text"><div class="serv-title">Insurance</div><div class="serv-desc">Book travel insurance for clients. 4-step wizard with instant policy generation.</div><div class="serv-link">Start Booking →</div></div>
+          </div>
+          <div class="serv-card">
+            <div class="serv-icon visa"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M7 18s3-2 5-2 5 2 5 2"/></svg></div>
+            <div class="serv-text"><div class="serv-title">Visa</div><div class="serv-desc">Submit visa applications on behalf of clients. Country selection, document upload, status tracking.</div><div class="serv-link">Apply Now →</div></div>
+          </div>
+          <div class="serv-card" style="opacity:.7">
+            <div class="serv-icon forex"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <div class="serv-text"><div class="serv-title">Forex</div><div class="serv-desc">Currency exchange and rates for international travel bookings.</div><div class="serv-badge">Coming Soon</div></div>
+          </div>
+        </div>
+        <div class="bnav">
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Market</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Assoc.</div>
+          <div class="bn a"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Services</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Account</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ACCOUNT -->
+  <div class="fb">
+    <div class="fl lt"><span class="d"></span>ACCOUNT</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+      <div class="acct">
+        <div class="appbar-sub"><div class="ab-title">Account</div><div class="ab-action"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div></div>
+        <div class="acct-c">
+          <div class="prof-card">
+            <div class="prof-av" style="background-image:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80')"></div>
+            <div class="prof-text"><div class="prof-name">Rakesh Sharma</div><div class="prof-email">rakesh@sharmatravels.com</div><div class="prof-email">+91 98765 43210</div></div>
+            <div class="prof-edit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+          </div>
+          <div class="mem-card"><div class="mem-row"><div class="mem-info"><div class="mem-label">Active Membership</div><div class="mem-org">TAAI Member</div><div class="mem-id">ID: TAAI12345</div></div><span class="mem-status"><span class="d"></span>Active</span></div></div>
+
+          <div class="menu-sec"><div class="menu-sec-label">Preferences</div><div class="menu-list">
+            <div class="menu-r"><div class="menu-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div><div class="menu-r-label">Dark Mode</div><div class="toggle-track"></div></div>
+            <div class="menu-r"><div class="menu-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="menu-r-label">Notifications</div><div class="toggle-track on"></div></div>
+            <div class="menu-r"><div class="menu-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div><div class="menu-r-label">Language<div class="menu-r-sub">English</div></div><svg class="menu-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+          </div></div>
+
+          <div class="menu-sec"><div class="menu-sec-label">Support</div><div class="menu-list">
+            <div class="menu-r"><div class="menu-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div class="menu-r-label">Help & Support</div><svg class="menu-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+            <div class="menu-r"><div class="menu-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div><div class="menu-r-label">About<div class="menu-r-sub">v2026.2.24</div></div><svg class="menu-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+            <div class="menu-r"><div class="menu-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><div class="menu-r-label">Privacy Policy</div><svg class="menu-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+            <div class="menu-r"><div class="menu-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div><div class="menu-r-label">Share App</div><svg class="menu-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+            <div class="menu-r danger"><div class="menu-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div><div class="menu-r-label">Logout</div></div>
+          </div></div>
+        </div>
+        <div class="bnav">
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Market</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Assoc.</div>
+          <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Services</div>
+          <div class="bn a"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Account</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+</body>
+</html>

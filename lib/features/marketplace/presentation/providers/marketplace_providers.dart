@@ -43,8 +43,8 @@ final villaCitiesProvider = FutureProvider<List<VillaCityModel>>((ref) {
 
 typedef VillaSearchParams = ({
   String city,
-  String checkin,
-  String checkout,
+  String checkin,  // '' means no date selected
+  String checkout, // '' means no date selected
   int adults,
   int children,
 });
@@ -54,8 +54,8 @@ final villaRatesProvider =
         (ref, params) {
   return ref.watch(marketplaceDatasourceProvider).searchVillaRates(
         city: params.city,
-        checkin: params.checkin,
-        checkout: params.checkout,
+        checkin: params.checkin.isEmpty ? null : params.checkin,
+        checkout: params.checkout.isEmpty ? null : params.checkout,
         adults: params.adults,
         children: params.children,
       );

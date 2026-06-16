@@ -98,21 +98,22 @@ class MarketplaceRemoteDatasource {
 
   Future<List<VillaRateModel>> searchVillaRates({
     required String city,
-    required String checkin,
-    required String checkout,
+    String? checkin,
+    String? checkout,
     required int adults,
     required int children,
   }) async {
-    final response = await _dio.get(
-      '/api/elivaas/rates',
-      queryParameters: {
-        'city': city,
-        'checkinDate': checkin,
-        'checkoutDate': checkout,
-        'adults': adults,
-        'children': children,
-      },
-    );
+    final params = <String, dynamic>{
+      'city': city,
+      'adults': adults,
+      'children': children,
+      'page': 0,
+      'pageSize': 10,
+    };
+    if (checkin != null && checkin.isNotEmpty) params['checkinDate'] = checkin;
+    if (checkout != null && checkout.isNotEmpty) params['checkoutDate'] = checkout;
+
+    final response = await _dio.get('/api/elivaas/rates', queryParameters: params);
     final data = response.data;
     final List<dynamic> list;
     if (data is List) {
@@ -128,8 +129,8 @@ class MarketplaceRemoteDatasource {
         .cast<Map<String, dynamic>>()
         .map((j) => VillaRateModel.fromJson(
               j,
-              checkin: checkin,
-              checkout: checkout,
+              checkin: checkin ?? '',
+              checkout: checkout ?? '',
               adults: adults,
               children: children,
             ))

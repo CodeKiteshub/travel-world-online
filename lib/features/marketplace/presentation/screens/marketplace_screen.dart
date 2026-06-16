@@ -717,141 +717,141 @@ class _DealCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => context.push(RouteNames.dealDetail, extra: deal),
       child: Container(
-      decoration: BoxDecoration(
-        color: colors.surfaceCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.lineSoft),
-      ),
-      clipBehavior: Clip.hardEdge,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AspectRatio(
-            aspectRatio: 16 / 9,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                deal.firstImage.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: deal.firstImage,
-                        fit: BoxFit.cover,
-                        placeholder: (_, __) =>
-                            Container(color: colors.surfaceTertiary),
-                        errorWidget: (_, __, ___) => const _NavyFallback(),
-                      )
-                    : const _NavyFallback(),
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Color(0x22000000), Color(0xBB000000)],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  child: Text(
-                    (deal.destination ?? deal.dealName).toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                      letterSpacing: 0.6,
-                      shadows: [
-                        Shadow(color: Color(0x80000000), blurRadius: 8)
-                      ],
-                    ),
-                  ),
-                ),
-                if (_stars > 0)
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: List.generate(
-                        5,
-                        (i) => Icon(
-                          i < _stars
-                              ? Icons.star_rounded
-                              : Icons.star_outline_rounded,
-                          size: 14,
-                          color: AppColors.goldPrimary,
-                        ),
+        decoration: BoxDecoration(
+          color: colors.surfaceCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.lineSoft),
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  deal.firstImage.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: deal.firstImage,
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) =>
+                              Container(color: colors.surfaceTertiary),
+                          errorWidget: (_, __, ___) => const _NavyFallback(),
+                        )
+                      : const _NavyFallback(),
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0x22000000), Color(0xBB000000)],
                       ),
                     ),
                   ),
-                if (deal.duration != null)
                   Positioned(
-                    bottom: 12,
+                    top: 12,
                     left: 12,
                     child: Text(
-                      deal.duration!.toUpperCase(),
+                      (deal.destination ?? deal.dealName).toUpperCase(),
                       style: const TextStyle(
                         color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        letterSpacing: 0.6,
                         shadows: [
-                          Shadow(color: Color(0x80000000), blurRadius: 4)
+                          Shadow(color: Color(0x80000000), blurRadius: 8)
                         ],
                       ),
                     ),
                   ),
-                if (deal.priceForSame != null && deal.priceForSame!.isNotEmpty)
-                  Positioned(
-                    bottom: 12,
-                    right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '₹${deal.priceForSame}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
+                  if (_stars > 0)
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(
+                          5,
+                          (i) => Icon(
+                            i < _stars
+                                ? Icons.star_rounded
+                                : Icons.star_outline_rounded,
+                            size: 14,
+                            color: AppColors.goldPrimary,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    deal.dealName,
-                    style: AppTypography.caption.copyWith(
-                      color: colors.ink600,
-                      fontSize: 12,
+                  if (deal.duration != null)
+                    Positioned(
+                      bottom: 12,
+                      left: 12,
+                      child: Text(
+                        deal.duration!.toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 11,
+                          shadows: [
+                            Shadow(color: Color(0x80000000), blurRadius: 4)
+                          ],
+                        ),
+                      ),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(
-                  'View Deal →',
-                  style: AppTypography.label.copyWith(
-                    color: colors.goldPrimary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
+                  if (deal.priceForSame != null && deal.priceForSame!.isNotEmpty)
+                    Positioned(
+                      bottom: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '₹${deal.priceForSame}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      deal.dealName,
+                      style: AppTypography.caption.copyWith(
+                        color: colors.ink600,
+                        fontSize: 12,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Text(
+                    'View Deal →',
+                    style: AppTypography.label.copyWith(
+                      color: colors.goldPrimary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
     );
   }
 }
@@ -865,151 +865,154 @@ class _LuxuryHotelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.surfaceCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.lineSoft),
-      ),
-      clipBehavior: Clip.hardEdge,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AspectRatio(
-            aspectRatio: 16 / 9,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                hotel.firstImage.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: hotel.firstImage,
-                        fit: BoxFit.cover,
-                        placeholder: (_, __) =>
-                            Container(color: colors.surfaceTertiary),
-                        errorWidget: (_, __, ___) => const _NavyFallback(),
-                      )
-                    : const _NavyFallback(),
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Color(0xBB000000)],
+    return GestureDetector(
+      onTap: () => context.push(RouteNames.hotelDetail, extra: hotel),
+      child: Container(
+        decoration: BoxDecoration(
+          color: colors.surfaceCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.lineSoft),
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  hotel.firstImage.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: hotel.firstImage,
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) =>
+                              Container(color: colors.surfaceTertiary),
+                          errorWidget: (_, __, ___) => const _NavyFallback(),
+                        )
+                      : const _NavyFallback(),
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.transparent, Color(0xBB000000)],
+                      ),
                     ),
                   ),
-                ),
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.navyDeep,
-                      borderRadius: BorderRadius.circular(999),
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.navyDeep,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.star_rounded,
+                              size: 10, color: AppColors.goldPrimary),
+                          const SizedBox(width: 4),
+                          Text(
+                            'LUXURY',
+                            style: AppTypography.overline.copyWith(
+                              color: AppColors.goldPrimary,
+                              fontSize: 9,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.star_rounded,
-                            size: 10, color: AppColors.goldPrimary),
-                        const SizedBox(width: 4),
-                        Text(
-                          'LUXURY',
-                          style: AppTypography.overline.copyWith(
-                            color: AppColors.goldPrimary,
-                            fontSize: 9,
-                            letterSpacing: 1,
+                  ),
+                  Positioned(
+                    bottom: 12,
+                    left: 12,
+                    right: 12,
+                    child: Text(
+                      hotel.name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        shadows: [
+                          Shadow(color: Color(0x80000000), blurRadius: 8)
+                        ],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.location_on_outlined,
+                          size: 13, color: colors.ink400),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          hotel.location,
+                          style: AppTypography.caption.copyWith(
+                            color: colors.ink600,
+                            fontSize: 12,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ),
-                Positioned(
-                  bottom: 12,
-                  left: 12,
-                  right: 12,
-                  child: Text(
-                    hotel.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                      shadows: [
-                        Shadow(color: Color(0x80000000), blurRadius: 8)
-                      ],
+                  if (hotel.title.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      hotel.title,
+                      style: AppTypography.caption.copyWith(
+                        color: colors.ink600,
+                        fontSize: 11,
+                        height: 1.4,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.location_on_outlined,
-                        size: 13, color: colors.ink400),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        hotel.location,
-                        style: AppTypography.caption.copyWith(
-                          color: colors.ink600,
+                  ],
+                  if (hotel.amenities.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: hotel.amenities
+                          .take(4)
+                          .map((a) => _AmenityChip(label: a, colors: colors))
+                          .toList(),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        'View Hotel →',
+                        style: AppTypography.label.copyWith(
+                          color: colors.goldPrimary,
                           fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                if (hotel.title.isNotEmpty) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    hotel.title,
-                    style: AppTypography.caption.copyWith(
-                      color: colors.ink600,
-                      fontSize: 11,
-                      height: 1.4,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    ],
                   ),
                 ],
-                if (hotel.amenities.isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: hotel.amenities
-                        .take(4)
-                        .map((a) => _AmenityChip(label: a, colors: colors))
-                        .toList(),
-                  ),
-                ],
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      'View Hotel →',
-                      style: AppTypography.label.copyWith(
-                        color: colors.goldPrimary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
