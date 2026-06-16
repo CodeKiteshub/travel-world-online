@@ -15,6 +15,11 @@ import '../../features/services/presentation/screens/services_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/discover/presentation/screens/deal_detail_screen.dart';
 import '../../features/discover/presentation/screens/deal_enquiry_screen.dart';
+import '../../features/news/presentation/screens/news_screen.dart';
+import '../../features/video/presentation/screens/video_screen.dart';
+import '../../features/campus/presentation/screens/campus_screen.dart';
+import '../../features/ppp/presentation/screens/ppp_screen.dart';
+import '../../features/jobs/presentation/screens/jobs_screen.dart';
 import '../../features/discover/data/models/deal_model.dart';
 import '../../features/marketplace/presentation/screens/villa_search_screen.dart';
 import '../../features/marketplace/presentation/screens/villa_detail_screen.dart';
@@ -176,6 +181,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.arosaResults,
         pageBuilder: (_, __) => _slideLeftPage(const ArosaResultsScreen()),
+      ),
+
+      // — Secondary module screens (available from home IconRow)
+      GoRoute(
+        path: RouteNames.news,
+        pageBuilder: (_, __) => _fadeScalePage(const NewsScreen()),
+      ),
+      GoRoute(
+        path: RouteNames.video,
+        pageBuilder: (_, __) => _fadeScalePage(const VideoScreen()),
+      ),
+      GoRoute(
+        path: RouteNames.campus,
+        pageBuilder: (_, __) => _fadeScalePage(const CampusScreen()),
+      ),
+      GoRoute(
+        path: RouteNames.ppp,
+        pageBuilder: (_, __) => _fadeScalePage(const PPPScreen()),
+      ),
+      GoRoute(
+        path: RouteNames.jobs,
+        pageBuilder: (_, __) => _fadeScalePage(const JobsScreen()),
       ),
 
       // — Main shell (5-tab bottom nav)

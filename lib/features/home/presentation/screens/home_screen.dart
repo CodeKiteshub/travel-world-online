@@ -649,30 +649,52 @@ class _IconTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            color: colors.surfaceCard,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: colors.lineSoft),
+    // Tappable tile that navigates to the corresponding secondary module screen.
+    return GestureDetector(
+      onTap: () {
+        switch (label) {
+          case 'News':
+            context.go(RouteNames.news);
+            break;
+          case 'Video':
+            context.go(RouteNames.video);
+            break;
+          case 'Campus':
+            context.go(RouteNames.campus);
+            break;
+          case 'PPP':
+            context.go(RouteNames.ppp);
+            break;
+          case 'Jobs':
+            context.go(RouteNames.jobs);
+            break;
+        }
+      },
+      child: Column(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: colors.surfaceCard,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: colors.lineSoft),
+            ),
+            child: Center(child: Icon(icon, size: 22, color: colors.ink900)),
           ),
-          child: Center(child: Icon(icon, size: 22, color: colors.ink900)),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: AppTypography.overline.copyWith(
-            color: colors.ink900,
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0,
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: AppTypography.overline.copyWith(
+              color: colors.ink900,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -9,6 +9,11 @@ abstract final class RouteNames {
   static const associations = '/associations';
   static const services = '/services';
   static const account = '/account';
+  static const news = '/news';
+  static const video = '/video';
+  static const campus = '/campus';
+  static const ppp = '/ppp';
+  static const jobs = '/jobs';
   static const dealDetail = '/deal-detail';
   static const dealEnquiry = '/deal-enquiry';
   static const hotelDetail = '/marketplace/hotel-detail';
