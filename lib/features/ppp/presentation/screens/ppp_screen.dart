@@ -1,32 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../data/models/ppp_model.dart';
+import '../providers/ppp_providers.dart';
 
-class PPPScreen extends StatelessWidget {
+class PPPScreen extends ConsumerStatefulWidget {
   const PPPScreen({super.key});
 
-  // Hard‑coded demo data extracted from the HTML design.
-  static const _segments = ['International', 'Domestic'];
-  static const _cards = [
-    {
-      'image': 'https://images.unsplash.com/photo-1555862124-94036092ab14?w=800&q=80',
-      'tag': 'International',
-      'name': 'Saint Petersburg',
-      'info': 'Imperial Russian capital. World-class museums, palaces, canals and white nights. Major destination for cultural tourism.',
-      'pills': ['Tourism Policy', 'Investment', 'Resources'],
-    },
-    {
-      'image': 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=80',
-      'tag': 'Domestic',
-      'name': 'Chhattisgarh Tourism',
-      'info': 'Undiscovered India. Adventure parks, tribal heritage, wildlife sanctuaries and eco‑tourism circuits.',
-      'pills': ['Tourism Policy', 'Hotels', 'Adventure', 'Film Tourism'],
-    },
-  ];
+  @override
+  ConsumerState<PPPScreen> createState() => _PPPScreenState();
+}
+
+class _PPPScreenState extends ConsumerState<PPPScreen> {
+  bool _showInternational = true;
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColorScheme>()!;
+    final pppAsync = ref.watch(pppAllProvider);
+
     return Scaffold(
       backgroundColor: colors.surfacePrimary,
       appBar: AppBar(
@@ -35,142 +37,336 @@ class PPPScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           color: colors.ink900,
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.pop(),
         ),
-        title: Text('Tourism Boards', style: AppTypography.titleMedium.copyWith(color: colors.ink900)),
+        title: Text(
+          'Tourism Boards',
+          style: AppTypography.titleMedium.copyWith(color: colors.ink900),
+        ),
       ),
-      body: ListView(
-        children: [
-          // Segmented control placeholder (static for now)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: Row(
-              children: _segments.map((seg) {
-                final bool selected = seg == _segments[0];
-                return Expanded(
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      color: selected ? colors.surfacePrimary : colors.surfaceTertiary,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: selected ? [BoxShadow(color: Colors.black12, blurRadius: 4)] : null,
-                    ),
-                    child: Center(
-                      child: Text(
-                        seg,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                          color: selected ? colors.ink900 : colors.ink600,
+      body: pppAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Failed to load tourism boards',
+                  style: TextStyle(color: colors.ink600)),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => ref.invalidate(pppAllProvider),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+        data: (all) {
+          final filtered = all.where((item) {
+            final matchesType = _showInternational
+                ? item.type == 'International'
+                : item.type == 'National';
+            final matchesQuery = _query.isEmpty ||
+                item.name.toLowerCase().contains(_query.toLowerCase());
+            return matchesType && matchesQuery;
+          }).toList();
+
+          return Column(
+            children: [
+              // Segmented control
+              _SegmentedControl(
+                showInternational: _showInternational,
+                onToggle: (val) => setState(() => _showInternational = val),
+                colors: colors,
+              ),
+              // Search bar
+              _SearchBar(
+                controller: _searchController,
+                onChanged: (v) => setState(() => _query = v),
+                colors: colors,
+              ),
+              const SizedBox(height: 4),
+              // Results
+              Expanded(
+                child: filtered.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No tourism boards found',
+                          style: TextStyle(color: colors.ink400),
                         ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 80),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, i) =>
+                            _PPPCard(item: filtered[i], colors: colors),
                       ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          // Search bar placeholder
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: colors.surfaceSecondary,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: colors.ink400),
               ),
-              child: Row(
-                children: const [
-                  Icon(Icons.search, size: 20, color: Color(0xFF9E9E9E)),
-                  SizedBox(width: 8),
-                  Expanded(child: Text('Search tourism boards...', style: TextStyle(fontSize: 12, color: Color(0xFF9E9E9E)))),
-                ],
-              ),
-            ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ── Segmented control ──────────────────────────────────────────────────────
+class _SegmentedControl extends StatelessWidget {
+  final bool showInternational;
+  final ValueChanged<bool> onToggle;
+  final AppColorScheme colors;
+
+  const _SegmentedControl({
+    required this.showInternational,
+    required this.onToggle,
+    required this.colors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: colors.surfaceTertiary,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          _SegBtn(
+            label: 'International',
+            active: showInternational,
+            onTap: () => onToggle(true),
+            colors: colors,
           ),
-          const SizedBox(height: 12),
-          // Cards
-          ..._cards.map((c) => _PPPCard(card: c, colors: colors)).toList(),
-          const SizedBox(height: 80),
+          _SegBtn(
+            label: 'Domestic',
+            active: !showInternational,
+            onTap: () => onToggle(false),
+            colors: colors,
+          ),
         ],
       ),
     );
   }
 }
 
-class _PPPCard extends StatelessWidget {
-  final Map<String, dynamic> card;
+class _SegBtn extends StatelessWidget {
+  final String label;
+  final bool active;
+  final VoidCallback onTap;
   final AppColorScheme colors;
-  const _PPPCard({required this.card, required this.colors});
+
+  const _SegBtn({
+    required this.label,
+    required this.active,
+    required this.onTap,
+    required this.colors,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final List<String> pills = List<String>.from(card['pills'] as List);
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(
-        color: colors.surfacePrimary,
-        border: Border.all(color: colors.ink400),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image with tag
-          Stack(
-            children: [
-              Container(
-                height: 200,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
-                  image: DecorationImage(
-                    image: NetworkImage(card['image'] as String),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.black45,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(card['tag'] as String, style: const TextStyle(fontSize: 10, color: Colors.white)),
-                ),
-              ),
-            ],
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: active ? colors.surfacePrimary : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: active
+                ? [
+                    BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 4)
+                  ]
+                : null,
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(card['name'] as String, style: const TextStyle(fontFamily: 'Playfair Display', fontWeight: FontWeight.w700, fontSize: 18, color: Color(0xFF1A1A1A))),
-                const SizedBox(height: 6),
-                Text(card['info'] as String, style: const TextStyle(fontSize: 12, color: Color(0xFF6E6E6E))),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 6,
-                  children: pills.map((p) => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: colors.themeBackground,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(p, style: const TextStyle(fontSize: 10, color: Color(0xFF1A3850))),
-                  )).toList(),
-                ),
-                const SizedBox(height: 12),
-                Text('Explore Board →', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFC9A84C))),
-              ],
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight:
+                    active ? FontWeight.w600 : FontWeight.w500,
+                color: active ? colors.ink900 : colors.ink600,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Search bar ─────────────────────────────────────────────────────────────
+class _SearchBar extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  final AppColorScheme colors;
+
+  const _SearchBar({
+    required this.controller,
+    required this.onChanged,
+    required this.colors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: colors.surfaceSecondary,
+        border: Border.all(color: colors.lineSoft),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.search, size: 18, color: colors.ink400),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              onChanged: onChanged,
+              style: TextStyle(fontSize: 13, color: colors.ink900),
+              decoration: InputDecoration.collapsed(
+                hintText: 'Search tourism boards…',
+                hintStyle:
+                    TextStyle(fontSize: 13, color: colors.ink400),
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Tourism board card ─────────────────────────────────────────────────────
+class _PPPCard extends StatelessWidget {
+  final PppItem item;
+  final AppColorScheme colors;
+
+  const _PPPCard({required this.item, required this.colors});
+
+  List<String> get _pills {
+    final tags = <String>[];
+    if (item.tourismpolicy.isNotEmpty) tags.add('Tourism Policy');
+    if (item.investmentOpportunity.isNotEmpty) tags.add('Investment');
+    if (tags.length < 3) tags.add('Resources');
+    return tags.take(4).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        color: colors.surfaceSecondary,
+        border: Border.all(color: colors.lineSoft),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image with tag
+            Stack(
+              children: [
+                AspectRatio(
+                  aspectRatio: 2.0,
+                  child: item.firstImage.isNotEmpty
+                      ? Image.network(
+                          item.firstImage,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            color: colors.surfaceTertiary,
+                          ),
+                        )
+                      : Container(color: colors.surfaceTertiary),
+                ),
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black45,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      item.isDomestic ? 'Domestic' : 'International',
+                      style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          letterSpacing: 0.04),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.name,
+                    style: const TextStyle(
+                        fontFamily: 'Playfair Display',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
+                        color: Color(0xFF1A1A1A)),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    item.isDomestic
+                        ? 'Domestic tourism board. Discover local attractions and tourism initiatives.'
+                        : 'International tourism board. World-class destinations and cultural experiences.',
+                    style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF6E6E6E),
+                        height: 1.5),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: _pills
+                        .map((p) => Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: colors.themeBackground,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                p,
+                                style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF2A4A6B)),
+                              ),
+                            ))
+                        .toList(),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Explore Board →',
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFC9A84C)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
