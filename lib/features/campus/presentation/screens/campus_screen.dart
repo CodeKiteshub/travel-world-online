@@ -1,8 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../data/models/campus_models.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../providers/campus_providers.dart';
 
@@ -211,14 +213,14 @@ class CampusScreen extends ConsumerWidget {
 
 // ── Featured advisory member preview ──────────────────────────────────────
 class _FeaturedMember extends StatelessWidget {
-  final dynamic member;
+  final AdvisoryBoardMember member;
   final AppColorScheme colors;
 
   const _FeaturedMember({required this.member, required this.colors});
 
   @override
   Widget build(BuildContext context) {
-    final imgUrl = member.firstImage as String;
+    final imgUrl = member.firstImage;
     return Container(
       padding: const EdgeInsets.all(10),
       margin: const EdgeInsets.only(top: 8),
@@ -231,25 +233,32 @@ class _FeaturedMember extends StatelessWidget {
           CircleAvatar(
             radius: 18,
             backgroundColor: colors.surfaceTertiary,
-            backgroundImage:
-                imgUrl.isNotEmpty ? NetworkImage(imgUrl) : null,
-            child: imgUrl.isEmpty
-                ? Icon(Icons.person, color: colors.ink400, size: 18)
-                : null,
+            child: imgUrl.isNotEmpty
+                ? ClipOval(
+                    child: CachedNetworkImage(
+                      imageUrl: imgUrl,
+                      width: 36,
+                      height: 36,
+                      fit: BoxFit.cover,
+                      errorWidget: (_, __, ___) =>
+                          Icon(Icons.person, color: colors.ink400, size: 18),
+                    ),
+                  )
+                : Icon(Icons.person, color: colors.ink400, size: 18),
           ),
           const SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                member.name as String,
+                member.name,
                 style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 12,
                     color: colors.ink900),
               ),
               Text(
-                member.post as String,
+                member.post,
                 style:
                     TextStyle(fontSize: 10, color: colors.ink600),
               ),

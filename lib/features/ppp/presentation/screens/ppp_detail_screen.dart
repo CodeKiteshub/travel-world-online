@@ -712,9 +712,9 @@ class _PdfCard extends StatelessWidget {
   Widget _pdfPlaceholder() => Container(
         width: 56,
         height: 72,
-        color: AppColors.surfaceTertiary,
+        color: colors.surfaceTertiary,
         child: Icon(Icons.picture_as_pdf_outlined,
-            color: AppColors.ink400, size: 28),
+            color: colors.ink400, size: 28),
       );
 }
 
@@ -755,7 +755,8 @@ class _ShimmerGrid extends StatelessWidget {
       child: GridView.builder(
         padding: const EdgeInsets.all(16),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12),
+            crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12,
+            childAspectRatio: 16 / 10),
         itemCount: 6,
         itemBuilder: (_, __) => ClipRRect(
           borderRadius: BorderRadius.circular(12),
