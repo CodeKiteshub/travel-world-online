@@ -185,6 +185,10 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
       success: Color.lerp(success, other.success, t)!,
       warning: Color.lerp(warning, other.warning, t)!,
       error: Color.lerp(error, other.error, t)!,
+      surfaceSecondary: Color.lerp(surfaceSecondary, other.surfaceSecondary, t)!,
+      infoBg: Color.lerp(infoBg, other.infoBg, t)!,
+      warningBg: Color.lerp(warningBg, other.warningBg, t)!,
+      themeBackground: Color.lerp(themeBackground, other.themeBackground, t)!,
     );
   }
 }

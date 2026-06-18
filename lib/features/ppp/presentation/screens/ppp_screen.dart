@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../data/models/ppp_model.dart';
@@ -45,7 +46,7 @@ class _PPPScreenState extends ConsumerState<PPPScreen> {
         ),
       ),
       body: pppAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const _PPPShimmer(),
         error: (e, _) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -170,6 +171,7 @@ class _SegBtn extends StatelessWidget {
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
+          constraints: const BoxConstraints(minHeight: 48),
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             color: active ? colors.surfacePrimary : Colors.transparent,
@@ -316,20 +318,20 @@ class _PPPCard extends StatelessWidget {
                 children: [
                   Text(
                     item.name,
-                    style: const TextStyle(
-                        fontFamily: 'Playfair Display',
+                    style: TextStyle(
+                        fontFamily: 'PlayfairDisplay',
                         fontWeight: FontWeight.w700,
                         fontSize: 18,
-                        color: Color(0xFF1A1A1A)),
+                        color: colors.ink900),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     item.isDomestic
                         ? 'Domestic tourism board. Discover local attractions and tourism initiatives.'
                         : 'International tourism board. World-class destinations and cultural experiences.',
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF6E6E6E),
+                        color: colors.ink600,
                         height: 1.5),
                   ),
                   const SizedBox(height: 10),
@@ -346,27 +348,112 @@ class _PPPCard extends StatelessWidget {
                               ),
                               child: Text(
                                 p,
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w500,
-                                    color: Color(0xFF2A4A6B)),
+                                    color: colors.navyDeep),
                               ),
                             ))
                         .toList(),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
+                  Text(
                     'Explore Board →',
                     style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFFC9A84C)),
+                        color: colors.goldPrimary),
                   ),
                 ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Shimmer loading skeleton ───────────────────────────────────────────────
+class _PPPShimmer extends StatelessWidget {
+  const _PPPShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppColorScheme>()!;
+    return ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 4,
+      itemBuilder: (_, __) => Shimmer.fromColors(
+        baseColor: colors.surfaceTertiary,
+        highlightColor: colors.surfaceSecondary,
+        child: const _ShimmerCard(),
+      ),
+    );
+  }
+}
+
+class _ShimmerCard extends StatelessWidget {
+  const _ShimmerCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AspectRatio(
+            aspectRatio: 2.0,
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(height: 20, width: 180, color: Colors.white),
+                const SizedBox(height: 8),
+                Container(height: 12, color: Colors.white),
+                const SizedBox(height: 4),
+                Container(height: 12, width: 200, color: Colors.white),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Container(
+                      height: 24,
+                      width: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      height: 24,
+                      width: 70,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Container(height: 14, width: 100, color: Colors.white),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
