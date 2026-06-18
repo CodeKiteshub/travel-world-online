@@ -42,8 +42,8 @@ class CampusScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              gradient: const LinearGradient(
-                colors: [Color(0xFF0D1B2A), Color(0xFF1A3850)],
+              gradient: LinearGradient(
+                colors: [colors.navyDeep, const Color(0xFF1A3850)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -62,7 +62,7 @@ class CampusScreen extends ConsumerWidget {
                 Text(
                   'Upskill Your Travel Expertise',
                   style: TextStyle(
-                      fontFamily: 'Playfair Display',
+                      fontFamily: 'PlayfairDisplay',
                       fontWeight: FontWeight.w700,
                       fontSize: 22,
                       color: Colors.white),
@@ -131,7 +131,7 @@ class CampusScreen extends ConsumerWidget {
               loading: () => _CampusCard(
                 icon: Icons.public,
                 iconBg: colors.infoBg,
-                iconColor: const Color(0xFF2A4A6B),
+                iconColor: colors.navyDeep,
                 title: 'Destination Specialist',
                 desc:
                     'Master India, Canada, Nepal and more. Circuits include Buddhist Circuit, Golden Triangle, Royal Rajasthan.',
@@ -142,7 +142,7 @@ class CampusScreen extends ConsumerWidget {
               error: (_, __) => _CampusCard(
                 icon: Icons.public,
                 iconBg: colors.infoBg,
-                iconColor: const Color(0xFF2A4A6B),
+                iconColor: colors.navyDeep,
                 title: 'Destination Specialist',
                 desc:
                     'Master India, Canada, Nepal and more. Circuits include Buddhist Circuit, Golden Triangle, Royal Rajasthan.',
@@ -153,7 +153,7 @@ class CampusScreen extends ConsumerWidget {
               data: (dests) => _CampusCard(
                 icon: Icons.public,
                 iconBg: colors.infoBg,
-                iconColor: const Color(0xFF2A4A6B),
+                iconColor: colors.navyDeep,
                 title: 'Destination Specialist',
                 desc:
                     'Master India, Canada, Nepal and more. Circuits include Buddhist Circuit, Golden Triangle, Royal Rajasthan.',
@@ -171,7 +171,7 @@ class CampusScreen extends ConsumerWidget {
               loading: () => _CampusCard(
                 icon: Icons.school,
                 iconBg: colors.warningBg,
-                iconColor: const Color(0xFFB45309),
+                iconColor: colors.warning,
                 title: 'Skill Development',
                 desc:
                     'Practical courses: GST for tour operators, news capsule creation, and business fundamentals.',
@@ -182,7 +182,7 @@ class CampusScreen extends ConsumerWidget {
               error: (_, __) => _CampusCard(
                 icon: Icons.school,
                 iconBg: colors.warningBg,
-                iconColor: const Color(0xFFB45309),
+                iconColor: colors.warning,
                 title: 'Skill Development',
                 desc:
                     'Practical courses: GST for tour operators, news capsule creation, and business fundamentals.',
@@ -193,7 +193,7 @@ class CampusScreen extends ConsumerWidget {
               data: (courses) => _CampusCard(
                 icon: Icons.school,
                 iconBg: colors.warningBg,
-                iconColor: const Color(0xFFB45309),
+                iconColor: colors.warning,
                 title: 'Skill Development',
                 desc:
                     'Practical courses: GST for tour operators, news capsule creation, and business fundamentals.',
@@ -314,32 +314,32 @@ class _CampusCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                      fontFamily: 'Playfair Display',
+                  style: TextStyle(
+                      fontFamily: 'PlayfairDisplay',
                       fontWeight: FontWeight.w700,
                       fontSize: 18,
-                      color: Color(0xFF1A1A1A)),
+                      color: colors.ink900),
                 ),
                 const SizedBox(height: 4),
                 Text(desc,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 12,
                         height: 1.5,
-                        color: Color(0xFF6E6E6E))),
+                        color: colors.ink600)),
                 if (extra != null) extra!,
                 const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(count ?? '',
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 12,
-                            color: Color(0xFF9E9E9E))),
+                            color: colors.ink400)),
                     Text(link ?? '',
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFFC9A84C))),
+                            color: colors.goldPrimary)),
                   ],
                 ),
               ],
