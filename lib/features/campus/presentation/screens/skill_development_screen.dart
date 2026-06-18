@@ -194,8 +194,7 @@ class _SkillCategoryCard extends StatelessWidget {
         extra: course.label,
       ),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 0)
-            .copyWith(bottom: 12),
+        margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: colors.surfaceSecondary,
