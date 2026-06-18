@@ -19,6 +19,8 @@ import '../../features/news/presentation/screens/news_screen.dart';
 import '../../features/video/presentation/screens/video_screen.dart';
 import '../../features/campus/presentation/screens/campus_screen.dart';
 import '../../features/ppp/presentation/screens/ppp_screen.dart';
+import '../../features/ppp/presentation/screens/ppp_detail_screen.dart';
+import '../../features/ppp/data/models/ppp_model.dart';
 import '../../features/jobs/presentation/screens/jobs_screen.dart';
 import '../../features/discover/data/models/deal_model.dart';
 import '../../features/marketplace/presentation/screens/villa_search_screen.dart';
@@ -199,6 +201,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.ppp,
         pageBuilder: (_, __) => _fadeScalePage(const PPPScreen()),
+      ),
+      GoRoute(
+        path: RouteNames.pppDetail,
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id']!;
+          final item = state.extra as PppItem?;
+          return _slideLeftPage(PPPDetailScreen(id: id, item: item));
+        },
       ),
       GoRoute(
         path: RouteNames.jobs,

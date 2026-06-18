@@ -262,14 +262,16 @@ class _PPPCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(
-        color: colors.surfaceSecondary,
-        border: Border.all(color: colors.lineSoft),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: ClipRRect(
+    return GestureDetector(
+      onTap: () => context.push('/ppp/${item.id}', extra: item),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: colors.surfaceSecondary,
+          border: Border.all(color: colors.lineSoft),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: ClipRRect(
         borderRadius: BorderRadius.circular(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,6 +371,7 @@ class _PPPCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

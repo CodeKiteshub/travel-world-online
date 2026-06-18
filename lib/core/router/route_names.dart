@@ -13,6 +13,7 @@ abstract final class RouteNames {
   static const video = '/video';
   static const campus = '/campus';
   static const ppp = '/ppp';
+  static const pppDetail = '/ppp/:id';
   static const jobs = '/jobs';
   static const dealDetail = '/deal-detail';
   static const dealEnquiry = '/deal-enquiry';
