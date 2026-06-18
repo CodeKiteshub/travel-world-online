@@ -267,9 +267,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/skill-development/:catId',
-        pageBuilder: (_, state) {
+        pageBuilder: (context, state) {
           final catId = state.pathParameters['catId']!;
-          return _slideLeftPage(CourseListScreen(catId: catId));
+          final catLabel = state.extra as String?;
+          return _slideLeftPage(
+              CourseListScreen(catId: catId, catLabel: catLabel));
         },
       ),
 
