@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../providers/campus_providers.dart';
@@ -77,120 +78,129 @@ class CampusScreen extends ConsumerWidget {
           ),
 
           // Advisory Board card
-          advisoryAsync.when(
-            loading: () => _CampusCard(
-              icon: Icons.people,
-              iconBg: colors.surfaceSecondary,
-              iconColor: colors.ink900,
-              title: 'Advisory Board',
-              desc:
-                  'Industry veterans guiding the future of Indian travel and tourism.',
-              count: 'Loading…',
-              link: 'View All →',
-              colors: colors,
-            ),
-            error: (_, __) => _CampusCard(
-              icon: Icons.people,
-              iconBg: colors.surfaceSecondary,
-              iconColor: colors.ink900,
-              title: 'Advisory Board',
-              desc:
-                  'Industry veterans guiding the future of Indian travel and tourism.',
-              count: 'Experts',
-              link: 'View All →',
-              colors: colors,
-            ),
-            data: (members) {
-              final featured =
-                  members.isNotEmpty ? members.first : null;
-              return _CampusCard(
+          GestureDetector(
+            onTap: () => context.push(RouteNames.advisoryBoard),
+            child: advisoryAsync.when(
+              loading: () => _CampusCard(
                 icon: Icons.people,
                 iconBg: colors.surfaceSecondary,
                 iconColor: colors.ink900,
                 title: 'Advisory Board',
                 desc:
                     'Industry veterans guiding the future of Indian travel and tourism.',
-                count: '${members.length} Expert${members.length != 1 ? 's' : ''}',
+                count: 'Loading…',
                 link: 'View All →',
                 colors: colors,
-                extra: featured != null
-                    ? _FeaturedMember(member: featured, colors: colors)
-                    : null,
-              );
-            },
+              ),
+              error: (_, __) => _CampusCard(
+                icon: Icons.people,
+                iconBg: colors.surfaceSecondary,
+                iconColor: colors.ink900,
+                title: 'Advisory Board',
+                desc:
+                    'Industry veterans guiding the future of Indian travel and tourism.',
+                count: 'Experts',
+                link: 'View All →',
+                colors: colors,
+              ),
+              data: (members) {
+                final featured =
+                    members.isNotEmpty ? members.first : null;
+                return _CampusCard(
+                  icon: Icons.people,
+                  iconBg: colors.surfaceSecondary,
+                  iconColor: colors.ink900,
+                  title: 'Advisory Board',
+                  desc:
+                      'Industry veterans guiding the future of Indian travel and tourism.',
+                  count: '${members.length} Expert${members.length != 1 ? 's' : ''}',
+                  link: 'View All →',
+                  colors: colors,
+                  extra: featured != null
+                      ? _FeaturedMember(member: featured, colors: colors)
+                      : null,
+                );
+              },
+            ),
           ),
 
           // Destination Specialist card
-          destAsync.when(
-            loading: () => _CampusCard(
-              icon: Icons.public,
-              iconBg: colors.infoBg,
-              iconColor: const Color(0xFF2A4A6B),
-              title: 'Destination Specialist',
-              desc:
-                  'Master India, Canada, Nepal and more. Circuits include Buddhist Circuit, Golden Triangle, Royal Rajasthan.',
-              count: 'Loading…',
-              link: 'Explore →',
-              colors: colors,
-            ),
-            error: (_, __) => _CampusCard(
-              icon: Icons.public,
-              iconBg: colors.infoBg,
-              iconColor: const Color(0xFF2A4A6B),
-              title: 'Destination Specialist',
-              desc:
-                  'Master India, Canada, Nepal and more. Circuits include Buddhist Circuit, Golden Triangle, Royal Rajasthan.',
-              count: '5+ Circuits',
-              link: 'Explore →',
-              colors: colors,
-            ),
-            data: (dests) => _CampusCard(
-              icon: Icons.public,
-              iconBg: colors.infoBg,
-              iconColor: const Color(0xFF2A4A6B),
-              title: 'Destination Specialist',
-              desc:
-                  'Master India, Canada, Nepal and more. Circuits include Buddhist Circuit, Golden Triangle, Royal Rajasthan.',
-              count: '${dests.length} Destination${dests.length != 1 ? 's' : ''}',
-              link: 'Explore →',
-              colors: colors,
+          GestureDetector(
+            onTap: () => context.push(RouteNames.destinationSpecialist),
+            child: destAsync.when(
+              loading: () => _CampusCard(
+                icon: Icons.public,
+                iconBg: colors.infoBg,
+                iconColor: const Color(0xFF2A4A6B),
+                title: 'Destination Specialist',
+                desc:
+                    'Master India, Canada, Nepal and more. Circuits include Buddhist Circuit, Golden Triangle, Royal Rajasthan.',
+                count: 'Loading…',
+                link: 'Explore →',
+                colors: colors,
+              ),
+              error: (_, __) => _CampusCard(
+                icon: Icons.public,
+                iconBg: colors.infoBg,
+                iconColor: const Color(0xFF2A4A6B),
+                title: 'Destination Specialist',
+                desc:
+                    'Master India, Canada, Nepal and more. Circuits include Buddhist Circuit, Golden Triangle, Royal Rajasthan.',
+                count: '5+ Circuits',
+                link: 'Explore →',
+                colors: colors,
+              ),
+              data: (dests) => _CampusCard(
+                icon: Icons.public,
+                iconBg: colors.infoBg,
+                iconColor: const Color(0xFF2A4A6B),
+                title: 'Destination Specialist',
+                desc:
+                    'Master India, Canada, Nepal and more. Circuits include Buddhist Circuit, Golden Triangle, Royal Rajasthan.',
+                count: '${dests.length} Destination${dests.length != 1 ? 's' : ''}',
+                link: 'Explore →',
+                colors: colors,
+              ),
             ),
           ),
 
           // Skill Development card
-          coursesAsync.when(
-            loading: () => _CampusCard(
-              icon: Icons.school,
-              iconBg: colors.warningBg,
-              iconColor: const Color(0xFFB45309),
-              title: 'Skill Development',
-              desc:
-                  'Practical courses: GST for tour operators, news capsule creation, and business fundamentals.',
-              count: 'Loading…',
-              link: 'Start Learning →',
-              colors: colors,
-            ),
-            error: (_, __) => _CampusCard(
-              icon: Icons.school,
-              iconBg: colors.warningBg,
-              iconColor: const Color(0xFFB45309),
-              title: 'Skill Development',
-              desc:
-                  'Practical courses: GST for tour operators, news capsule creation, and business fundamentals.',
-              count: 'Courses Available',
-              link: 'Start Learning →',
-              colors: colors,
-            ),
-            data: (courses) => _CampusCard(
-              icon: Icons.school,
-              iconBg: colors.warningBg,
-              iconColor: const Color(0xFFB45309),
-              title: 'Skill Development',
-              desc:
-                  'Practical courses: GST for tour operators, news capsule creation, and business fundamentals.',
-              count: '${courses.length} Course${courses.length != 1 ? 's' : ''} Available',
-              link: 'Start Learning →',
-              colors: colors,
+          GestureDetector(
+            onTap: () => context.push(RouteNames.skillDevelopment),
+            child: coursesAsync.when(
+              loading: () => _CampusCard(
+                icon: Icons.school,
+                iconBg: colors.warningBg,
+                iconColor: const Color(0xFFB45309),
+                title: 'Skill Development',
+                desc:
+                    'Practical courses: GST for tour operators, news capsule creation, and business fundamentals.',
+                count: 'Loading…',
+                link: 'Start Learning →',
+                colors: colors,
+              ),
+              error: (_, __) => _CampusCard(
+                icon: Icons.school,
+                iconBg: colors.warningBg,
+                iconColor: const Color(0xFFB45309),
+                title: 'Skill Development',
+                desc:
+                    'Practical courses: GST for tour operators, news capsule creation, and business fundamentals.',
+                count: 'Courses Available',
+                link: 'Start Learning →',
+                colors: colors,
+              ),
+              data: (courses) => _CampusCard(
+                icon: Icons.school,
+                iconBg: colors.warningBg,
+                iconColor: const Color(0xFFB45309),
+                title: 'Skill Development',
+                desc:
+                    'Practical courses: GST for tour operators, news capsule creation, and business fundamentals.',
+                count: '${courses.length} Course${courses.length != 1 ? 's' : ''} Available',
+                link: 'Start Learning →',
+                colors: colors,
+              ),
             ),
           ),
         ],

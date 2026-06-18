@@ -15,6 +15,9 @@ abstract final class RouteNames {
   static const ppp = '/ppp';
   static const pppDetail = '/ppp/:id';
   static const jobs = '/jobs';
+  static const advisoryBoard = '/advisory-board';
+  static const destinationSpecialist = '/destination-specialist';
+  static const skillDevelopment = '/skill-development';
   static const dealDetail = '/deal-detail';
   static const dealEnquiry = '/deal-enquiry';
   static const hotelDetail = '/marketplace/hotel-detail';

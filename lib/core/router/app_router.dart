@@ -18,6 +18,13 @@ import '../../features/discover/presentation/screens/deal_enquiry_screen.dart';
 import '../../features/news/presentation/screens/news_screen.dart';
 import '../../features/video/presentation/screens/video_screen.dart';
 import '../../features/campus/presentation/screens/campus_screen.dart';
+import '../../features/campus/presentation/screens/advisory_board_screen.dart';
+import '../../features/campus/presentation/screens/destination_specialist_screen.dart';
+import '../../features/campus/presentation/screens/dest_sub_category_screen.dart';
+import '../../features/campus/presentation/screens/dest_sub_sub_category_screen.dart';
+import '../../features/campus/presentation/screens/dest_video_screen.dart';
+import '../../features/campus/presentation/screens/skill_development_screen.dart';
+import '../../features/campus/presentation/screens/course_list_screen.dart';
 import '../../features/ppp/presentation/screens/ppp_screen.dart';
 import '../../features/ppp/presentation/screens/ppp_detail_screen.dart';
 import '../../features/ppp/data/models/ppp_model.dart';
@@ -213,6 +220,57 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.jobs,
         pageBuilder: (_, __) => _fadeScalePage(const JobsScreen()),
+      ),
+
+      // — Campus sub-screens
+      GoRoute(
+        path: RouteNames.advisoryBoard,
+        pageBuilder: (_, __) => _slideLeftPage(const AdvisoryBoardScreen()),
+      ),
+      GoRoute(
+        path: RouteNames.destinationSpecialist,
+        pageBuilder: (_, __) =>
+            _slideLeftPage(const DestinationSpecialistScreen()),
+      ),
+      GoRoute(
+        path: '/destination-specialist/:catId',
+        pageBuilder: (_, state) {
+          final catId = state.pathParameters['catId']!;
+          final catLabel = state.extra as String? ?? catId;
+          return _slideLeftPage(
+              DestSubCategoryScreen(catId: catId, catLabel: catLabel));
+        },
+      ),
+      GoRoute(
+        path: '/destination-specialist/:catId/:subCatId',
+        pageBuilder: (_, state) {
+          final catId = state.pathParameters['catId']!;
+          final subCatId = state.pathParameters['subCatId']!;
+          return _slideLeftPage(
+              DestSubSubCategoryScreen(catId: catId, subCatId: subCatId));
+        },
+      ),
+      GoRoute(
+        path: '/destination-specialist/:catId/:subCatId/:subSubCatId',
+        pageBuilder: (_, state) {
+          final catId = state.pathParameters['catId']!;
+          final subCatId = state.pathParameters['subCatId']!;
+          final subSubCatId = state.pathParameters['subSubCatId']!;
+          return _slideLeftPage(DestVideoScreen(
+              catId: catId, subCatId: subCatId, subSubCatId: subSubCatId));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.skillDevelopment,
+        pageBuilder: (_, __) =>
+            _slideLeftPage(const SkillDevelopmentScreen()),
+      ),
+      GoRoute(
+        path: '/skill-development/:catId',
+        pageBuilder: (_, state) {
+          final catId = state.pathParameters['catId']!;
+          return _slideLeftPage(CourseListScreen(catId: catId));
+        },
       ),
 
       // — Main shell (5-tab bottom nav)
