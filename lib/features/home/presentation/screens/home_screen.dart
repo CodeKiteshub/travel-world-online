@@ -57,7 +57,7 @@ class HomeScreen extends ConsumerWidget {
                   child: _SectionRow(
                     heading: 'Top Stories',
                     colors: colors,
-                    onViewAll: () {},
+                    onViewAll: () => context.push(RouteNames.news),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -83,6 +83,9 @@ class HomeScreen extends ConsumerWidget {
                                         meta: a.sourceMeta,
                                         imageUrl: a.firstImage,
                                         colors: colors,
+                                        onTap: () => context.push(
+                                            RouteNames.newsArticleDetail,
+                                            extra: a),
                                       ),
                                     ))
                                 .toList(),
@@ -654,19 +657,19 @@ class _IconTile extends StatelessWidget {
       onTap: () {
         switch (label) {
           case 'News':
-            context.go(RouteNames.news);
+            context.push(RouteNames.news);
             break;
           case 'Video':
-            context.go(RouteNames.video);
+            context.push(RouteNames.video);
             break;
           case 'Campus':
-            context.go(RouteNames.campus);
+            context.push(RouteNames.campus);
             break;
           case 'PPP':
-            context.go(RouteNames.ppp);
+            context.push(RouteNames.ppp);
             break;
           case 'Jobs':
-            context.go(RouteNames.jobs);
+            context.push(RouteNames.jobs);
             break;
         }
       },
@@ -744,16 +747,20 @@ class _NewsCard extends StatelessWidget {
     required this.meta,
     required this.imageUrl,
     required this.colors,
+    required this.onTap,
   });
   final String eyebrow;
   final String title;
   final String meta;
   final String imageUrl;
   final AppColorScheme colors;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: colors.surfaceCard,
@@ -810,6 +817,7 @@ class _NewsCard extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 
