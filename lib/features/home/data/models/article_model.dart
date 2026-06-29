@@ -19,6 +19,8 @@ class Article {
     required this.category,
     required this.images,
     required this.addedAt,
+    this.content = '',
+    this.audioUrls = const [],
   });
 
   final String id;
@@ -27,8 +29,11 @@ class Article {
   final ArticleCategory category;
   final List<String> images;
   final DateTime addedAt;
+  final String content;
+  final List<String> audioUrls;
 
   String get firstImage => images.isNotEmpty ? images.first : '';
+  String? get firstAudioUrl => audioUrls.isNotEmpty ? audioUrls.first : null;
 
   String get timeAgo {
     final diff = DateTime.now().difference(addedAt);
@@ -48,5 +53,7 @@ class Article {
         images: (json['urlToImage'] as List<dynamic>?)?.cast<String>() ?? [],
         addedAt: DateTime.tryParse(json['addedAt'] as String? ?? '') ??
             DateTime.now(),
+        content: json['content'] as String? ?? '',
+        audioUrls: (json['audio'] as List<dynamic>?)?.cast<String>() ?? [],
       );
 }
