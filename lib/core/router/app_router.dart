@@ -212,14 +212,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.news,
         pageBuilder: (_, __) => _fadeScalePage(const NewsScreen()),
-      ),
-      GoRoute(
-        path: RouteNames.newsArticleDetail,
-        pageBuilder: (_, state) {
-          final article = state.extra as Article?;
-          if (article == null) return _slideLeftPage(const NewsScreen());
-          return _slideLeftPage(NewsArticleDetailScreen(article: article));
-        },
+        routes: [
+          GoRoute(
+            path: 'article',
+            pageBuilder: (_, state) {
+              final article = state.extra as Article?;
+              if (article == null) return _slideLeftPage(const NewsScreen());
+              return _slideLeftPage(NewsArticleDetailScreen(article: article));
+            },
+          ),
+        ],
       ),
       GoRoute(
         path: RouteNames.video,
