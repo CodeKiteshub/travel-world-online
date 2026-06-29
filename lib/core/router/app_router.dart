@@ -201,8 +201,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RouteNames.newsArticleDetail,
-        pageBuilder: (_, state) =>
-            _slideLeftPage(NewsArticleDetailScreen(article: state.extra as Article)),
+        pageBuilder: (_, state) {
+          final article = state.extra as Article?;
+          if (article == null) return _slideLeftPage(const NewsScreen());
+          return _slideLeftPage(NewsArticleDetailScreen(article: article));
+        },
       ),
       GoRoute(
         path: RouteNames.video,

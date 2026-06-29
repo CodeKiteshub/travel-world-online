@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,16 +22,25 @@ class NewsArticleDetailScreen extends ConsumerStatefulWidget {
 class _NewsArticleDetailScreenState
     extends ConsumerState<NewsArticleDetailScreen> {
   late final AudioPlayer _player;
+  StreamSubscription<PlayerState>? _playerSub;
   bool _isListening = false;
 
   @override
   void initState() {
     super.initState();
     _player = AudioPlayer();
+    _playerSub = _player.playerStateStream.listen((state) {
+      if (state.processingState == ProcessingState.completed && mounted) {
+        setState(() => _isListening = false);
+        _player.seek(Duration.zero);
+      }
+    });
   }
 
   @override
   void dispose() {
+    _playerSub?.cancel();
+    _player.stop();
     _player.dispose();
     super.dispose();
   }
