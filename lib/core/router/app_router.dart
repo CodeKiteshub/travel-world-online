@@ -28,8 +28,22 @@ import '../../features/campus/presentation/screens/skill_development_screen.dart
 import '../../features/campus/presentation/screens/course_list_screen.dart';
 import '../../features/ppp/presentation/screens/ppp_screen.dart';
 import '../../features/ppp/presentation/screens/ppp_detail_screen.dart';
+import '../../features/ppp/presentation/screens/ppp_directory_screen.dart';
+import '../../features/ppp/presentation/screens/ppp_register_screen.dart';
 import '../../features/ppp/data/models/ppp_model.dart';
 import '../../features/jobs/presentation/screens/jobs_screen.dart';
+import '../../features/associations/data/models/association_model.dart';
+import '../../features/associations/data/models/association_content_model.dart';
+import '../../features/associations/presentation/screens/association_login_screen.dart';
+import '../../features/associations/presentation/screens/association_dashboard_screen.dart';
+import '../../features/associations/presentation/screens/association_deals_screen.dart';
+import '../../features/associations/presentation/screens/association_deal_create_screen.dart';
+import '../../features/associations/presentation/screens/association_circulars_screen.dart';
+import '../../features/associations/presentation/screens/association_updates_screen.dart';
+import '../../features/associations/presentation/screens/association_directory_screen.dart';
+import '../../features/associations/presentation/screens/association_jobs_screen.dart';
+import '../../features/associations/presentation/screens/association_chat_screen.dart';
+import '../../features/associations/presentation/screens/association_cabs_screen.dart';
 import '../../features/discover/data/models/deal_model.dart';
 import '../../features/home/data/models/article_model.dart';
 import '../../features/marketplace/presentation/screens/villa_search_screen.dart';
@@ -228,8 +242,124 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: RouteNames.pppDirectory,
+        pageBuilder: (_, state) {
+          final pppId = state.pathParameters['id']!;
+          final boardName = state.extra as String?;
+          return _slideLeftPage(
+              PPPDirectoryScreen(pppId: pppId, boardName: boardName));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.pppRegister,
+        pageBuilder: (_, state) {
+          final pppId = state.pathParameters['id']!;
+          return _slideLeftPage(PPPRegisterScreen(pppId: pppId));
+        },
+      ),
+      GoRoute(
         path: RouteNames.jobs,
         pageBuilder: (_, __) => _fadeScalePage(const JobsScreen()),
+      ),
+
+      // — Association sub-screens
+      GoRoute(
+        path: RouteNames.associationLogin,
+        pageBuilder: (_, state) {
+          final assoc = state.extra as AssociationModel;
+          return _slideLeftPage(AssociationLoginScreen(assoc: assoc));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.associationDashboard,
+        pageBuilder: (_, state) {
+          final assoc = state.extra as AssociationModel;
+          return _slideLeftPage(AssociationDashboardScreen(assoc: assoc));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.associationDeals,
+        pageBuilder: (_, state) {
+          final assoc = state.extra as AssociationModel;
+          return _slideLeftPage(AssociationDealsScreen(assoc: assoc));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.associationDealCreate,
+        pageBuilder: (_, state) {
+          final assoc = state.extra as AssociationModel;
+          return _slideUpPage(AssociationDealCreateScreen(assoc: assoc));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.associationDemandCreate,
+        pageBuilder: (_, state) {
+          final assoc = state.extra as AssociationModel;
+          return _slideUpPage(AssociationDemandCreateScreen(assoc: assoc));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.associationLastMinCreate,
+        pageBuilder: (_, state) {
+          final assoc = state.extra as AssociationModel;
+          return _slideUpPage(AssociationDealCreateScreen(assoc: assoc));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.associationCirculars,
+        pageBuilder: (_, state) {
+          final assoc = state.extra as AssociationModel;
+          return _slideLeftPage(AssociationCircularsScreen(assoc: assoc));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.associationUpdates,
+        pageBuilder: (_, state) {
+          final assoc = state.extra as AssociationModel;
+          return _slideLeftPage(AssociationUpdatesScreen(assoc: assoc));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.associationDirectory,
+        pageBuilder: (_, state) {
+          final assoc = state.extra as AssociationModel;
+          return _slideLeftPage(AssociationDirectoryScreen(assoc: assoc));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.associationJobs,
+        pageBuilder: (_, state) {
+          final assoc = state.extra as AssociationModel;
+          return _slideLeftPage(AssociationJobsScreen(assoc: assoc));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.associationChat,
+        pageBuilder: (_, state) {
+          final assoc = state.extra as AssociationModel;
+          return _slideLeftPage(AssociationChatScreen(assoc: assoc));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.associationChatThread,
+        pageBuilder: (_, state) {
+          final chat = state.extra as AssociationChatModel;
+          return _slideLeftPage(AssociationChatThreadScreen(chat: chat));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.associationCabs,
+        pageBuilder: (_, state) {
+          final assoc = state.extra as AssociationModel;
+          return _slideLeftPage(AssociationCabsScreen(assoc: assoc));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.associationAdminCabs,
+        pageBuilder: (_, state) {
+          final assoc = state.extra as AssociationModel;
+          return _slideLeftPage(AssociationCabsScreen(assoc: assoc, isAdmin: true));
+        },
       ),
 
       // — Campus sub-screens

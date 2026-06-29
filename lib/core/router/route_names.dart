@@ -15,7 +15,26 @@ abstract final class RouteNames {
   static const campus = '/campus';
   static const ppp = '/ppp';
   static const pppDetail = '/ppp/:id';
+  static const pppDirectory = '/ppp/:id/directory';
+  static const pppRegister = '/ppp/:id/register';
   static const jobs = '/jobs';
+
+  // — Association sub-screens
+  static const associationLogin = '/association/:id/login';
+  static const associationDashboard = '/association/:id';
+  static const associationDeals = '/association/:id/deals';
+  static const associationDealCreate = '/association/:id/deals/create';
+  static const associationDemandCreate = '/association/:id/deals/demand';
+  static const associationLastMinCreate = '/association/:id/deals/lastmin';
+  static const associationCirculars = '/association/:id/circulars';
+  static const associationCircularDetail = '/association/:id/circulars/:cid';
+  static const associationUpdates = '/association/:id/updates';
+  static const associationDirectory = '/association/:id/directory';
+  static const associationJobs = '/association/:id/jobs';
+  static const associationChat = '/association/:id/chat';
+  static const associationChatThread = '/association/:id/chat/:chatId';
+  static const associationCabs = '/association/:id/cabs';
+  static const associationAdminCabs = '/association/:id/admin-cabs';
   static const advisoryBoard = '/advisory-board';
   static const destinationSpecialist = '/destination-specialist';
   static const skillDevelopment = '/skill-development';
