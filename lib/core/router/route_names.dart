@@ -10,6 +10,7 @@ abstract final class RouteNames {
   static const services = '/services';
   static const account = '/account';
   static const news = '/news';
+  static const newsArticleDetail = '/news/article';
   static const video = '/video';
   static const campus = '/campus';
   static const ppp = '/ppp';

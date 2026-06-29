@@ -16,6 +16,7 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/discover/presentation/screens/deal_detail_screen.dart';
 import '../../features/discover/presentation/screens/deal_enquiry_screen.dart';
 import '../../features/news/presentation/screens/news_screen.dart';
+import '../../features/news/presentation/screens/news_article_detail_screen.dart';
 import '../../features/video/presentation/screens/video_screen.dart';
 import '../../features/campus/presentation/screens/campus_screen.dart';
 import '../../features/campus/presentation/screens/advisory_board_screen.dart';
@@ -30,6 +31,7 @@ import '../../features/ppp/presentation/screens/ppp_detail_screen.dart';
 import '../../features/ppp/data/models/ppp_model.dart';
 import '../../features/jobs/presentation/screens/jobs_screen.dart';
 import '../../features/discover/data/models/deal_model.dart';
+import '../../features/home/data/models/article_model.dart';
 import '../../features/marketplace/presentation/screens/villa_search_screen.dart';
 import '../../features/marketplace/presentation/screens/villa_detail_screen.dart';
 import '../../features/marketplace/presentation/screens/arosa_results_screen.dart';
@@ -196,6 +198,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.news,
         pageBuilder: (_, __) => _fadeScalePage(const NewsScreen()),
+      ),
+      GoRoute(
+        path: RouteNames.newsArticleDetail,
+        pageBuilder: (_, state) =>
+            _slideLeftPage(NewsArticleDetailScreen(article: state.extra as Article)),
       ),
       GoRoute(
         path: RouteNames.video,
