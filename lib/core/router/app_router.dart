@@ -52,6 +52,10 @@ import '../../features/marketplace/presentation/screens/arosa_results_screen.dar
 import '../../features/marketplace/presentation/screens/luxury_hotel_detail_screen.dart';
 import '../../features/marketplace/data/models/villa_rate_model.dart';
 import '../../features/marketplace/data/models/luxury_hotel_model.dart';
+import '../../features/insurance/presentation/screens/insurance_wizard_screen.dart';
+import '../../features/insurance/presentation/screens/insurance_confirmation_screen.dart';
+import '../../features/visa/presentation/screens/visa_wizard_screen.dart';
+import '../../features/visa/presentation/screens/visa_confirmation_screen.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'route_names.dart';
@@ -206,6 +210,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.arosaResults,
         pageBuilder: (_, __) => _slideLeftPage(const ArosaResultsScreen()),
+      ),
+
+      // — Insurance wizard
+      GoRoute(
+        path: RouteNames.insurance,
+        pageBuilder: (_, __) => _slideLeftPage(const InsuranceWizardScreen()),
+      ),
+      GoRoute(
+        path: RouteNames.insuranceConfirmation,
+        pageBuilder: (_, __) =>
+            _slideLeftPage(const InsuranceConfirmationScreen()),
+      ),
+
+      // — Visa wizard
+      GoRoute(
+        path: RouteNames.visa,
+        pageBuilder: (_, __) => _slideLeftPage(const VisaWizardScreen()),
+      ),
+      GoRoute(
+        path: RouteNames.visaConfirmation,
+        pageBuilder: (_, __) =>
+            _slideLeftPage(const VisaConfirmationScreen()),
       ),
 
       // — Secondary module screens (available from home IconRow)

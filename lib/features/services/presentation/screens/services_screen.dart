@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../../core/router/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
-
-const _insuranceUrl =
-    'https://travelworldonline.in/mix_modules/insurance/insurance.html';
 
 class ServicesScreen extends StatelessWidget {
   const ServicesScreen({super.key});
@@ -30,10 +28,7 @@ class ServicesScreen extends StatelessWidget {
                 description:
                     'Book travel insurance for clients. 4-step wizard with instant policy generation.',
                 actionLabel: 'Start Booking →',
-                onAction: () => launchUrl(
-                  Uri.parse(_insuranceUrl),
-                  mode: LaunchMode.externalApplication,
-                ),
+                onAction: () => context.push(RouteNames.insurance),
                 dimmed: false,
               ),
               const SizedBox(height: 14),
@@ -46,7 +41,7 @@ class ServicesScreen extends StatelessWidget {
                 description:
                     'Submit visa applications on behalf of clients. Country selection, document upload, status tracking.',
                 actionLabel: 'Apply Now →',
-                onAction: () {},
+                onAction: () => context.push(RouteNames.visa),
                 dimmed: false,
               ),
               const SizedBox(height: 14),

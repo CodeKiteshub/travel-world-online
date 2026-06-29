@@ -1,265 +1,469 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../data/models/video_models.dart';
+import '../providers/video_providers.dart';
 
-class VideoScreen extends StatelessWidget {
+class VideoScreen extends ConsumerStatefulWidget {
   const VideoScreen({super.key});
 
-  // Hard‑coded demo data extracted from the HTML design.
-  static const _heroImage =
-      'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=900&q=80';
-  static const _heroTitle = 'Sri Lanka Concludes, TAFI Western India';
-  static const _heroSub = 'Travel World Online · Interviews';
-  static const _heroDuration = '2:40';
+  @override
+  ConsumerState<VideoScreen> createState() => _VideoScreenState();
+}
 
-  static const _categories = [
-    {'label': 'News', 'color': Color(0xFF0D1B2A), 'bg': Color(0xFF1A3850)},
-    {'label': 'Interviews', 'color': Color(0xFFC9A84C), 'bg': Color(0xFFE8D08A)},
-    {'label': 'Destinations', 'color': Color(0xFF2D7A4F), 'bg': Color(0xFF1A5036)},
+class _VideoScreenState extends ConsumerState<VideoScreen> {
+  static const _tabs = [
+    ('News', 'news'),
+    ('Interviews', 'interviews'),
+    ('Destinations', 'destinations'),
   ];
 
-  static const _videos = [
-    {
-      'thumb': 'https://images.unsplash.com/photo-1587825140708-dfaf18c4f5a4?w=400&q=80',
-      'duration': '8:12',
-      'title': 'CM Rekha Gupta Speaks on Hospitality Reforms | Felicitation 2025',
-      'author': 'Travel World · 3d ago',
-    },
-    {
-      'thumb': 'https://images.unsplash.com/photo-1566837945700-30057527ade0?w=400&q=80',
-      'duration': '5:44',
-      'title': 'Kashmir is Ready Again! Tourism Revival Event Sparks Energy',
-      'author': 'Travel World · 5d ago',
-    },
-    {
-      'thumb': 'https://images.unsplash.com/photo-1577717903315-1691ae25ab3f?w=400&q=80',
-      'duration': '12:08',
-      'title': "Manoj Tiwari's Inspiring Speech at World MSME Day 2025",
-      'author': 'Travel World · 1w ago',
-    },
-    {
-      'thumb': 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=400&q=80',
-      'duration': '6:32',
-      'title': 'World MSME Day 2025 | WASME Panel Discussion at Bharat Mandapam',
-      'author': 'Travel World · 1w ago',
-    },
-  ];
+  final ScrollController _scrollController = ScrollController();
+  YoutubePlayerController? _playerController;
+
+  // Tracks whether a category switch is waiting for fresh data
+  bool _pendingCategoryReload = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _playerController?.pause();
+    _playerController?.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 300) {
+      ref.read(videoFeedProvider.notifier).loadMore();
+    }
+  }
+
+  void _initPlayer(String videoId, {bool autoPlay = false}) {
+    if (!mounted || videoId.isEmpty) return;
+    setState(() {
+      _playerController?.dispose();
+      _playerController = YoutubePlayerController(
+        initialVideoId: videoId,
+        flags: YoutubePlayerFlags(
+          autoPlay: autoPlay,
+          mute: false,
+          enableCaption: true,
+        ),
+      );
+    });
+  }
+
+  void _loadInPlayer(String videoId) {
+    if (videoId.isEmpty) return;
+    if (_playerController == null) {
+      _initPlayer(videoId, autoPlay: true);
+    } else {
+      _playerController!.load(videoId);
+    }
+    // Scroll to top so the player is visible
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColorScheme>()!;
-    return Scaffold(
-      backgroundColor: colors.surfacePrimary,
-      appBar: AppBar(
-        backgroundColor: colors.surfacePrimary,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          color: colors.ink900,
-          onPressed: () => Navigator.of(context).pop(),
+
+    // Listen for state changes to manage the player lifecycle
+    ref.listen<VideoFeedState>(videoFeedProvider, (prev, next) {
+      if (!mounted) return;
+
+      // Track category switches
+      if (prev != null && prev.selectedCategory != next.selectedCategory) {
+        _pendingCategoryReload = true;
+      }
+
+      // When loading completes and fresh data has arrived
+      final dataArrived = (prev?.isLoading ?? false) &&
+          !next.isLoading &&
+          next.items.isNotEmpty;
+      if (!dataArrived) return;
+
+      final firstId = next.items.first.firstVideoId;
+      if (firstId.isEmpty) return;
+
+      if (_playerController == null) {
+        // First time data arrives — initialise player, no autoplay
+        _initPlayer(firstId, autoPlay: false);
+      } else if (_pendingCategoryReload) {
+        // Category switched — load first video of new category
+        _pendingCategoryReload = false;
+        _playerController!.load(firstId);
+      }
+    });
+
+    final feed = ref.watch(videoFeedProvider);
+
+    return YoutubePlayerBuilder(
+      player: YoutubePlayer(
+        controller: _playerController ??
+            YoutubePlayerController(initialVideoId: ''),
+        aspectRatio: 16 / 9,
+        showVideoProgressIndicator: true,
+        progressIndicatorColor: const Color(0xFFC9A84C),
+        progressColors: const ProgressBarColors(
+          playedColor: Color(0xFFC9A84C),
+          handleColor: Color(0xFFC9A84C),
         ),
-        title: Text('Video', style: AppTypography.titleMedium.copyWith(color: colors.ink900)),
       ),
-      body: ListView(
-        children: [
-          // Hero video
-          Container(
-            height: 250,
-            margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              image: const DecorationImage(
-                image: NetworkImage(_heroImage),
-                fit: BoxFit.cover,
-              ),
+      builder: (context, player) {
+        return Scaffold(
+          backgroundColor: colors.surfacePrimary,
+          appBar: AppBar(
+            backgroundColor: colors.surfacePrimary,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              color: colors.ink900,
+              onPressed: () => context.pop(),
             ),
+            title: Text(
+              'Video',
+              style: AppTypography.titleMedium.copyWith(color: colors.ink900),
+            ),
+          ),
+          body: feed.items.isEmpty && feed.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : feed.items.isEmpty && feed.error != null
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('Failed to load videos',
+                              style: TextStyle(color: colors.ink600)),
+                          const SizedBox(height: 12),
+                          TextButton(
+                            onPressed: () => ref
+                                .read(videoFeedProvider.notifier)
+                                .loadMore(),
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      controller: _scrollController,
+                      // +3 = player + tabs + loading bar
+                      itemCount: feed.items.length + 3,
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return _playerController != null
+                              ? Container(
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 20),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: player,
+                                  ),
+                                )
+                              : _PlaceholderHero(
+                                  video: feed.items.isNotEmpty
+                                      ? feed.items.first
+                                      : null,
+                                  colors: colors,
+                                  onTap: () {
+                                    if (feed.items.isNotEmpty) {
+                                      final id =
+                                          feed.items.first.firstVideoId;
+                                      if (id.isNotEmpty) {
+                                        _initPlayer(id, autoPlay: true);
+                                      }
+                                    }
+                                  },
+                                );
+                        }
+                        if (index == 1) {
+                          return _CategoryTabs(
+                            tabs: _tabs,
+                            selected: feed.selectedCategory,
+                            onSelect: (cat) => ref
+                                .read(videoFeedProvider.notifier)
+                                .setCategory(cat),
+                            colors: colors,
+                          );
+                        }
+                        if (index == 2) {
+                          return feed.isLoading
+                              ? LinearProgressIndicator(
+                                  minHeight: 2,
+                                  backgroundColor: colors.lineSoft,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      colors.ink900),
+                                )
+                              : const SizedBox.shrink();
+                        }
+                        final itemIndex = index - 3;
+                        if (itemIndex >= feed.items.length) {
+                          return feed.isLoading
+                              ? const Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(vertical: 20),
+                                  child: Center(
+                                      child: CircularProgressIndicator()),
+                                )
+                              : const SizedBox(height: 80);
+                        }
+                        return _VideoListItem(
+                          video: feed.items[itemIndex],
+                          colors: colors,
+                          onTap: () =>
+                              _loadInPlayer(feed.items[itemIndex].firstVideoId),
+                        );
+                      },
+                    ),
+        );
+      },
+    );
+  }
+}
+
+// ── Placeholder shown before player is initialised ─────────────────────────
+class _PlaceholderHero extends StatelessWidget {
+  final VideoItem? video;
+  final AppColorScheme colors;
+  final VoidCallback onTap;
+
+  const _PlaceholderHero({
+    required this.video,
+    required this.colors,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final thumbUrl = video?.thumbnailUrl ?? '';
+    final title = video?.title ?? '';
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
             child: Stack(
+              fit: StackFit.expand,
               children: [
-                // dark overlay
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    color: Colors.black45,
-                  ),
-                ),
-                // play button
+                if (thumbUrl.isNotEmpty)
+                  Image.network(thumbUrl, fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          Container(color: colors.surfaceTertiary))
+                else
+                  Container(color: const Color(0xFF0D1B2A)),
+                Container(color: Colors.black38),
                 Center(
                   child: Container(
-                    width: 56,
-                    height: 56,
+                    width: 60,
+                    height: 60,
                     decoration: BoxDecoration(
                       color: Colors.white24,
                       shape: BoxShape.circle,
+                      border:
+                          Border.all(color: Colors.white70, width: 2),
                     ),
-                    child: const Icon(Icons.play_arrow, size: 32, color: Colors.white),
+                    child: const Icon(Icons.play_arrow,
+                        size: 36, color: Colors.white),
                   ),
                 ),
-                // info overlay
-                Positioned(
-                  bottom: 12,
-                  left: 14,
-                  right: 14,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _heroTitle,
-                        style: const TextStyle(fontFamily: 'Playfair Display', fontWeight: FontWeight.w700, fontSize: 16, color: Colors.white),
+                if (title.isNotEmpty)
+                  Positioned(
+                    bottom: 14,
+                    left: 14,
+                    right: 14,
+                    child: Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Playfair Display',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: Colors.white,
+                        height: 1.2,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _heroSub,
-                        style: const TextStyle(fontSize: 11, color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                ),
-                // duration badge
-                Positioned(
-                  bottom: 12,
-                  right: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(_heroDuration, style: const TextStyle(fontSize: 11, color: Colors.white)),
                   ),
-                ),
               ],
             ),
           ),
-          // Category cards
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Text('Categories', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          ),
-          const SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: _categories.map((cat) {
-                return Container(
-                  width: 110,
-                  height: 72,
-                  margin: const EdgeInsets.only(right: 10),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [cat['bg'] as Color, (cat['bg'] as Color).withValues(alpha: 0.7)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Colors.transparent, Colors.black54],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Center(
-                        child: Text(
-                          cat['label'] as String,
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          const SizedBox(height: 22),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Text('Recent', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          ),
-          const SizedBox(height: 8),
-          // Video list items
-          ..._videos.map((v) => _VideoItem(video: v, colors: colors)).toList(),
-          const SizedBox(height: 80),
-        ],
+        ),
       ),
     );
   }
 }
 
-class _VideoItem extends StatelessWidget {
-  final Map<String, String> video;
+// ── Category tabs ──────────────────────────────────────────────────────────
+class _CategoryTabs extends StatelessWidget {
+  final List<(String, String)> tabs;
+  final String selected;
+  final ValueChanged<String> onSelect;
   final AppColorScheme colors;
-  const _VideoItem({required this.video, required this.colors});
+
+  const _CategoryTabs({
+    required this.tabs,
+    required this.selected,
+    required this.onSelect,
+    required this.colors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Row(
+        children: tabs.map((tab) {
+          final (label, key) = tab;
+          final isSelected = key == selected;
+          return GestureDetector(
+            onTap: () => onSelect(key),
+            child: Container(
+              margin: const EdgeInsets.only(right: 8),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color:
+                    isSelected ? colors.ink900 : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color:
+                      isSelected ? colors.ink900 : colors.lineSoft,
+                ),
+              ),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected
+                      ? FontWeight.w600
+                      : FontWeight.w500,
+                  color: isSelected
+                      ? colors.surfacePrimary
+                      : colors.ink600,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+// ── Video list tile ────────────────────────────────────────────────────────
+class _VideoListItem extends StatelessWidget {
+  final VideoItem video;
+  final AppColorScheme colors;
+  final VoidCallback onTap;
+
+  const _VideoListItem({
+    required this.video,
+    required this.colors,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Stack(
-                children: [
-                  Container(
-                    width: 130,
-                    height: 78,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      image: DecorationImage(
-                        image: NetworkImage(video['thumb']!),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 6,
-                    right: 6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        video['duration']!,
-                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: Row(
+              children: [
+                Stack(
                   children: [
-                    Text(
-                      video['title']!,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1A1A1A)),
+                    Container(
+                      width: 130,
+                      height: 78,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: colors.surfaceTertiary,
+                        image: video.thumbnailUrl.isNotEmpty
+                            ? DecorationImage(
+                                image: NetworkImage(video.thumbnailUrl),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      video['author']!,
-                      style: const TextStyle(fontSize: 11, color: Color(0xFF9E9E9E)),
+                    Positioned.fill(
+                      child: Center(
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: const BoxDecoration(
+                            color: Colors.black45,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.play_arrow,
+                              size: 18, color: Colors.white),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        video.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: colors.ink900,
+                          height: 1.35,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        video.timeAgo.isNotEmpty
+                            ? 'Travel World Online · ${video.timeAgo}'
+                            : 'Travel World Online',
+                        style: TextStyle(
+                            fontSize: 11, color: colors.ink400),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        const Divider(height: 1, thickness: 1, indent: 20, endIndent: 20, color: Color(0xFFE8E5DC)),
+        Divider(
+          height: 1,
+          thickness: 1,
+          indent: 20,
+          endIndent: 20,
+          color: colors.lineSoft,
+        ),
       ],
     );
   }

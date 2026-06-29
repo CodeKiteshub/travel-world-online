@@ -247,22 +247,27 @@ class _FeaturedMember extends StatelessWidget {
                 : Icon(Icons.person, color: colors.ink400, size: 18),
           ),
           const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                member.name,
-                style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                    color: colors.ink900),
-              ),
-              Text(
-                member.post,
-                style:
-                    TextStyle(fontSize: 10, color: colors.ink600),
-              ),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  member.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                      color: colors.ink900),
+                ),
+                Text(
+                  member.post,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 10, color: colors.ink600),
+                ),
+              ],
+            ),
           ),
         ],
       ),

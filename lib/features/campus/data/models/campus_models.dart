@@ -39,12 +39,12 @@ class SkillCourse {
 
   factory SkillCourse.fromJson(Map<String, dynamic> json) => SkillCourse(
         id: json['id']?.toString() ?? '',
-        label: json['name'] as String? ??
+        label: json['label'] as String? ??
+            json['name'] as String? ??
             json['videocat'] as String? ??
-            json['label'] as String? ??
             '',
-        description: json['link'] as String? ??
-            json['description'] as String? ??
+        description: json['description'] as String? ??
+            json['link'] as String? ??
             '',
       );
 }
@@ -63,8 +63,13 @@ class DestinationCategory {
   factory DestinationCategory.fromJson(Map<String, dynamic> json) =>
       DestinationCategory(
         id: json['id']?.toString() ?? '',
-        label: json['videocat'] as String? ?? json['label'] as String? ?? '',
-        description: json['detail'] as String? ?? json['description'] as String? ?? '',
+        label: json['countryName'] as String? ??
+            json['videocat'] as String? ??
+            json['label'] as String? ??
+            '',
+        description: json['description'] as String? ??
+            json['detail'] as String? ??
+            '',
       );
 }
 
@@ -78,7 +83,10 @@ class DestSubCategory {
 
   factory DestSubCategory.fromJson(Map<String, dynamic> json) => DestSubCategory(
         id: json['id']?.toString() ?? '',
-        label: json['videosubcat'] as String? ?? json['label'] as String? ?? '',
+        label: json['categoryName'] as String? ??
+            json['videosubcat'] as String? ??
+            json['label'] as String? ??
+            '',
         imageUrl: json['image'] as String? ?? '',
       );
 }
@@ -112,14 +120,22 @@ class DestVideo {
   final String detail;
   final String place;
 
-  factory DestVideo.fromJson(Map<String, dynamic> json) => DestVideo(
-        id: json['id']?.toString() ?? '',
-        heading: json['heading'] as String? ?? '',
-        imageUrl: json['image'] as String? ?? '',
-        videoUrl: json['video'] as String? ?? '',
-        detail: json['detail'] as String? ?? '',
-        place: json['place'] as String? ?? '',
-      );
+  factory DestVideo.fromJson(Map<String, dynamic> json) {
+    // Firebase countryData uses videoUrls list; REST uses a single 'video' string
+    final videoUrls = (json['videoUrls'] as List<dynamic>?) ?? [];
+    final firstVideo = videoUrls.isNotEmpty ? videoUrls.first as String? ?? '' : '';
+    return DestVideo(
+      id: json['id']?.toString() ?? '',
+      heading: json['courseName'] as String? ?? json['heading'] as String? ?? '',
+      imageUrl: json['thumbnail'] as String? ?? json['image'] as String? ?? '',
+      videoUrl: json['video'] as String? ??
+          (firstVideo.isNotEmpty ? firstVideo : null) ??
+          json['websiteUrl'] as String? ??
+          '',
+      detail: json['courseDescription'] as String? ?? json['detail'] as String? ?? '',
+      place: json['place'] as String? ?? '',
+    );
+  }
 }
 
 // ── Skill development models ───────────────────────────────────────────────────
@@ -130,9 +146,17 @@ class CampusCourseItem {
   final String label;
   final String link;
 
-  factory CampusCourseItem.fromJson(Map<String, dynamic> json) => CampusCourseItem(
-        id: json['id']?.toString() ?? '',
-        label: json['name'] as String? ?? json['label'] as String? ?? '',
-        link: json['link'] as String? ?? '',
-      );
+  factory CampusCourseItem.fromJson(Map<String, dynamic> json) {
+    // Firebase data subcollection uses videoUrls list and websiteUrl
+    final videoUrls = (json['videoUrls'] as List<dynamic>?) ?? [];
+    final firstVideo = videoUrls.isNotEmpty ? videoUrls.first as String? ?? '' : '';
+    return CampusCourseItem(
+      id: json['id']?.toString() ?? '',
+      label: json['courseName'] as String? ?? json['name'] as String? ?? json['label'] as String? ?? '',
+      link: json['websiteUrl'] as String? ??
+          (firstVideo.isNotEmpty ? firstVideo : null) ??
+          json['link'] as String? ??
+          '',
+    );
+  }
 }

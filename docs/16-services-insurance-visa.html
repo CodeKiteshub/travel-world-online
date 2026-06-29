@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TWO — Services: Insurance + Visa Wizards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+[data-theme="light"]{--sp:#FAF8F3;--sc:#FFFFFF;--st:#EFEDE6;--gold:#C9A84C;--ga:#E8D08A;--i9:#1A1A1A;--i6:#5E5E5E;--i4:#9E9E9E;--ln:#E8E5DC;--tb:#E8EEF5;--tbt:#2A4A6B;--ok:#2D7A4F;--ok-bg:rgba(45,122,79,.12);--er:#C0392B;--er-bg:rgba(192,57,43,.12);--nv:#0D1B2A}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;background:#111;color:#fff;padding:48px 20px 80px;-webkit-font-smoothing:antialiased}
+.gh{text-align:center;margin-bottom:48px;max-width:760px;margin-left:auto;margin-right:auto}.gh-e{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#C9A84C;font-weight:500;margin-bottom:16px}.gh-t{font-family:'Playfair Display',serif;font-weight:700;font-size:38px;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}.gh-s{font-size:15px;line-height:24px;color:#9E9E9E;max-width:640px;margin:0 auto}
+.row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:32px;max-width:1280px;margin:0 auto 56px;padding:32px 0;border-top:1px solid rgba(255,255,255,.06);justify-items:center}
+.row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:32px;max-width:880px;margin:0 auto 56px;padding:32px 0;border-top:1px solid rgba(255,255,255,.06);justify-items:center}
+.ph{display:flex;align-items:baseline;gap:14px;margin-bottom:24px;grid-column:1/-1}
+.ph h2{font-family:'Playfair Display',serif;font-weight:700;font-size:22px}.ph span{font-size:12px;color:#9E9E9E;letter-spacing:.04em}
+.fb{display:flex;flex-direction:column;align-items:center}.fl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:#FAF8F3}.fl .d{width:8px;height:8px;border-radius:999px;background:#FAF8F3}
+.phone{width:380px;height:800px;background:#000;border-radius:44px;padding:8px;box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.06)}
+.scr{width:100%;height:100%;border-radius:36px;overflow:hidden;position:relative;background:var(--sp);color:var(--i9);font-family:'DM Sans',sans-serif}
+.notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:110px;height:28px;background:#000;border-radius:16px;z-index:100}
+.sb{position:absolute;top:0;left:0;right:0;height:44px;padding:14px 28px 0;display:flex;justify-content:space-between;align-items:center;z-index:50;font-size:14px;font-weight:600;color:var(--i9)}
+.si{display:flex;gap:5px;align-items:center}svg{display:block}
+
+.appbar{position:absolute;top:44px;left:0;right:0;padding:12px 20px;background:var(--sp);z-index:10}
+.ab-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.ab-bk{width:38px;height:38px;border-radius:999px;background:var(--sc);border:1px solid var(--ln);display:flex;align-items:center;justify-content:center;color:var(--i9);flex-shrink:0}
+.ab-t{flex:1;font-family:'Playfair Display',serif;font-weight:700;font-size:18px;color:var(--i9)}
+
+/* Step indicator */
+.steps{display:flex;align-items:center;padding:0 4px}
+.step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative}
+.step-dot{width:26px;height:26px;border-radius:999px;background:var(--st);color:var(--i4);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;z-index:2;border:2px solid var(--sp)}
+.step-dot.done{background:var(--ok);color:#fff}
+.step-dot.active{background:var(--gold);color:var(--i9)}
+.step-label{font-size:8px;font-weight:600;color:var(--i4);margin-top:5px;text-align:center;letter-spacing:.02em}
+.step-label.active{color:var(--i9)}
+.step-line{position:absolute;top:13px;left:-50%;width:100%;height:2px;background:var(--ln);z-index:1}
+.step-line.done{background:var(--ok)}
+.step:first-child .step-line{display:none}
+
+.scrollarea{width:100%;height:100%;overflow-y:auto;position:relative}
+
+/* Form elements */
+.form-c{padding:148px 20px 100px}
+.form-c.noind{padding-top:104px}
+.sec-h{font-family:'Playfair Display',serif;font-weight:700;font-size:18px;color:var(--i9);margin-bottom:4px}
+.sec-sub{font-size:12px;color:var(--i6);margin-bottom:20px}
+.field-label{font-size:12px;font-weight:600;color:var(--i9);margin-bottom:6px;display:block}
+.field-input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--ln);background:var(--sc);font-size:13px;color:var(--i9);margin-bottom:16px}
+.field-input::placeholder{color:var(--i4)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-select{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--ln);background:var(--sc);font-size:13px;color:var(--i4);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.field-select.filled{color:var(--i9)}
+.stepper{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--ln);background:var(--sc);border-radius:12px;padding:6px 14px;margin-bottom:16px}
+.stepper-btn{width:30px;height:30px;border-radius:999px;background:var(--st);display:flex;align-items:center;justify-content:center;color:var(--i9);font-weight:700}
+.stepper-val{font-weight:600;font-size:14px;color:var(--i9)}
+.btn-next{width:100%;padding:15px;border-radius:12px;background:var(--gold);color:var(--i9);text-align:center;font-weight:700;font-size:14px;position:absolute;bottom:20px;left:20px;right:20px}
+
+/* Plan cards */
+.plan-card{border:1.5px solid var(--ln);border-radius:16px;padding:18px;margin-bottom:14px;background:var(--sc);position:relative}
+.plan-card.sel{border-color:var(--gold);background:linear-gradient(180deg,rgba(201,168,76,.06),transparent)}
+.plan-badge{position:absolute;top:-10px;right:16px;background:var(--gold);color:var(--i9);font-size:9px;font-weight:700;padding:3px 10px;border-radius:999px;letter-spacing:.04em}
+.plan-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.plan-name{font-family:'Playfair Display',serif;font-weight:700;font-size:16px;color:var(--i9)}
+.plan-price{font-weight:700;font-size:15px;color:var(--i9)}
+.plan-cover{font-size:11px;color:var(--i6);margin-bottom:12px}
+.plan-feat{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;font-size:12px;color:var(--i6)}
+.plan-feat svg{flex-shrink:0;margin-top:2px}
+.plan-radio{position:absolute;top:18px;right:18px;width:20px;height:20px;border-radius:999px;border:2px solid var(--ln)}
+.plan-radio.sel{border-color:var(--gold);background:var(--gold)}
+
+/* Review summary */
+.rv-card{background:var(--sc);border:1px solid var(--ln);border-radius:16px;padding:16px;margin-bottom:14px}
+.rv-row{display:flex;justify-content:space-between;padding:7px 0;font-size:12px}
+.rv-label{color:var(--i6)}.rv-val{color:var(--i9);font-weight:600;text-align:right}
+.rv-divider{height:1px;background:var(--ln);margin:8px 0}
+.rv-total{display:flex;justify-content:space-between;padding-top:10px;font-weight:700;font-size:15px;color:var(--i9)}
+.pay-method{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--ln);border-radius:12px;margin-bottom:10px;background:var(--sc)}
+.pay-method.sel{border-color:var(--gold);background:rgba(201,168,76,.06)}
+.pay-icon{width:36px;height:36px;border-radius:10px;background:var(--tb);color:var(--tbt);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pay-name{flex:1;font-weight:600;font-size:13px;color:var(--i9)}
+.pay-radio{width:18px;height:18px;border-radius:999px;border:2px solid var(--ln)}
+.pay-radio.sel{border-color:var(--gold);background:var(--gold)}
+
+/* Document upload rows */
+.doc-row{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--ln);border-radius:14px;margin-bottom:10px;background:var(--sc)}
+.doc-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.doc-icon.done{background:var(--ok-bg);color:var(--ok)}
+.doc-icon.pending{background:var(--st);color:var(--i4)}
+.doc-info{flex:1;min-width:0}
+.doc-name{font-weight:600;font-size:13px;color:var(--i9)}
+.doc-status{font-size:11px;margin-top:1px}
+.doc-status.done{color:var(--ok)}.doc-status.pending{color:var(--i4)}
+.doc-action{font-size:11px;font-weight:600;color:var(--gold);flex-shrink:0}
+
+/* Confirmation */
+.conf-c{padding:60px 30px;text-align:center}
+.conf-icon{width:80px;height:80px;border-radius:999px;background:var(--ok-bg);color:var(--ok);display:flex;align-items:center;justify-content:center;margin:0 auto 24px}
+.conf-title{font-family:'Playfair Display',serif;font-weight:700;font-size:22px;color:var(--i9);margin-bottom:8px}
+.conf-sub{font-size:13px;color:var(--i6);line-height:20px;margin-bottom:28px}
+.conf-card{background:var(--sc);border:1px solid var(--ln);border-radius:16px;padding:20px;margin-bottom:24px;text-align:left}
+.conf-row{display:flex;justify-content:space-between;padding:8px 0;font-size:12px;border-bottom:1px solid var(--ln)}
+.conf-row:last-child{border-bottom:none}
+.conf-label{color:var(--i6)}.conf-val{color:var(--i9);font-weight:600}
+.conf-btn{width:100%;padding:15px;border-radius:12px;background:var(--gold);color:var(--i9);text-align:center;font-weight:700;font-size:14px;margin-bottom:10px}
+.conf-btn.outline{background:transparent;border:1px solid var(--ln);color:var(--i9)}
+.checklist-note{background:var(--tb);color:var(--tbt);padding:12px 14px;border-radius:12px;font-size:11px;line-height:17px;margin-bottom:24px;text-align:left}
+</style>
+</head>
+<body>
+
+<div class="gh">
+  <div class="gh-e">SERVICES MODULE · WIZARDS</div>
+  <h1 class="gh-t">Insurance and Visa, step by step.</h1>
+  <p class="gh-s">Two complete 4-step booking wizards plus confirmation screens — the two highest-value forms in Services, fully designed in the v1.3 system.</p>
+</div>
+
+<!-- ============================================ INSURANCE WIZARD ============================================ -->
+<div class="row3">
+  <div class="ph"><h2>Insurance — Steps 1 &amp; 2</h2><span>· Trip Details → Choose Plan</span></div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>STEP 1 · TRIP DETAILS</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar">
+        <div class="ab-row"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Travel Insurance</div></div>
+        <div class="steps">
+          <div class="step"><div class="step-dot active">1</div><div class="step-label active">Trip</div></div>
+          <div class="step"><div class="step-line"></div><div class="step-dot">2</div><div class="step-label">Plan</div></div>
+          <div class="step"><div class="step-line"></div><div class="step-dot">3</div><div class="step-label">Traveller</div></div>
+          <div class="step"><div class="step-line"></div><div class="step-dot">4</div><div class="step-label">Pay</div></div>
+        </div>
+      </div>
+      <div class="scrollarea">
+        <div class="form-c">
+          <div class="sec-h">Trip Details</div>
+          <div class="sec-sub">Tell us about the trip you're insuring</div>
+
+          <label class="field-label">Travel Category</label>
+          <div class="field-select filled">International <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+
+          <label class="field-label">Country of Visit</label>
+          <div class="field-select filled">Indonesia <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+
+          <div class="field-row">
+            <div><label class="field-label">Start Date</label><input class="field-input" placeholder="12-07-2026"></div>
+            <div><label class="field-label">End Date</label><input class="field-input" placeholder="18-07-2026"></div>
+          </div>
+
+          <label class="field-label">Number of Travellers</label>
+          <div class="stepper"><div class="stepper-btn">−</div><div class="stepper-val">2</div><div class="stepper-btn">+</div></div>
+
+          <label class="field-label">Traveller 1 — Date of Birth</label>
+          <input class="field-input" placeholder="dd-mm-yyyy">
+        </div>
+      </div>
+      <div class="btn-next">Next: Choose Plan</div>
+    </div></div>
+  </div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>STEP 2 · CHOOSE PLAN</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar">
+        <div class="ab-row"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Travel Insurance</div></div>
+        <div class="steps">
+          <div class="step"><div class="step-dot done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-label">Trip</div></div>
+          <div class="step"><div class="step-line done"></div><div class="step-dot active">2</div><div class="step-label active">Plan</div></div>
+          <div class="step"><div class="step-line"></div><div class="step-dot">3</div><div class="step-label">Traveller</div></div>
+          <div class="step"><div class="step-line"></div><div class="step-dot">4</div><div class="step-label">Pay</div></div>
+        </div>
+      </div>
+      <div class="scrollarea">
+        <div class="form-c">
+          <div class="sec-h">Choose Your Plan</div>
+          <div class="sec-sub">Indonesia · 6 days · 2 travellers</div>
+
+          <div class="plan-card"><div class="plan-radio"></div><div class="plan-top"><div class="plan-name">Basic</div><div class="plan-price">₹890</div></div><div class="plan-cover">Coverage up to $50,000</div>
+            <div class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Emergency medical expenses</div>
+            <div class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Trip cancellation cover</div>
+          </div>
+
+          <div class="plan-card sel"><div class="plan-badge">Most Popular</div><div class="plan-radio sel"></div><div class="plan-top"><div class="plan-name">Standard</div><div class="plan-price">₹1,450</div></div><div class="plan-cover">Coverage up to $100,000</div>
+            <div class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Emergency medical expenses</div>
+            <div class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Trip cancellation cover</div>
+            <div class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Baggage loss protection</div>
+          </div>
+
+          <div class="plan-card"><div class="plan-radio"></div><div class="plan-top"><div class="plan-name">Premium</div><div class="plan-price">₹2,200</div></div><div class="plan-cover">Coverage up to $250,000</div>
+            <div class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Everything in Standard</div>
+            <div class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Adventure sports cover</div>
+            <div class="plan-feat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Zero deductible</div>
+          </div>
+        </div>
+      </div>
+      <div class="btn-next">Next: Traveller Details</div>
+    </div></div>
+  </div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>STEP 3 · TRAVELLER DETAILS</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar">
+        <div class="ab-row"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Travel Insurance</div></div>
+        <div class="steps">
+          <div class="step"><div class="step-dot done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-label">Trip</div></div>
+          <div class="step"><div class="step-line done"></div><div class="step-dot done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-label">Plan</div></div>
+          <div class="step"><div class="step-line done"></div><div class="step-dot active">3</div><div class="step-label active">Traveller</div></div>
+          <div class="step"><div class="step-line"></div><div class="step-dot">4</div><div class="step-label">Pay</div></div>
+        </div>
+      </div>
+      <div class="scrollarea">
+        <div class="form-c">
+          <div class="sec-h">Traveller 1 of 2</div>
+          <div class="sec-sub">Standard Plan · ₹1,450 per traveller</div>
+
+          <label class="field-label">Full Name (as per Passport)</label>
+          <input class="field-input" placeholder="Rakesh Sharma">
+
+          <label class="field-label">Passport Number</label>
+          <input class="field-input" placeholder="P1234567">
+
+          <div class="field-row">
+            <div><label class="field-label">Date of Birth</label><input class="field-input" placeholder="dd-mm-yyyy"></div>
+            <div><label class="field-label">Nationality</label><input class="field-input" placeholder="Indian"></div>
+          </div>
+
+          <label class="field-label">Email Address</label>
+          <input class="field-input" placeholder="rakesh@sharmatravels.com">
+
+          <label class="field-label">Phone Number</label>
+          <input class="field-input" placeholder="+91 98765 43210">
+
+          <label class="field-label">Any Pre-Existing Medical Conditions?</label>
+          <div class="field-select filled">No <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+        </div>
+      </div>
+      <div class="btn-next">Next: Review & Pay</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="row2">
+  <div class="ph"><h2>Insurance — Step 4 &amp; Confirmation</h2><span>· Review & Pay → Policy Issued</span></div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>STEP 4 · REVIEW &amp; PAY</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar">
+        <div class="ab-row"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Travel Insurance</div></div>
+        <div class="steps">
+          <div class="step"><div class="step-dot done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-label">Trip</div></div>
+          <div class="step"><div class="step-line done"></div><div class="step-dot done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-label">Plan</div></div>
+          <div class="step"><div class="step-line done"></div><div class="step-dot done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-label">Traveller</div></div>
+          <div class="step"><div class="step-line done"></div><div class="step-dot active">4</div><div class="step-label active">Pay</div></div>
+        </div>
+      </div>
+      <div class="scrollarea">
+        <div class="form-c">
+          <div class="sec-h">Review &amp; Pay</div>
+          <div class="sec-sub">Check everything before you pay</div>
+
+          <div class="rv-card">
+            <div class="rv-row"><span class="rv-label">Destination</span><span class="rv-val">Indonesia</span></div>
+            <div class="rv-row"><span class="rv-label">Travel Dates</span><span class="rv-val">12–18 Jul 2026</span></div>
+            <div class="rv-row"><span class="rv-label">Plan</span><span class="rv-val">Standard</span></div>
+            <div class="rv-row"><span class="rv-label">Travellers</span><span class="rv-val">2</span></div>
+            <div class="rv-divider"></div>
+            <div class="rv-row"><span class="rv-label">Premium (×2)</span><span class="rv-val">₹2,900</span></div>
+            <div class="rv-row"><span class="rv-label">GST (18%)</span><span class="rv-val">₹522</span></div>
+            <div class="rv-total"><span>Total</span><span>₹3,422</span></div>
+          </div>
+
+          <label class="field-label">Payment Method</label>
+          <div class="pay-method sel"><div class="pay-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div class="pay-name">Credit / Debit Card</div><div class="pay-radio sel"></div></div>
+          <div class="pay-method"><div class="pay-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="pay-name">UPI</div><div class="pay-radio"></div></div>
+          <div class="pay-method"><div class="pay-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="pay-name">Wallet Balance — ₹12,400</div><div class="pay-radio"></div></div>
+        </div>
+      </div>
+      <div class="btn-next">Pay ₹3,422</div>
+    </div></div>
+  </div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>POLICY ISSUED</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="scrollarea">
+        <div class="conf-c" style="padding-top:100px">
+          <div class="conf-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+          <div class="conf-title">Policy Issued</div>
+          <div class="conf-sub">Your travel insurance is confirmed. A copy has been sent to rakesh@sharmatravels.com</div>
+
+          <div class="conf-card">
+            <div class="conf-row"><span class="conf-label">Policy Number</span><span class="conf-val">TWO-INS-88291</span></div>
+            <div class="conf-row"><span class="conf-label">Plan</span><span class="conf-val">Standard</span></div>
+            <div class="conf-row"><span class="conf-label">Coverage</span><span class="conf-val">$100,000</span></div>
+            <div class="conf-row"><span class="conf-label">Valid</span><span class="conf-val">12–18 Jul 2026</span></div>
+            <div class="conf-row"><span class="conf-label">Amount Paid</span><span class="conf-val">₹3,422</span></div>
+          </div>
+
+          <div class="conf-btn">Download Policy PDF</div>
+          <div class="conf-btn outline">View in My Documents</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ============================================ VISA WIZARD ============================================ -->
+<div class="row3">
+  <div class="ph"><h2>Visa — Steps 1 &amp; 2</h2><span>· Personal Info → Travel Details</span></div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>STEP 1 · PERSONAL INFO</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar">
+        <div class="ab-row"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Visa Application</div></div>
+        <div class="steps">
+          <div class="step"><div class="step-dot active">1</div><div class="step-label active">Personal</div></div>
+          <div class="step"><div class="step-line"></div><div class="step-dot">2</div><div class="step-label">Travel</div></div>
+          <div class="step"><div class="step-line"></div><div class="step-dot">3</div><div class="step-label">Docs</div></div>
+          <div class="step"><div class="step-line"></div><div class="step-dot">4</div><div class="step-label">Submit</div></div>
+        </div>
+      </div>
+      <div class="scrollarea">
+        <div class="form-c">
+          <div class="sec-h">Personal Information</div>
+          <div class="sec-sub">As it appears on your passport</div>
+
+          <label class="field-label">Full Name</label>
+          <input class="field-input" placeholder="Rakesh Sharma">
+
+          <div class="field-row">
+            <div><label class="field-label">Date of Birth</label><input class="field-input" placeholder="dd-mm-yyyy"></div>
+            <div><label class="field-label">Nationality</label><input class="field-input" placeholder="Indian"></div>
+          </div>
+
+          <label class="field-label">Passport Number</label>
+          <input class="field-input" placeholder="P1234567">
+
+          <label class="field-label">Passport Expiry Date</label>
+          <input class="field-input" placeholder="dd-mm-yyyy">
+
+          <label class="field-label">Email Address</label>
+          <input class="field-input" placeholder="rakesh@sharmatravels.com">
+
+          <label class="field-label">Phone Number</label>
+          <input class="field-input" placeholder="+91 98765 43210">
+        </div>
+      </div>
+      <div class="btn-next">Next: Travel Details</div>
+    </div></div>
+  </div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>STEP 2 · TRAVEL DETAILS</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar">
+        <div class="ab-row"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Visa Application</div></div>
+        <div class="steps">
+          <div class="step"><div class="step-dot done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-label">Personal</div></div>
+          <div class="step"><div class="step-line done"></div><div class="step-dot active">2</div><div class="step-label active">Travel</div></div>
+          <div class="step"><div class="step-line"></div><div class="step-dot">3</div><div class="step-label">Docs</div></div>
+          <div class="step"><div class="step-line"></div><div class="step-dot">4</div><div class="step-label">Submit</div></div>
+        </div>
+      </div>
+      <div class="scrollarea">
+        <div class="form-c">
+          <div class="sec-h">Travel Details</div>
+          <div class="sec-sub">Where and when are you travelling?</div>
+
+          <label class="field-label">Destination Country</label>
+          <div class="field-select filled">Schengen (France) <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+
+          <label class="field-label">Visa Type</label>
+          <div class="field-select filled">Tourist — Single Entry <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+
+          <div class="field-row">
+            <div><label class="field-label">Travel Date</label><input class="field-input" placeholder="dd-mm-yyyy"></div>
+            <div><label class="field-label">Duration of Stay</label><input class="field-input" placeholder="10 days"></div>
+          </div>
+
+          <label class="field-label">Purpose of Visit</label>
+          <input class="field-input" placeholder="Tourism">
+
+          <label class="field-label">Accommodation Address</label>
+          <input class="field-input" placeholder="Hotel name & address in destination">
+        </div>
+      </div>
+      <div class="btn-next">Next: Upload Documents</div>
+    </div></div>
+  </div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>STEP 3 · DOCUMENT UPLOAD</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar">
+        <div class="ab-row"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Visa Application</div></div>
+        <div class="steps">
+          <div class="step"><div class="step-dot done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-label">Personal</div></div>
+          <div class="step"><div class="step-line done"></div><div class="step-dot done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-label">Travel</div></div>
+          <div class="step"><div class="step-line done"></div><div class="step-dot active">3</div><div class="step-label active">Docs</div></div>
+          <div class="step"><div class="step-line"></div><div class="step-dot">4</div><div class="step-label">Submit</div></div>
+        </div>
+      </div>
+      <div class="scrollarea">
+        <div class="form-c">
+          <div class="sec-h">Upload Documents</div>
+          <div class="sec-sub">3 of 4 documents uploaded</div>
+
+          <div class="doc-row"><div class="doc-icon done"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div><div class="doc-info"><div class="doc-name">Passport Copy</div><div class="doc-status done">Uploaded · passport.pdf</div></div><div class="doc-action">Replace</div></div>
+          <div class="doc-row"><div class="doc-icon done"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div><div class="doc-info"><div class="doc-name">Passport Photo</div><div class="doc-status done">Uploaded · photo.jpg</div></div><div class="doc-action">Replace</div></div>
+          <div class="doc-row"><div class="doc-icon done"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div><div class="doc-info"><div class="doc-name">Flight Itinerary</div><div class="doc-status done">Uploaded · itinerary.pdf</div></div><div class="doc-action">Replace</div></div>
+          <div class="doc-row"><div class="doc-icon pending"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="doc-info"><div class="doc-name">Bank Statement</div><div class="doc-status pending">Last 3 months · Required</div></div><div class="doc-action">Upload</div></div>
+        </div>
+      </div>
+      <div class="btn-next">Next: Review &amp; Submit</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="row2">
+  <div class="ph"><h2>Visa — Step 4 &amp; Confirmation</h2><span>· Review & Submit → Application Submitted</span></div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>STEP 4 · REVIEW &amp; SUBMIT</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar">
+        <div class="ab-row"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Visa Application</div></div>
+        <div class="steps">
+          <div class="step"><div class="step-dot done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-label">Personal</div></div>
+          <div class="step"><div class="step-line done"></div><div class="step-dot done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-label">Travel</div></div>
+          <div class="step"><div class="step-line done"></div><div class="step-dot done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-label">Docs</div></div>
+          <div class="step"><div class="step-line done"></div><div class="step-dot active">4</div><div class="step-label active">Submit</div></div>
+        </div>
+      </div>
+      <div class="scrollarea">
+        <div class="form-c">
+          <div class="sec-h">Review &amp; Submit</div>
+          <div class="sec-sub">Please check everything carefully</div>
+
+          <div class="rv-card">
+            <div class="rv-row"><span class="rv-label">Applicant</span><span class="rv-val">Rakesh Sharma</span></div>
+            <div class="rv-row"><span class="rv-label">Passport No.</span><span class="rv-val">P1234567</span></div>
+            <div class="rv-divider"></div>
+            <div class="rv-row"><span class="rv-label">Destination</span><span class="rv-val">Schengen (France)</span></div>
+            <div class="rv-row"><span class="rv-label">Visa Type</span><span class="rv-val">Tourist · Single Entry</span></div>
+            <div class="rv-row"><span class="rv-label">Travel Date</span><span class="rv-val">12 Jul 2026</span></div>
+            <div class="rv-divider"></div>
+            <div class="rv-row"><span class="rv-label">Documents</span><span class="rv-val">4 of 4 uploaded</span></div>
+          </div>
+
+          <div class="checklist-note">By submitting, you confirm all information and documents provided are true and accurate. Processing fees are non-refundable once submitted to the embassy.</div>
+        </div>
+      </div>
+      <div class="btn-next">Submit Application</div>
+    </div></div>
+  </div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>APPLICATION SUBMITTED</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="scrollarea">
+        <div class="conf-c" style="padding-top:100px">
+          <div class="conf-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+          <div class="conf-title">Application Submitted</div>
+          <div class="conf-sub">Your visa application has been received and is being processed.</div>
+
+          <div class="conf-card">
+            <div class="conf-row"><span class="conf-label">Application ID</span><span class="conf-val">TWO-VISA-44102</span></div>
+            <div class="conf-row"><span class="conf-label">Destination</span><span class="conf-val">Schengen (France)</span></div>
+            <div class="conf-row"><span class="conf-label">Submitted</span><span class="conf-val">27 Jun 2026</span></div>
+            <div class="conf-row"><span class="conf-label">Processing Time</span><span class="conf-val">5–7 business days</span></div>
+          </div>
+
+          <div class="conf-btn">Track Application Status</div>
+          <div class="conf-btn outline">View in My Documents</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+</body>
+</html>

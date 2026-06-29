@@ -1,0 +1,320 @@
+import 'package:dio/dio.dart';
+import '../models/association_content_model.dart';
+import '../models/association_deal_model.dart';
+
+class AssociationContentDatasource {
+  AssociationContentDatasource(this._dio);
+  final Dio _dio;
+
+  Options _auth(String token) =>
+      Options(headers: {'Authorization': 'Bearer $token'});
+
+  // ── Deals ─────────────────────────────────────────────────────────────────
+
+  Future<List<AssociationDealModel>> fetchOffers({
+    required String associationId,
+    required String category,
+    required String token,
+  }) async {
+    // Old API embeds assocId in the path; response is [{<key>:[...]}]
+    final res = await _dio.get(
+      _offersEndpoint(category, associationId),
+      options: _auth(token),
+    );
+    return _parseDealEnvelope(res.data, _envelopeKey(category));
+  }
+
+  Future<List<AssociationDemandModel>> fetchDemands({
+    required String associationId,
+    required String category,
+    required String token,
+  }) async {
+    final res = await _dio.get(
+      _demandsEndpoint(category, associationId),
+      options: _auth(token),
+    );
+    return _parseDemandEnvelope(res.data, _envelopeKey(category));
+  }
+
+  Future<List<AssociationLastMinModel>> fetchLastMin({
+    required String associationId,
+    required String token,
+  }) async {
+    final res = await _dio.get(
+      '/api/package/lastmin',
+      queryParameters: {'associationId': associationId},
+      options: _auth(token),
+    );
+    return _parseList(res.data, AssociationLastMinModel.fromJson);
+  }
+
+  Future<void> createOffer({
+    required String associationId,
+    required String token,
+    required String category,
+    required String destination,
+    required int nights,
+    required int days,
+    required double price,
+    required String hotelCategory,
+    String? imagePath,
+  }) async {
+    final endpoint = _createEndpoint(category);
+    final formData = FormData.fromMap({
+      'associationId': associationId,
+      'destination': destination,
+      'nights': nights,
+      'days': days,
+      'price': price,
+      'hotelCategory': hotelCategory,
+      if (imagePath != null)
+        'image': await MultipartFile.fromFile(imagePath),
+    });
+    await _dio.post(
+      endpoint,
+      data: formData,
+      options: Options(headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'multipart/form-data',
+      }),
+    );
+  }
+
+  Future<void> createDemand({
+    required String associationId,
+    required String token,
+    required String category,
+    required String destination,
+    required double budgetMin,
+    required double budgetMax,
+    required int pax,
+    required int nights,
+    required String details,
+  }) async {
+    final endpoint = _demandsCreateEndpoint(category);
+    await _dio.post(
+      endpoint,
+      data: {
+        'associationId': associationId,
+        'category': category,
+        'destination': destination,
+        'budgetMin': budgetMin,
+        'budgetMax': budgetMax,
+        'pax': pax,
+        'nights': nights,
+        'details': details,
+      },
+      options: _auth(token),
+    );
+  }
+
+  Future<void> deleteDeal({
+    required String id,
+    required String category,
+    required String token,
+  }) async {
+    final endpoint = _deleteEndpoint(category, id);
+    await _dio.delete(endpoint, options: _auth(token));
+  }
+
+  Future<void> toggleFavourite({
+    required String id,
+    required String category,
+    required String token,
+  }) async {
+    final endpoint = _favEndpoint(category);
+    await _dio.put(
+      endpoint,
+      data: {'packageId': id},
+      options: _auth(token),
+    );
+  }
+
+  // ── Circulars & Updates ───────────────────────────────────────────────────
+
+  Future<List<AssociationCircularModel>> fetchCirculars({
+    required String associationId,
+    required String token,
+  }) async {
+    final res = await _dio.get('/api/circulars/$associationId', options: _auth(token));
+    final raw = res.data;
+    if (raw is List && raw.isNotEmpty) {
+      final block = raw.first as Map<String, dynamic>;
+      // Backend key is 'circular' (singular, lowercase)
+      final list = block['circular'] as List? ?? [];
+      return list
+          .whereType<Map<String, dynamic>>()
+          .map(AssociationCircularModel.fromJson)
+          .toList();
+    }
+    return [];
+  }
+
+  Future<List<AssociationUpdateModel>> fetchUpdates({
+    required String associationId,
+    required String token,
+  }) async {
+    final res = await _dio.get('/api/updates/$associationId', options: _auth(token));
+    final raw = res.data;
+    if (raw is List && raw.isNotEmpty) {
+      final block = raw.first as Map<String, dynamic>;
+      // Backend key is 'Update' (capital U, singular)
+      final list = block['Update'] as List? ?? [];
+      return list
+          .whereType<Map<String, dynamic>>()
+          .map(AssociationUpdateModel.fromJson)
+          .toList();
+    }
+    return [];
+  }
+
+  // ── Directory ─────────────────────────────────────────────────────────────
+
+  Future<List<AssociationMemberModel>> searchMembers({
+    required String associationId,
+    required String query,
+    required String token,
+  }) async {
+    final res = await _dio.get(
+      '/api/members/search',
+      queryParameters: {'associationId': associationId, 'query': query},
+      options: _auth(token),
+    );
+    return _parseList(res.data, AssociationMemberModel.fromJson);
+  }
+
+  // ── Jobs ──────────────────────────────────────────────────────────────────
+
+  Future<List<AssociationJobModel>> fetchJobs({
+    required String associationId,
+    required String token,
+  }) async {
+    // ponytail: backend has no per-association filter — returns all job posts
+    final res = await _dio.get('/api/jobposts', options: _auth(token));
+    return _parseList(res.data, AssociationJobModel.fromJson);
+  }
+
+  // ── Chat ──────────────────────────────────────────────────────────────────
+
+  Future<List<AssociationChatModel>> fetchChats({
+    required String memberId,
+    required String token,
+  }) async {
+    final res = await _dio.get('/api/chat/$memberId', options: _auth(token));
+    if (res.data is! List) return [];
+    return (res.data as List).whereType<Map<String, dynamic>>().map((j) {
+      final members = (j['members'] as List?)?.map((e) => e.toString()).toList() ?? [];
+      // Show the other person's name (not ours)
+      final name = members.isNotEmpty && members.first == memberId
+          ? (j['receiverName'] as String? ?? '')
+          : (j['senderName'] as String? ?? '');
+      return AssociationChatModel(
+        id: j['_id']?.toString() ?? j['id']?.toString() ?? '',
+        name: name,
+        lastMessage: '',
+        time: j['updatedAt'] as String? ?? '',
+      );
+    }).toList();
+  }
+
+  // ── Cabs ──────────────────────────────────────────────────────────────────
+
+  // Cab Network — all registered drivers, no auth required
+  Future<List<AssociationCabModel>> fetchCabNetwork() async {
+    final res = await _dio.get('/api/CabBooking/cab');
+    return _parseList(res.data, AssociationCabModel.fromJson);
+  }
+
+  // Admin Cab — vehicles uploaded by this association (requires auth)
+  Future<List<AssociationCabModel>> fetchCabs({
+    required String associationId,
+    required String token,
+  }) async {
+    final res = await _dio.get(
+      '/api/vehicles',
+      queryParameters: {'associationId': associationId},
+      options: _auth(token),
+    );
+    return _parseList(res.data, AssociationCabModel.fromJson);
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  List<T> _parseList<T>(
+      dynamic data, T Function(Map<String, dynamic>) fromJson) {
+    if (data is List) {
+      return data.whereType<Map<String, dynamic>>().map(fromJson).toList();
+    }
+    if (data is Map<String, dynamic>) {
+      final list = data['data'] as List? ??
+          data['result'] as List? ??
+          data['items'] as List? ??
+          [];
+      return list.whereType<Map<String, dynamic>>().map(fromJson).toList();
+    }
+    return [];
+  }
+
+  // Backend returns [{<key>:[...]}] — extract the inner deal list
+  List<AssociationDealModel> _parseDealEnvelope(dynamic data, String key) {
+    if (data is List && data.isNotEmpty && data.first is Map<String, dynamic>) {
+      final list = (data.first as Map<String, dynamic>)[key] as List? ?? [];
+      return list.whereType<Map<String, dynamic>>()
+          .map(AssociationDealModel.fromJson).toList();
+    }
+    return [];
+  }
+
+  List<AssociationDemandModel> _parseDemandEnvelope(dynamic data, String key) {
+    if (data is List && data.isNotEmpty && data.first is Map<String, dynamic>) {
+      final list = (data.first as Map<String, dynamic>)[key] as List? ?? [];
+      return list.whereType<Map<String, dynamic>>()
+          .map(AssociationDemandModel.fromJson).toList();
+    }
+    return [];
+  }
+
+  // Assoc ID goes in the path, not a query param — matches old API
+  String _offersEndpoint(String cat, String assocId) => switch (cat) {
+        'Hotel' => '/api/hotel/Gethotels/$assocId',
+        'Transport' => '/api/transport/GetTransport/$assocId',
+        _ => '/api/package/Getpackages/$assocId',
+      };
+
+  String _demandsEndpoint(String cat, String assocId) => switch (cat) {
+        'Hotel' => '/api/Hotelbuyer/GetAllhotels/$assocId',
+        'Transport' => '/api/TransportBuyer/GetAllTransport/$assocId',
+        _ => '/api/PackageBuyer/Getpackages/$assocId',
+      };
+
+  // Response envelope key per category (case-sensitive, confirmed from old B2BModel)
+  String _envelopeKey(String cat) => switch (cat) {
+        'Hotel' => 'hotel',       // lowercase h
+        'Transport' => 'Transport', // capital T
+        _ => 'Packages',           // capital P
+      };
+
+  String _createEndpoint(String cat) => switch (cat) {
+        'Hotel' => '/api/hotel',
+        'Transport' => '/api/transport',
+        _ => '/api/package',
+      };
+
+  String _demandsCreateEndpoint(String cat) => switch (cat) {
+        'Hotel' => '/api/Hotelbuyer',
+        'Transport' => '/api/TransportBuyer',
+        _ => '/api/PackageBuyer',
+      };
+
+  String _deleteEndpoint(String cat, String id) => switch (cat) {
+        'Hotel' => '/api/hotel/deleteHotel/$id',
+        'Transport' => '/api/transport/deleteTransport/$id',
+        _ => '/api/package/deletePackage/$id',
+      };
+
+  String _favEndpoint(String cat) => switch (cat) {
+        'Hotel' => '/api/hotel/AddorRemovefavorites',
+        'Transport' => '/api/transport/AddorRemovefavorites',
+        _ => '/api/package/AddorRemovefavorites',
+      };
+}

@@ -1,18 +1,18 @@
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import '../models/campus_models.dart';
 
 class CampusRemoteDatasource {
-  const CampusRemoteDatasource({
-    required this.backendDio,
-    required this.twoDio,
-  });
+  const CampusRemoteDatasource({required this.backendDio});
 
   final Dio backendDio;
-  final Dio twoDio;
 
-  // travelworldonline.in returns plain text; unwrap [{"tblvideocats": [...]}]
-  List<dynamic> _unwrap(dynamic raw) {
+  Future<List<AdvisoryBoardMember>> fetchAdvisoryBoard() async {
+    // Endpoint lives on backend.twoapp.in (same backend as the app, requires auth)
+    final response =
+        await backendDio.get('/api/advisoryBoard/getAdvisoryBoard');
+    dynamic raw = response.data;
     if (raw is String) {
       try {
         raw = jsonDecode(raw.trim());
@@ -20,91 +20,89 @@ class CampusRemoteDatasource {
         return [];
       }
     }
-    try {
-      if (raw is List && raw.isNotEmpty) {
-        final first = raw.first;
-        if (first is Map<String, dynamic> && first['tblvideocats'] is List) {
-          return first['tblvideocats'] as List<dynamic>;
-        }
-        return raw;
+    // Response shape: [{advisoryBoard: [{_id, name, post, about, images}]}]
+    List<dynamic> items = [];
+    if (raw is List && raw.isNotEmpty) {
+      final first = raw.first;
+      if (first is Map<String, dynamic>) {
+        items = first['advisoryBoard'] as List<dynamic>? ?? [];
       }
-      if (raw is Map<String, dynamic>) {
-        return raw['tblvideocats'] as List<dynamic>? ??
-            raw['data'] as List<dynamic>? ??
-            [];
-      }
-    } catch (_) {}
-    return [];
-  }
-
-  Future<List<AdvisoryBoardMember>> fetchAdvisoryBoard() async {
-    final response =
-        await backendDio.get('/api/advisoryBoard/getAdvisoryBoard');
-    final raw = response.data;
-    List<dynamic> list;
-    if (raw is List) {
-      list = raw;
     } else if (raw is Map<String, dynamic>) {
-      list = raw['data'] as List<dynamic>? ?? [];
-    } else {
-      list = [];
+      items = raw['advisoryBoard'] as List<dynamic>? ??
+          raw['data'] as List<dynamic>? ??
+          [];
     }
-    return list
+    return items
         .whereType<Map<String, dynamic>>()
         .map(AdvisoryBoardMember.fromJson)
         .toList();
   }
 
+  FirebaseFirestore get _fs => FirebaseFirestore.instance;
+
   Future<List<SkillCourse>> fetchSkillCourses() async {
-    final response = await twoDio.get('/travelvideojson/courselist/');
-    return _unwrap(response.data)
-        .whereType<Map<String, dynamic>>()
-        .map(SkillCourse.fromJson)
-        .toList();
+    final snap = await _fs.collection('courseCategory').orderBy('order').get();
+    return snap.docs.map((doc) {
+      final data = <String, dynamic>{'id': doc.id, ...doc.data()};
+      return SkillCourse.fromJson(data);
+    }).toList();
   }
 
   Future<List<DestinationCategory>> fetchDestinations() async {
-    final response = await twoDio.get('/travelvideojson/destcat/');
-    return _unwrap(response.data)
-        .whereType<Map<String, dynamic>>()
-        .map(DestinationCategory.fromJson)
-        .toList();
+    final snap = await _fs.collection('country').orderBy('order').get();
+    return snap.docs.map((doc) {
+      final data = <String, dynamic>{'id': doc.id, ...doc.data()};
+      return DestinationCategory.fromJson(data);
+    }).toList();
   }
 
   Future<List<DestSubCategory>> fetchDestSubCategories(String catId) async {
-    final response = await twoDio.get('/travelvideojson/destsubcat/?catid=$catId');
-    return _unwrap(response.data)
-        .whereType<Map<String, dynamic>>()
-        .map(DestSubCategory.fromJson)
-        .toList();
+    final snap = await _fs
+        .collection('country')
+        .doc(catId)
+        .collection('countryCategory')
+        .orderBy('order')
+        .get();
+    return snap.docs.map((doc) {
+      final data = <String, dynamic>{'id': doc.id, ...doc.data()};
+      return DestSubCategory.fromJson(data);
+    }).toList();
   }
 
+  // Firebase has no sub-sub-category level — returning empty triggers the
+  // existing skip-to-video redirect in DestSubSubCategoryScreen.
   Future<List<DestSubSubCategory>> fetchDestSubSubCategories(
       String catId, String subCatId) async {
-    final response = await twoDio.get(
-        '/travelvideojson/destsubsubcat/?catid=$catId&subcatid=$subCatId');
-    return _unwrap(response.data)
-        .whereType<Map<String, dynamic>>()
-        .map(DestSubSubCategory.fromJson)
-        .toList();
+    return [];
   }
 
+  // subSubCatId is '_' (skip sentinel from redirect) — ignored for Firebase.
   Future<List<DestVideo>> fetchDestVideos(
       String catId, String subCatId, String subSubCatId) async {
-    final response = await twoDio.get(
-        '/travelvideojson/destinationlist/?catid=$catId&subcatid=$subCatId&subsubcatid=$subSubCatId');
-    return _unwrap(response.data)
-        .whereType<Map<String, dynamic>>()
-        .map(DestVideo.fromJson)
-        .toList();
+    final snap = await _fs
+        .collection('country')
+        .doc(catId)
+        .collection('countryCategory')
+        .doc(subCatId)
+        .collection('countryData')
+        .orderBy('uploadedTime', descending: true)
+        .get();
+    return snap.docs.map((doc) {
+      final data = <String, dynamic>{'id': doc.id, ...doc.data()};
+      return DestVideo.fromJson(data);
+    }).toList();
   }
 
   Future<List<CampusCourseItem>> fetchCourseItems(String catId) async {
-    final response =
-        await twoDio.get('/travelvideojson/coursevideolist/?catid=$catId');
-    return _unwrap(response.data)
-        .whereType<Map<String, dynamic>>()
-        .map(CampusCourseItem.fromJson)
-        .toList();
+    final snap = await _fs
+        .collection('courseCategory')
+        .doc(catId)
+        .collection('data')
+        .orderBy('uploadedTime', descending: true)
+        .get();
+    return snap.docs.map((doc) {
+      final data = <String, dynamic>{'id': doc.id, ...doc.data()};
+      return CampusCourseItem.fromJson(data);
+    }).toList();
   }
 }

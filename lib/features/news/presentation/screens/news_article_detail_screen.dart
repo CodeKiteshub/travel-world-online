@@ -35,6 +35,7 @@ class _NewsArticleDetailScreenState
         _player.seek(Duration.zero);
       }
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startListening());
   }
 
   @override
@@ -47,13 +48,15 @@ class _NewsArticleDetailScreenState
 
   Future<void> _startListening() async {
     final url = widget.article.firstAudioUrl;
-    if (url == null || url.isEmpty) return;
+    if (url == null || url.isEmpty || _isListening) return;
+    // Show the bar immediately — playerStateStream handles loading indicator
+    setState(() => _isListening = true);
     try {
       await _player.setUrl(url);
-      await _player.play();
-      if (mounted) setState(() => _isListening = true);
+      _player.play();
     } catch (_) {
       if (mounted) {
+        setState(() => _isListening = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not load audio')),
         );
@@ -144,7 +147,6 @@ class _ArticleBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Hero image
           AspectRatio(
             aspectRatio: 16 / 10,
             child: a.firstImage.isNotEmpty
@@ -164,7 +166,6 @@ class _ArticleBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Category tag
                 Text(
                   a.category.name.toUpperCase(),
                   style: AppTypography.overline.copyWith(
@@ -176,7 +177,6 @@ class _ArticleBody extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
 
-                // Article title — Playfair Display
                 Text(
                   a.title,
                   style: AppTypography.displayMd.copyWith(
@@ -187,7 +187,6 @@ class _ArticleBody extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
-                // Byline
                 Text(
                   byline,
                   style: AppTypography.caption.copyWith(color: colors.ink400),
@@ -197,7 +196,6 @@ class _ArticleBody extends StatelessWidget {
                   child: Divider(height: 1),
                 ),
 
-                // Article content (HTML)
                 if (a.content.isNotEmpty)
                   HtmlWidget(
                     a.content,
@@ -271,7 +269,7 @@ class _ListenFab extends StatelessWidget {
   }
 }
 
-// ── Reading bar (listening state) ─────────────────────────────────────────────
+// ── Reading bar — all state driven from playerStateStream ─────────────────────
 
 class _ReadingBar extends StatelessWidget {
   const _ReadingBar({
@@ -285,75 +283,94 @@ class _ReadingBar extends StatelessWidget {
   final AppColorScheme colors;
   final VoidCallback onStop;
 
+  static bool _isBuffering(PlayerState? s) =>
+      s == null ||
+      s.processingState == ProcessingState.idle ||
+      s.processingState == ProcessingState.loading ||
+      s.processingState == ProcessingState.buffering;
+
   @override
   Widget build(BuildContext context) {
     return Positioned(
       bottom: 0,
       left: 0,
       right: 0,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-        color: const Color(0xFF0D1B2A),
-        child: Row(
-          children: [
-            // Gold icon
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFFC9A84C), Color(0xFF8B6914)],
-                ),
-              ),
-              child: const Icon(Icons.volume_up_rounded,
-                  color: Color(0xFF1A1A1A), size: 18),
-            ),
-            const SizedBox(width: 12),
+      child: StreamBuilder<PlayerState>(
+        stream: player.playerStateStream,
+        builder: (context, snapshot) {
+          final state = snapshot.data;
+          final buffering = _isBuffering(state);
+          final isPlaying = state?.playing ?? false;
 
-            // Text + progress
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'NOW READING ALOUD',
-                    style: AppTypography.overline.copyWith(
-                      color: Colors.white54,
-                      fontSize: 10,
-                      letterSpacing: 0.6,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.label.copyWith(
-                      color: Colors.white,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  _ProgressTrack(player: player),
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-
-            // Controls
-            Row(
+          return Container(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+            color: const Color(0xFF0D1B2A),
+            child: Row(
               children: [
-                StreamBuilder<PlayerState>(
-                  stream: player.playerStateStream,
-                  builder: (context, snapshot) {
-                    final isPlaying = snapshot.data?.playing ?? false;
-                    return GestureDetector(
-                      onTap: () =>
-                          isPlaying ? player.pause() : player.play(),
+                // Gold icon
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFFC9A84C), Color(0xFF8B6914)],
+                    ),
+                  ),
+                  child: const Icon(Icons.volume_up_rounded,
+                      color: Color(0xFF1A1A1A), size: 18),
+                ),
+                const SizedBox(width: 12),
+
+                // Text + progress
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        buffering ? 'CONNECTING…' : 'NOW READING ALOUD',
+                        style: AppTypography.overline.copyWith(
+                          color: Colors.white54,
+                          fontSize: 10,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.label.copyWith(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      if (buffering)
+                        const LinearProgressIndicator(
+                          backgroundColor: Colors.white24,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xFFC9A84C)),
+                          minHeight: 3,
+                        )
+                      else
+                        _ProgressTrack(player: player),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+
+                // Controls
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: buffering
+                          ? null
+                          : () =>
+                              isPlaying ? player.pause() : player.play(),
                       child: Container(
                         width: 36,
                         height: 36,
@@ -361,27 +378,36 @@ class _ReadingBar extends StatelessWidget {
                           color: Color(0xFFC9A84C),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(
-                          isPlaying
-                              ? Icons.pause_rounded
-                              : Icons.play_arrow_rounded,
-                          color: const Color(0xFF1A1A1A),
-                          size: 18,
-                        ),
+                        padding: buffering
+                            ? const EdgeInsets.all(9)
+                            : EdgeInsets.zero,
+                        child: buffering
+                            ? const CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xFF1A1A1A)),
+                              )
+                            : Icon(
+                                isPlaying
+                                    ? Icons.pause_rounded
+                                    : Icons.play_arrow_rounded,
+                                color: const Color(0xFF1A1A1A),
+                                size: 18,
+                              ),
                       ),
-                    );
-                  },
-                ),
-                const SizedBox(width: 10),
-                GestureDetector(
-                  onTap: onStop,
-                  child: const Icon(Icons.close_rounded,
-                      color: Colors.white54, size: 20),
+                    ),
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      onTap: onStop,
+                      child: const Icon(Icons.close_rounded,
+                          color: Colors.white54, size: 20),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

@@ -53,10 +53,22 @@ class _PPPDetailScreenState extends ConsumerState<PPPDetailScreen>
               onPressed: () => context.pop(),
             ),
             actions: [
+              IconButton(
+                tooltip: 'Directory',
+                icon: const Icon(Icons.people_outline_rounded,
+                    color: Colors.white70),
+                onPressed: () => context.push(
+                  '/ppp/${widget.id}/directory',
+                  extra: boardName,
+                ),
+              ),
               TextButton(
-                onPressed: () => _openStakeholderForm(),
+                onPressed: () =>
+                    context.push('/ppp/${widget.id}/register'),
                 child: const Text('Register',
-                    style: TextStyle(color: Colors.white70, fontSize: 12,
+                    style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
                         fontFamily: 'DMSans')),
               ),
             ],
@@ -149,13 +161,6 @@ class _PPPDetailScreenState extends ConsumerState<PPPDetailScreen>
     );
   }
 
-  Future<void> _openStakeholderForm() async {
-    final uri = Uri.parse(
-        'https://backend.twoapp.in/api/StackHolder?pppId=${widget.id}');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
 }
 
 // ── Tab bar sticky header ─────────────────────────────────────────────────────

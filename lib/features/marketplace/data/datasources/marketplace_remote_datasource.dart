@@ -119,7 +119,8 @@ class MarketplaceRemoteDatasource {
     if (data is List) {
       list = data;
     } else if (data is Map<String, dynamic>) {
-      list = data['data'] as List<dynamic>? ??
+      list = data['list'] as List<dynamic>? ??
+          data['data'] as List<dynamic>? ??
           data['rates'] as List<dynamic>? ??
           [];
     } else {
@@ -161,7 +162,8 @@ class MarketplaceRemoteDatasource {
     if (data is List) {
       list = data;
     } else if (data is Map<String, dynamic>) {
-      list = data['data'] as List<dynamic>? ??
+      list = data['list'] as List<dynamic>? ??
+          data['data'] as List<dynamic>? ??
           data['ratePlans'] as List<dynamic>? ??
           [];
     } else {

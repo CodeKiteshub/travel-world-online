@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TWO — Association Module FINAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+[data-theme="light"]{--sp:#FAF8F3;--sc:#FFFFFF;--st:#EFEDE6;--gold:#C9A84C;--ga:#E8D08A;--i9:#1A1A1A;--i6:#5E5E5E;--i4:#9E9E9E;--ln:#E8E5DC;--tb:#E8EEF5;--tbt:#2A4A6B;--ok:#2D7A4F;--ok-bg:rgba(45,122,79,.12);--wn:#B45309;--wn-bg:rgba(180,83,9,.12);--er:#C0392B;--er-bg:rgba(192,57,43,.12)}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;background:#111;color:#fff;padding:48px 20px 80px;-webkit-font-smoothing:antialiased}
+.gh{text-align:center;margin-bottom:40px;max-width:760px;margin-left:auto;margin-right:auto}.gh-e{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#C9A84C;font-weight:500;margin-bottom:16px}.gh-t{font-family:'Playfair Display',serif;font-weight:700;font-size:38px;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}.gh-s{font-size:15px;line-height:24px;color:#9E9E9E;max-width:640px;margin:0 auto}
+.locked{max-width:1000px;margin:0 auto 48px;padding:18px 24px;background:rgba(45,122,79,.1);border-radius:14px;border:1px solid rgba(45,122,79,.3);display:flex;gap:24px;flex-wrap:wrap;font-size:13px;color:#9ed6b0}
+.locked strong{color:#fff}
+.row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:32px;max-width:1280px;margin:0 auto 56px;padding:32px 0;border-top:1px solid rgba(255,255,255,.06);justify-items:center}
+.ph{display:flex;align-items:baseline;gap:14px;margin-bottom:24px;grid-column:1/-1}
+.ph h2{font-family:'Playfair Display',serif;font-weight:700;font-size:22px}.ph span{font-size:12px;color:#9E9E9E;letter-spacing:.04em}
+.fb{display:flex;flex-direction:column;align-items:center}.fl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:#FAF8F3}.fl .d{width:8px;height:8px;border-radius:999px;background:#FAF8F3}
+.phone{width:380px;height:800px;background:#000;border-radius:44px;padding:8px;box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.06)}
+.scr{width:100%;height:100%;border-radius:36px;overflow:hidden;position:relative;background:var(--sp);color:var(--i9);font-family:'DM Sans',sans-serif}
+.notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:110px;height:28px;background:#000;border-radius:16px;z-index:100}
+.sb{position:absolute;top:0;left:0;right:0;height:44px;padding:14px 28px 0;display:flex;justify-content:space-between;align-items:center;z-index:50;font-size:14px;font-weight:600;color:var(--i9)}
+.si{display:flex;gap:5px;align-items:center}svg{display:block}
+.appbar{position:absolute;top:44px;left:0;right:0;padding:12px 20px;display:flex;align-items:center;gap:10px;background:var(--sp);z-index:10}
+.ab-bk{width:38px;height:38px;border-radius:999px;background:var(--sc);border:1px solid var(--ln);display:flex;align-items:center;justify-content:center;color:var(--i9);flex-shrink:0}
+.ab-t{flex:1;font-family:'Playfair Display',serif;font-weight:700;font-size:18px;color:var(--i9)}
+.ab-icon{width:38px;height:38px;border-radius:999px;background:var(--sc);border:1px solid var(--ln);display:flex;align-items:center;justify-content:center;color:var(--i9);flex-shrink:0}
+.ab-icon.active{background:var(--gold);border-color:var(--gold)}
+.ab-badge{padding:5px 10px;border-radius:999px;font-weight:600;font-size:10px;background:var(--er-bg);color:var(--er);flex-shrink:0}
+.scrollarea{width:100%;height:100%;overflow-y:auto;position:relative}
+
+/* ===== Dashboard Option A (LOCKED) ===== */
+.dash-c{padding:106px 0 20px}
+.dash-live{margin:0 20px 20px;border-radius:18px;overflow:hidden;aspect-ratio:16/9;background:linear-gradient(135deg,#0D1B2A,#1A3850);position:relative;display:flex;align-items:center;justify-content:center}
+.dash-live-play{width:52px;height:52px;border-radius:999px;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center}
+.dash-live-badge{position:absolute;top:12px;left:14px;display:flex;align-items:center;gap:5px;background:rgba(192,57,43,.9);color:#fff;padding:4px 10px;border-radius:999px;font-weight:600;font-size:10px}
+.ld{width:5px;height:5px;border-radius:999px;background:#fff;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.da-full{margin:0 20px 12px;background:var(--sc);border:1px solid var(--ln);border-radius:16px;padding:16px;display:flex;gap:14px;align-items:center}
+.da-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.da-text{flex:1;min-width:0}.da-name{font-weight:600;font-size:14px;color:var(--i9)}.da-preview{font-size:11px;color:var(--i6);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.da-meta{flex-shrink:0;text-align:right}.da-count{font-weight:700;font-size:13px;color:var(--i9)}.da-label{font-size:9px;color:var(--i4);margin-top:1px}
+.da-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 20px 10px}
+.da-half{background:var(--sc);border:1px solid var(--ln);border-radius:16px;padding:16px}
+.da-half-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.da-half-name{font-weight:600;font-size:13px;color:var(--i9);margin-bottom:2px}.da-half-preview{font-size:11px;color:var(--i6);line-height:15px}
+.da-half-count{font-weight:700;font-size:18px;color:var(--gold);margin-bottom:2px;font-family:'Playfair Display',serif}
+
+/* ===== Network Deals Approach A (LOCKED) ===== */
+.nd-c{padding:104px 0 20px}
+.nd-seg{display:flex;margin:0 20px 14px;background:var(--st);border-radius:12px;padding:4px}
+.nd-seg-b{flex:1;text-align:center;padding:10px 4px;border-radius:9px;font-weight:600;font-size:12px;color:var(--i6)}
+.nd-seg-b.a{background:var(--sc);color:var(--i9);box-shadow:0 2px 6px rgba(0,0,0,.07)}
+.nd-cats{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 20px;margin-bottom:16px}.nd-cats::-webkit-scrollbar{display:none}
+.nd-cat{padding:8px 16px;border-radius:999px;font-weight:500;font-size:12px;color:var(--i6);border:1px solid var(--ln);background:var(--sc);white-space:nowrap;flex-shrink:0}
+.nd-cat.a{background:var(--i9);color:var(--sp);border-color:var(--i9);font-weight:600}
+.nd-status{display:flex;align-items:center;gap:8px;padding:0 20px;margin-bottom:14px;font-size:11px;color:var(--i6)}
+.nd-status strong{color:var(--i9);font-weight:600}
+.nd-fab{position:absolute;bottom:24px;right:20px;display:flex;align-items:center;gap:6px;padding:13px 18px;background:var(--gold);color:var(--i9);border-radius:999px;font-weight:700;font-size:13px;box-shadow:0 8px 24px rgba(201,168,76,.4);z-index:15}
+.sbar{display:flex;align-items:center;gap:10px;background:var(--sc);border:1px solid var(--ln);border-radius:14px;padding:12px 16px;margin:0 20px 16px}.sbar input{flex:1;border:none;background:transparent;outline:none;font-size:13px;color:var(--i9)}.sbar input::placeholder{color:var(--i4)}
+
+.deal-card{margin:0 20px 14px;border-radius:18px;overflow:hidden;background:var(--sc);border:1px solid var(--ln)}
+.deal-img{width:100%;aspect-ratio:16/9;background-size:cover;background-position:center;position:relative}
+.deal-img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.5) 100%)}
+.deal-dest{position:absolute;top:12px;left:14px;font-weight:700;font-size:13px;color:#fff;letter-spacing:.06em;text-shadow:0 1px 4px rgba(0,0,0,.5);z-index:2}
+.deal-stars{position:absolute;top:12px;right:14px;display:flex;gap:2px;z-index:2}.deal-stars svg{width:12px;height:12px}
+.deal-bottom{position:absolute;bottom:0;left:0;right:0;padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-end;z-index:2;color:#fff}
+.deal-nights{font-weight:600;font-size:11px}.deal-price{font-weight:700;font-size:14px;color:var(--ga)}
+.demand-card{margin:0 20px 12px;padding:16px;background:var(--sc);border:1px solid var(--ln);border-radius:16px}
+.demand-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.demand-dest{font-family:'Playfair Display',serif;font-weight:700;font-size:16px;color:var(--i9)}
+.demand-budget{font-weight:700;font-size:13px;color:var(--ok);background:var(--ok-bg);padding:4px 10px;border-radius:8px}
+.demand-detail{font-size:12px;color:var(--i6);line-height:18px;margin-bottom:10px}
+.demand-foot{display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--ln)}
+.demand-by{font-size:11px;color:var(--i4)}
+.demand-respond{font-weight:600;font-size:12px;color:var(--gold)}
+.lastmin-card{margin:0 20px 12px;padding:14px;background:var(--sc);border:1.5px solid var(--er);border-radius:16px;display:flex;gap:12px;align-items:center}
+.lastmin-clock{width:40px;height:40px;border-radius:10px;background:var(--er-bg);color:var(--er);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lastmin-info{flex:1;min-width:0}.lastmin-name{font-weight:600;font-size:13px;color:var(--i9)}.lastmin-time{font-size:11px;color:var(--er);font-weight:600;margin-top:1px}
+.lastmin-price{font-weight:700;font-size:14px;color:var(--i9);flex-shrink:0}
+
+/* Create Offer form */
+.form-c{padding:104px 20px 20px}
+.field-label{font-size:12px;font-weight:600;color:var(--i9);margin-bottom:6px;display:block}
+.field-input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--ln);background:var(--sc);font-size:13px;color:var(--i9);margin-bottom:16px}
+.field-input::placeholder{color:var(--i4)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-select{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--ln);background:var(--sc);font-size:13px;color:var(--i4);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.upload-box{border:1.5px dashed var(--ln);border-radius:12px;padding:20px;text-align:center;margin-bottom:20px;color:var(--i6)}
+.upload-icon{width:36px;height:36px;border-radius:999px;background:var(--tb);color:var(--tbt);display:flex;align-items:center;justify-content:center;margin:0 auto 8px}
+.upload-text{font-size:12px;font-weight:600;color:var(--i9)}
+.upload-sub{font-size:10px;color:var(--i6);margin-top:2px}
+.btn-submit{width:100%;padding:15px;border-radius:12px;background:var(--gold);color:var(--i9);text-align:center;font-weight:700;font-size:14px}
+.cat-select-row{display:flex;gap:8px;margin-bottom:20px}
+.cat-select{flex:1;padding:12px 4px;text-align:center;border-radius:10px;border:1.5px solid var(--ln);font-size:11px;font-weight:600;color:var(--i6)}
+.cat-select.sel{border-color:var(--gold);background:rgba(201,168,76,.08);color:var(--i9)}
+
+/* ===== Other sub-screens (unchanged from approved v2) ===== */
+.sub-c{padding:104px 0 20px}
+.pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 20px;margin-bottom:16px}.pills::-webkit-scrollbar{display:none}
+.pill{padding:8px 16px;border-radius:999px;font-weight:500;font-size:12px;color:var(--i6);border:1px solid var(--ln);background:transparent;white-space:nowrap;flex-shrink:0}
+.pill.a{background:var(--i9);color:var(--sp);border-color:var(--i9);font-weight:600}
+.circ-card{display:flex;gap:14px;align-items:center;padding:14px;margin:0 20px 10px;background:var(--sc);border:1px solid var(--ln);border-radius:14px}
+.circ-ic{width:44px;height:44px;border-radius:12px;background:var(--er-bg);color:var(--er);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.circ-body{flex:1;min-width:0}.circ-title{font-weight:600;font-size:13px;line-height:18px;color:var(--i9);margin-bottom:3px}.circ-meta{font-size:11px;color:var(--i4)}
+.circ-new{display:inline-block;background:var(--er);color:#fff;font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;margin-left:6px}
+.chat-row{display:flex;gap:12px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--ln)}
+.chat-av{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
+.chat-info{flex:1;min-width:0}.chat-name{font-weight:600;font-size:13px;color:var(--i9)}.chat-last{font-size:11px;color:var(--i6);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-meta{text-align:right;flex-shrink:0}.chat-time{font-size:10px;color:var(--i4)}.chat-badge{width:20px;height:20px;border-radius:999px;background:var(--gold);color:var(--i9);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:4px 0 0 auto}
+.msg{max-width:75%;padding:10px 14px;margin:0 20px 8px;border-radius:14px;font-size:13px;line-height:19px}
+.msg.them{background:var(--sc);border:1px solid var(--ln);color:var(--i9);border-bottom-left-radius:4px}
+.msg.me{background:#1A1A1A;color:#FAF8F3;margin-left:auto;border-bottom-right-radius:4px}
+.msg-time{font-size:10px;color:var(--i4);margin-top:4px}.msg.me .msg-time{color:rgba(255,255,255,.5)}
+.thread-input{position:absolute;bottom:0;left:0;right:0;padding:12px 16px;background:var(--sc);border-top:1px solid var(--ln);display:flex;gap:10px;align-items:center;z-index:10}
+.thread-input input{flex:1;padding:11px 14px;border-radius:999px;border:1px solid var(--ln);background:var(--sp);font-size:13px;color:var(--i9);outline:none}
+.thread-send{width:40px;height:40px;border-radius:999px;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cab-card{display:flex;gap:14px;align-items:center;padding:14px;margin:0 20px 10px;background:var(--sc);border:1px solid var(--ln);border-radius:14px}
+.cab-av{width:44px;height:44px;border-radius:12px;background:var(--st);display:flex;align-items:center;justify-content:center;color:var(--i6);flex-shrink:0}
+.cab-info{flex:1;min-width:0}.cab-name{font-weight:600;font-size:13px;color:var(--i9)}.cab-loc{font-size:11px;color:var(--i6);margin-top:1px}
+.cab-type{display:inline-block;margin-top:5px;font-size:10px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--tb);color:var(--tbt)}
+.cab-btn{padding:10px 16px;border-radius:10px;font-weight:600;font-size:12px;border:none;flex-shrink:0}
+.cab-btn.go{background:var(--gold);color:var(--i9)}.cab-btn.done{background:var(--ok-bg);color:var(--ok)}
+.upd-card{padding:16px;margin:0 20px 12px;background:var(--sc);border:1px solid var(--ln);border-radius:16px}
+.upd-head{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.upd-av{width:36px;height:36px;border-radius:10px;background:var(--tb);color:var(--tbt);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:12px;flex-shrink:0}
+.upd-from{font-weight:600;font-size:13px;color:var(--i9)}.upd-time{font-size:11px;color:var(--i4);margin-top:1px}
+.upd-text{font-size:13px;line-height:20px;color:var(--i6)}
+.job-cta{display:block;margin:0 20px 16px;padding:14px;border-radius:12px;background:var(--gold);color:var(--i9);text-align:center;font-weight:700;font-size:14px}
+.empty{padding:60px 30px;text-align:center}.empty-ic{width:56px;height:56px;border-radius:999px;background:var(--st);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:var(--i4)}.empty-t{font-weight:600;font-size:14px;color:var(--i9);margin-bottom:6px}.empty-s{font-size:12px;color:var(--i6);line-height:18px}
+.mem-row{display:flex;gap:12px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--ln)}
+.mem-av{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0}
+.mem-info{flex:1;min-width:0}.mem-name{font-weight:600;font-size:13px;color:var(--i9)}.mem-role{font-size:11px;color:var(--i6);margin-top:1px}
+.mem-call{width:36px;height:36px;border-radius:10px;background:var(--ok-bg);color:var(--ok);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sec-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--i6);font-weight:600;margin:4px 20px 12px}
+</style>
+</head>
+<body>
+
+<div class="gh">
+  <div class="gh-e">ASSOCIATION MODULE · FINAL · LOCKED</div>
+  <h1 class="gh-t">Both decisions locked in.</h1>
+  <p class="gh-s">Dashboard uses content-preview cards. Network Deals uses the segmented + icon + FAB pattern. Applied across every state — Buying, Selling, Last Min, My Posts, and the Create Offer flow that completes it.</p>
+</div>
+
+<div class="locked">
+  <div>✓ <strong>Dashboard:</strong> Option A — content preview cards</div>
+  <div>✓ <strong>Network Deals:</strong> Approach A — segmented role + "My Posts" icon + gold FAB</div>
+  <div>✓ <strong>All 8 tiles kept:</strong> Deals, Circulars, Updates, Chat, Jobs, Directory, Cab Network, Admin Cab</div>
+</div>
+
+<!-- ============ DASHBOARD (LOCKED) ============ -->
+<div class="row3">
+  <div class="ph"><h2>01 · Dashboard — Locked</h2><span>· Content preview cards, every tile shows what's new</span></div>
+  <div class="fb">
+    <div class="fl"><span class="d"></span>LIGHT</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">TAAI</div><div class="ab-badge">● LIVE</div></div>
+      <div class="scrollarea"><div class="dash-c">
+        <div class="dash-live"><div class="dash-live-badge"><span class="ld"></span>LIVE</div><div class="dash-live-play"><svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><polygon points="5 3 19 12 5 21 5 3"/></svg></div></div>
+        <div class="da-full"><div class="da-icon" style="background:var(--tb);color:var(--tbt)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div><div class="da-text"><div class="da-name">Network Deals</div><div class="da-preview">Bali 6N/7D · Malaysia 5N/6D</div></div><div class="da-meta"><div class="da-count">12</div><div class="da-label">active</div></div></div>
+        <div class="da-full"><div class="da-icon" style="background:var(--er-bg);color:var(--er)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="da-text"><div class="da-name">Circulars</div><div class="da-preview">Schengen Visa Advisory · Convention</div></div><div class="da-meta"><div class="da-count">3</div><div class="da-label">new</div></div></div>
+        <div class="da-pair">
+          <div class="da-half"><div class="da-half-icon" style="background:var(--ok-bg);color:var(--ok)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="da-half-name">Updates</div><div class="da-half-preview">Convention registration open</div></div>
+          <div class="da-half"><div class="da-half-icon" style="background:rgba(201,168,76,.15);color:var(--gold)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="da-half-count">5</div><div class="da-half-name">Chat</div><div class="da-half-preview">Amrita: Bali rates?</div></div>
+        </div>
+        <div class="da-pair">
+          <div class="da-half"><div class="da-half-icon" style="background:var(--wn-bg);color:var(--wn)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="da-half-name">Jobs</div><div class="da-half-preview">No jobs posted</div></div>
+          <div class="da-half"><div class="da-half-icon" style="background:var(--tb);color:var(--tbt)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="da-half-name">Directory</div><div class="da-half-preview">2,400+ members</div></div>
+        </div>
+        <div class="da-pair">
+          <div class="da-half"><div class="da-half-icon" style="background:var(--ok-bg);color:var(--ok)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2"/></svg></div><div class="da-half-count">8</div><div class="da-half-name">Cab Network</div><div class="da-half-preview">Available drivers</div></div>
+          <div class="da-half"><div class="da-half-icon" style="background:var(--st);color:var(--i6)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82.33v.18a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82L4.2 7.12a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68 1.65 1.65 0 0 0 10 3.17V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.32 9c.26.6.85 1 1.51 1.08H21a2 2 0 0 1 0 4h-.09c-.66.08-1.25.47-1.51 1.08z"/></svg></div><div class="da-half-name">Admin Cab</div><div class="da-half-preview">Manage fleet</div></div>
+        </div>
+      </div></div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ============ NETWORK DEALS — ALL STATES (LOCKED) ============ -->
+<div class="row3">
+  <div class="ph"><h2>02 · Network Deals — Buying / Selling / Last Min</h2><span>· The locked Approach A pattern, shown across all 3 role states</span></div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>BUYING — DEMANDS FEED</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Network Deals</div><div class="ab-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="ab-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div></div>
+      <div class="scrollarea"><div class="nd-c">
+        <div class="nd-seg"><div class="nd-seg-b a">Buying</div><div class="nd-seg-b">Selling</div><div class="nd-seg-b">Last Min.</div></div>
+        <div class="nd-cats"><div class="nd-cat a">Packages</div><div class="nd-cat">Hotels</div><div class="nd-cat">Transport</div><div class="nd-cat">Flights</div></div>
+
+        <div class="demand-card"><div class="demand-top"><div class="demand-dest">Need: Bali Package</div><div class="demand-budget">₹70-85K</div></div><div class="demand-detail">8 pax · 6N/7D · Looking for 4-star resort + transfers. Travel dates: 12-18 July.</div><div class="demand-foot"><span class="demand-by">Posted by Amrita Kumari · 2h ago</span><span class="demand-respond">Respond →</span></div></div>
+        <div class="demand-card"><div class="demand-top"><div class="demand-dest">Need: Kashmir Group Tour</div><div class="demand-budget">₹40-50K</div></div><div class="demand-detail">15 pax · 5N/6D · School group, need houseboat + Gulmarg. August dates flexible.</div><div class="demand-foot"><span class="demand-by">Posted by Mr. Aijaz Ahmad Bhat · 5h ago</span><span class="demand-respond">Respond →</span></div></div>
+        <div class="demand-card"><div class="demand-top"><div class="demand-dest">Need: Singapore + Malaysia</div><div class="demand-budget">₹95-110K</div></div><div class="demand-detail">4 pax · 7N/8D · Combo package with Sentosa + Genting. December departure.</div><div class="demand-foot"><span class="demand-by">Posted by Ravi Singh · 1d ago</span><span class="demand-respond">Respond →</span></div></div>
+      </div></div>
+      <div class="nd-fab"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Post Demand</div>
+    </div></div>
+  </div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>SELLING — OFFERS FEED</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Network Deals</div><div class="ab-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="ab-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div></div>
+      <div class="scrollarea"><div class="nd-c">
+        <div class="nd-seg"><div class="nd-seg-b">Buying</div><div class="nd-seg-b a">Selling</div><div class="nd-seg-b">Last Min.</div></div>
+        <div class="nd-cats"><div class="nd-cat a">Packages</div><div class="nd-cat">Hotels</div><div class="nd-cat">Transport</div><div class="nd-cat">Flights</div></div>
+        <div class="sbar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input placeholder="Search title, details, organisation..."></div>
+
+        <div class="deal-card"><div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80')"><div class="deal-dest">BALI</div><div class="deal-stars"><svg viewBox="0 0 24 24" fill="#C9A84C" width="12" height="12"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg><svg viewBox="0 0 24 24" fill="#C9A84C" width="12" height="12"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg><svg viewBox="0 0 24 24" fill="#C9A84C" width="12" height="12"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg><svg viewBox="0 0 24 24" fill="#C9A84C" width="12" height="12"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg></div><div class="deal-bottom"><div class="deal-nights">6 NIGHTS, 7 DAYS</div><div class="deal-price">₹82,000</div></div></div></div>
+        <div class="deal-card"><div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=800&q=80')"><div class="deal-dest">MALAYSIA</div><div class="deal-stars"><svg viewBox="0 0 24 24" fill="#C9A84C" width="12" height="12"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg></div><div class="deal-bottom"><div class="deal-nights">5 NIGHTS, 6 DAYS</div><div class="deal-price">₹21,500</div></div></div></div>
+      </div></div>
+      <div class="nd-fab"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Create Offer</div>
+    </div></div>
+  </div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>LAST MIN. DEALS — TIME-SENSITIVE</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Network Deals</div><div class="ab-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="ab-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div></div>
+      <div class="scrollarea"><div class="nd-c">
+        <div class="nd-seg"><div class="nd-seg-b">Buying</div><div class="nd-seg-b">Selling</div><div class="nd-seg-b a">Last Min.</div></div>
+        <div class="nd-cats"><div class="nd-cat a">Packages</div><div class="nd-cat">Hotels</div><div class="nd-cat">Transport</div><div class="nd-cat">Flights</div></div>
+
+        <div class="lastmin-card"><div class="lastmin-clock"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="lastmin-info"><div class="lastmin-name">Goa — 3N/4D, departs in 2 days</div><div class="lastmin-time">Expires in 18 hours</div></div><div class="lastmin-price">₹11,200</div></div>
+        <div class="lastmin-card"><div class="lastmin-clock"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="lastmin-info"><div class="lastmin-name">Andaman — 4N/5D, departs tomorrow</div><div class="lastmin-time">Expires in 6 hours</div></div><div class="lastmin-price">₹13,999</div></div>
+        <div class="lastmin-card"><div class="lastmin-clock"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="lastmin-info"><div class="lastmin-name">Kerala — 5N/6D, departs in 3 days</div><div class="lastmin-time">Expires in 30 hours</div></div><div class="lastmin-price">₹19,500</div></div>
+      </div></div>
+      <div class="nd-fab"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Post Last Min.</div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ============ MY POSTS TOGGLE + CREATE OFFER FORM ============ -->
+<div class="row3">
+  <div class="ph"><h2>03 · "My Posts" Toggle · Create Offer Form</h2><span>· The icon-driven view and the FAB's destination — completing the flow</span></div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>MY POSTS — TOGGLED ON</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Network Deals</div><div class="ab-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="ab-icon active"><svg width="16" height="16" viewBox="0 0 24 24" fill="#1A1A1A" stroke="#1A1A1A" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div></div>
+      <div class="scrollarea"><div class="nd-c">
+        <div class="nd-seg"><div class="nd-seg-b">Buying</div><div class="nd-seg-b a">Selling</div><div class="nd-seg-b">Last Min.</div></div>
+        <div class="nd-status"><svg width="14" height="14" viewBox="0 0 24 24" fill="#1A1A1A" stroke="#1A1A1A" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>Showing <strong>My Offers</strong> only · 2 active</div>
+        <div class="nd-cats"><div class="nd-cat a">Packages</div><div class="nd-cat">Hotels</div><div class="nd-cat">Transport</div><div class="nd-cat">Flights</div></div>
+
+        <div class="deal-card"><div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80')"><div class="deal-dest">BALI</div><div class="deal-bottom"><div class="deal-nights">6 NIGHTS, 7 DAYS</div><div class="deal-price">₹82,000</div></div></div></div>
+        <div class="deal-card"><div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=800&q=80')"><div class="deal-dest">MALAYSIA</div><div class="deal-bottom"><div class="deal-nights">5 NIGHTS, 6 DAYS</div><div class="deal-price">₹21,500</div></div></div></div>
+      </div></div>
+      <div class="nd-fab"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Create Offer</div>
+    </div></div>
+  </div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>CREATE OFFER — FAB DESTINATION</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Create Offer</div></div>
+      <div class="scrollarea"><div class="form-c">
+        <label class="field-label">Category</label>
+        <div class="cat-select-row"><div class="cat-select sel">Package</div><div class="cat-select">Hotel</div><div class="cat-select">Transport</div></div>
+
+        <label class="field-label">Destination</label>
+        <input class="field-input" placeholder="e.g. Bali, Indonesia">
+
+        <div class="field-row">
+          <div><label class="field-label">Nights</label><input class="field-input" placeholder="6"></div>
+          <div><label class="field-label">Days</label><input class="field-input" placeholder="7"></div>
+        </div>
+
+        <label class="field-label">Price per person (₹)</label>
+        <input class="field-input" placeholder="82000">
+
+        <label class="field-label">Hotel Category</label>
+        <div class="field-select">Select rating <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+
+        <label class="field-label">Cover Photo</label>
+        <div class="upload-box"><div class="upload-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div class="upload-text">Upload destination photo</div><div class="upload-sub">JPG/PNG · Max 5MB</div></div>
+
+        <div class="btn-submit">Publish Offer</div>
+      </div></div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ============ REMAINING SUB-SCREENS (unchanged from approved version) ============ -->
+<div class="row3">
+  <div class="ph"><h2>04–06 · Circulars · Chat · Cab Network</h2><span>· Unchanged from the approved v2 — included here for completeness</span></div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>CIRCULARS</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Circulars</div></div>
+      <div class="scrollarea"><div class="sub-c">
+        <div class="sbar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input placeholder="Search circulars..."></div>
+        <div class="circ-card"><div class="circ-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="circ-body"><div class="circ-title">TAAI Advisory on Schengen Visa<span class="circ-new">NEW</span></div><div class="circ-meta">20 May 2025 · PDF · 12 pages</div></div></div>
+        <div class="circ-card"><div class="circ-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="circ-body"><div class="circ-title">Convention 2025 — Registration</div><div class="circ-meta">18 May 2025 · PDF · 4 pages</div></div></div>
+        <div class="circ-card"><div class="circ-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="circ-body"><div class="circ-title">Updated GST Guidelines</div><div class="circ-meta">14 May 2025 · PDF · 8 pages</div></div></div>
+      </div></div>
+    </div></div>
+  </div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>CHAT THREAD</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Amrita Kumari</div></div>
+      <div class="scrollarea" style="display:flex;flex-direction:column;padding-bottom:80px">
+        <div style="padding-top:104px"></div>
+        <div class="msg them">Hi Rakesh! Can you share your Bali rates for July departures?<div class="msg-time">10:30 AM</div></div>
+        <div class="msg me">Hi Amrita! Yes, I have a 6N/7D package at ₹82,000 per person.<div class="msg-time">10:32 AM</div></div>
+        <div class="msg them">That sounds good. What hotel category is this?<div class="msg-time">10:33 AM</div></div>
+        <div class="msg me">4-star resort in Ubud + beach villa in Seminyak.<div class="msg-time">10:35 AM</div></div>
+      </div>
+      <div class="thread-input"><input placeholder="Type a message..."><div class="thread-send"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div></div>
+    </div></div>
+  </div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>CAB NETWORK</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Cab Network</div></div>
+      <div class="scrollarea"><div class="sub-c">
+        <div class="pills"><div class="pill a">Available</div><div class="pill">Accepted</div><div class="pill">All</div></div>
+        <div class="cab-card"><div class="cab-av"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2"/></svg></div><div class="cab-info"><div class="cab-name">Salma Shaikh</div><div class="cab-loc">Mumbai, Maharashtra</div><span class="cab-type">Mini (Economical)</span></div><button class="cab-btn go">Accept</button></div>
+        <div class="cab-card"><div class="cab-av"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2"/></svg></div><div class="cab-info"><div class="cab-name">Anil Sharma</div><div class="cab-loc">Delhi</div><span class="cab-type">Compact SUV</span></div><button class="cab-btn go">Accept</button></div>
+        <div class="cab-card"><div class="cab-av"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2"/></svg></div><div class="cab-info"><div class="cab-name">Prajwal Verma</div><div class="cab-loc">Noida, Uttar Pradesh</div><span class="cab-type">Luxury</span></div><button class="cab-btn done">Accepted</button></div>
+      </div></div>
+    </div></div>
+  </div>
+</div>
+
+</body>
+</html>

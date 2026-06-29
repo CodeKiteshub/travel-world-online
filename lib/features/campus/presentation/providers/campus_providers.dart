@@ -4,10 +4,7 @@ import '../../data/datasources/campus_remote_datasource.dart';
 import '../../data/models/campus_models.dart';
 
 final _campusDatasourceProvider = Provider<CampusRemoteDatasource>(
-  (ref) => CampusRemoteDatasource(
-    backendDio: ref.watch(dioProvider),
-    twoDio: ref.watch(twoDioProvider),
-  ),
+  (ref) => CampusRemoteDatasource(backendDio: ref.watch(dioProvider)),
 );
 
 final advisoryBoardProvider =

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TWO — Association Module v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+[data-theme="light"]{--sp:#FAF8F3;--sc:#FFFFFF;--st:#EFEDE6;--gold:#C9A84C;--ga:#E8D08A;--i9:#1A1A1A;--i6:#5E5E5E;--i4:#9E9E9E;--nv:#0D1B2A;--ok:#2D7A4F;--ok-bg:rgba(45,122,79,.12);--wn:#B45309;--wn-bg:rgba(180,83,9,.12);--er:#C0392B;--er-bg:rgba(192,57,43,.12);--ln:#E8E5DC;--tb:#E8EEF5;--tbt:#2A4A6B}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;background:#111;color:#fff;padding:48px 20px 80px;-webkit-font-smoothing:antialiased}
+.gh{text-align:center;margin-bottom:56px;max-width:760px;margin-left:auto;margin-right:auto}.gh-e{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#C9A84C;font-weight:500;margin-bottom:16px}.gh-t{font-family:'Playfair Display',serif;font-weight:700;font-size:40px;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}.gh-s{font-size:15px;line-height:24px;color:#9E9E9E;max-width:640px;margin:0 auto}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:32px;max-width:880px;margin:0 auto 56px;padding:32px 0;border-top:1px solid rgba(255,255,255,.06);justify-items:center}
+.solo{display:flex;flex-direction:column;align-items:center;margin:0 auto 56px;padding:32px 0;border-top:1px solid rgba(255,255,255,.06)}
+.row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:32px;max-width:1280px;margin:0 auto 56px;padding:32px 0;border-top:1px solid rgba(255,255,255,.06);justify-items:center}
+.ph{display:flex;align-items:baseline;gap:14px;margin-bottom:24px}.pair .ph,.row3 .ph{grid-column:1/-1;margin-bottom:8px}
+.ph h2{font-family:'Playfair Display',serif;font-weight:700;font-size:22px}.ph span{font-size:12px;color:#9E9E9E;letter-spacing:.04em}
+.fb{display:flex;flex-direction:column;align-items:center}.fl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:#FAF8F3}.fl .d{width:8px;height:8px;border-radius:999px;background:#FAF8F3}
+.phone{width:380px;height:800px;background:#000;border-radius:44px;padding:8px;box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.06)}.scr{width:100%;height:100%;border-radius:36px;overflow:hidden;position:relative;background:var(--sp);color:var(--i9);font-family:'DM Sans',sans-serif}.notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:110px;height:28px;background:#000;border-radius:16px;z-index:100}.sb{position:absolute;top:0;left:0;right:0;height:44px;padding:14px 28px 0;display:flex;justify-content:space-between;align-items:center;z-index:50;font-size:14px;font-weight:600;color:var(--i9)}.si{display:flex;gap:5px;align-items:center}svg{display:block}
+
+/* Appbar */
+.appbar{position:absolute;top:44px;left:0;right:0;padding:14px 20px;display:flex;align-items:center;gap:12px;background:var(--sp);z-index:10}
+.ab-bk{width:38px;height:38px;border-radius:999px;background:var(--sc);border:1px solid var(--ln);display:flex;align-items:center;justify-content:center;color:var(--i9);flex-shrink:0}
+.ab-t{flex:1;font-family:'Playfair Display',serif;font-weight:700;font-size:19px;color:var(--i9)}
+.ab-badge{padding:5px 10px;border-radius:999px;font-weight:600;font-size:10px;letter-spacing:.04em;flex-shrink:0}
+.ab-badge.live{background:var(--er-bg);color:var(--er)}
+.scrollarea{width:100%;height:100%;overflow-y:auto;position:relative}
+
+/* ========== SIGN-IN (v1.3 light style) ========== */
+.si-page{width:100%;height:100%;background:var(--sp);display:flex;flex-direction:column;position:relative}
+.si-hero{background:linear-gradient(135deg,#0D1B2A,#1A3850);padding:80px 32px 40px;text-align:center;position:relative;overflow:hidden}
+.si-hero::after{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(201,168,76,.2),transparent 70%)}
+.si-logo{width:80px;height:80px;border-radius:999px;background:#fff;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.3);position:relative;z-index:2}
+.si-logo-t{font-family:'Playfair Display',serif;font-weight:700;font-size:20px;color:#C0392B}
+.si-org{font-family:'Playfair Display',serif;font-weight:700;font-size:22px;color:#fff;margin-bottom:4px;position:relative;z-index:2}
+.si-org-sub{font-size:12px;color:rgba(255,255,255,.6);position:relative;z-index:2}
+.si-form{padding:28px 24px;flex:1}
+.si-label{font-size:12px;font-weight:600;color:var(--i9);margin-bottom:6px;display:block}
+.si-input{width:100%;padding:14px;border-radius:12px;border:1px solid var(--ln);background:var(--sc);font-size:14px;color:var(--i9);margin-bottom:18px;outline:none}
+.si-input::placeholder{color:var(--i4)}
+.si-btn{width:100%;padding:16px;border-radius:12px;text-align:center;font-weight:700;font-size:14px;border:none;cursor:pointer;margin-bottom:10px}
+.si-btn.gold{background:var(--gold);color:var(--i9)}
+.si-btn.green{background:var(--ok);color:#fff}
+.si-note{font-size:11px;color:var(--er);text-align:center;line-height:16px;margin-top:8px}
+
+/* ========== DASHBOARD shared ========== */
+.dash-c{padding:106px 0 20px}
+.dash-live{margin:0 20px 20px;border-radius:18px;overflow:hidden;aspect-ratio:16/9;background:linear-gradient(135deg,#0D1B2A,#1A3850);position:relative;display:flex;align-items:center;justify-content:center}
+.dash-live-play{width:52px;height:52px;border-radius:999px;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center}
+.dash-live-badge{position:absolute;top:12px;left:14px;display:flex;align-items:center;gap:5px;background:rgba(192,57,43,.9);color:#fff;padding:4px 10px;border-radius:999px;font-weight:600;font-size:10px;letter-spacing:.04em}
+.dash-live-badge .ld{width:5px;height:5px;border-radius:999px;background:#fff;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Option A: Content preview cards */
+.da-full{margin:0 20px 12px;background:var(--sc);border:1px solid var(--ln);border-radius:16px;padding:16px;display:flex;gap:14px;align-items:center}
+.da-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.da-icon.c1{background:var(--tb);color:var(--tbt)}
+.da-icon.c2{background:var(--er-bg);color:var(--er)}
+.da-icon.c3{background:var(--ok-bg);color:var(--ok)}
+.da-icon.c4{background:var(--wn-bg);color:var(--wn)}
+.da-icon.c5{background:rgba(201,168,76,.15);color:var(--gold)}
+.da-text{flex:1;min-width:0}
+.da-name{font-weight:600;font-size:14px;color:var(--i9)}
+.da-preview{font-size:11px;color:var(--i6);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.da-meta{flex-shrink:0;text-align:right}
+.da-count{font-weight:700;font-size:13px;color:var(--i9)}
+.da-label{font-size:9px;color:var(--i4);margin-top:1px}
+.da-chev{color:var(--i4);flex-shrink:0}
+.da-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 20px 10px}
+.da-half{background:var(--sc);border:1px solid var(--ln);border-radius:16px;padding:16px}
+.da-half-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.da-half-name{font-weight:600;font-size:13px;color:var(--i9);margin-bottom:2px}
+.da-half-preview{font-size:11px;color:var(--i6);line-height:15px}
+.da-half-count{font-weight:700;font-size:18px;color:var(--gold);margin-bottom:2px;font-family:'Playfair Display',serif}
+
+/* Option B: Clean grid */
+.db-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 20px}
+.db-tile{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 6px;background:var(--sc);border:1px solid var(--ln);border-radius:14px}
+.db-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.db-label{font-size:10px;font-weight:600;color:var(--i9);text-align:center;line-height:13px}
+.db-badge-wrap{position:relative}
+.db-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:999px;background:var(--er);border:2px solid var(--sc)}
+
+/* ========== SUB-SCREEN shared ========== */
+.sub-c{padding:106px 0 20px}
+.sbar{display:flex;align-items:center;gap:10px;background:var(--sc);border:1px solid var(--ln);border-radius:14px;padding:12px 16px;margin:0 20px 16px}
+.sbar input{flex:1;border:none;background:transparent;outline:none;font-size:13px;color:var(--i9)}.sbar input::placeholder{color:var(--i4)}
+.pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 20px;margin-bottom:16px}.pills::-webkit-scrollbar{display:none}
+.pill{padding:8px 16px;border-radius:999px;font-weight:500;font-size:12px;color:var(--i6);border:1px solid var(--ln);background:transparent;white-space:nowrap;flex-shrink:0}
+.pill.a{background:var(--i9);color:var(--sp);border-color:var(--i9);font-weight:600}
+.seg{display:flex;margin:0 20px 16px;background:var(--st);border-radius:12px;padding:4px}
+.seg-b{flex:1;text-align:center;padding:10px 4px;border-radius:10px;font-weight:500;font-size:12px;color:var(--i6)}
+.seg-b.a{background:var(--sc);color:var(--i9);font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.sec-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--i6);font-weight:600;margin:4px 20px 12px}
+
+/* Deal cards (redesigned) */
+.deal-card{margin:0 20px 14px;border-radius:18px;overflow:hidden;background:var(--sc);border:1px solid var(--ln)}
+.deal-img{width:100%;aspect-ratio:16/9;background-size:cover;background-position:center;position:relative}
+.deal-img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.5) 100%)}
+.deal-dest{position:absolute;top:12px;left:14px;font-weight:700;font-size:13px;color:#fff;letter-spacing:.06em;text-shadow:0 1px 4px rgba(0,0,0,.5);z-index:2}
+.deal-stars{position:absolute;top:12px;right:14px;display:flex;gap:2px;z-index:2}
+.deal-stars svg{width:12px;height:12px}
+.deal-bottom{position:absolute;bottom:0;left:0;right:0;padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-end;z-index:2;color:#fff}
+.deal-nights{font-weight:600;font-size:11px}
+.deal-price{font-weight:700;font-size:14px;color:var(--ga)}
+.deal-actions{position:absolute;top:12px;right:14px;display:flex;gap:6px;z-index:3}
+.deal-act{width:28px;height:28px;border-radius:8px;background:rgba(0,0,0,.4);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center}
+
+/* Chat (redesigned) */
+.chat-row{display:flex;gap:12px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--ln)}
+.chat-av{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
+.chat-info{flex:1;min-width:0}
+.chat-name{font-weight:600;font-size:13px;color:var(--i9)}.chat-last{font-size:11px;color:var(--i6);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-meta{text-align:right;flex-shrink:0}.chat-time{font-size:10px;color:var(--i4)}.chat-badge{width:20px;height:20px;border-radius:999px;background:var(--gold);color:var(--i9);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:4px 0 0 auto}
+
+/* Cab cards (redesigned) */
+.cab-card{display:flex;gap:14px;align-items:center;padding:14px;margin:0 20px 10px;background:var(--sc);border:1px solid var(--ln);border-radius:14px}
+.cab-av{width:44px;height:44px;border-radius:12px;background:var(--st);display:flex;align-items:center;justify-content:center;color:var(--i6);flex-shrink:0}
+.cab-info{flex:1;min-width:0}
+.cab-name{font-weight:600;font-size:13px;color:var(--i9)}.cab-loc{font-size:11px;color:var(--i6);margin-top:1px}
+.cab-type{display:inline-block;margin-top:5px;font-size:10px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--tb);color:var(--tbt)}
+.cab-btn{padding:10px 16px;border-radius:10px;font-weight:600;font-size:12px;border:none;flex-shrink:0}
+.cab-btn.go{background:var(--gold);color:var(--i9)}
+.cab-btn.done{background:var(--ok-bg);color:var(--ok)}
+
+/* Circular cards (redesigned) */
+.circ-card{display:flex;gap:14px;align-items:center;padding:14px;margin:0 20px 10px;background:var(--sc);border:1px solid var(--ln);border-radius:14px}
+.circ-ic{width:44px;height:44px;border-radius:12px;background:var(--er-bg);color:var(--er);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.circ-body{flex:1;min-width:0}
+.circ-title{font-weight:600;font-size:13px;line-height:18px;color:var(--i9);margin-bottom:3px}
+.circ-meta{font-size:11px;color:var(--i4)}
+.circ-new{display:inline-block;background:var(--er);color:#fff;font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;margin-left:6px}
+
+/* Member rows */
+.mem-row{display:flex;gap:12px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--ln)}
+.mem-av{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0}
+.mem-info{flex:1;min-width:0}.mem-name{font-weight:600;font-size:13px;color:var(--i9)}.mem-role{font-size:11px;color:var(--i6);margin-top:1px}
+.mem-call{width:36px;height:36px;border-radius:10px;background:var(--ok-bg);color:var(--ok);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* Job CTA */
+.job-cta{display:block;margin:0 20px 16px;padding:14px;border-radius:12px;background:var(--gold);color:var(--i9);text-align:center;font-weight:700;font-size:14px}
+
+/* Empty state */
+.empty{padding:60px 30px;text-align:center}.empty-ic{width:56px;height:56px;border-radius:999px;background:var(--st);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:var(--i4)}.empty-t{font-weight:600;font-size:14px;color:var(--i9);margin-bottom:6px}.empty-s{font-size:12px;color:var(--i6);line-height:18px}
+
+/* Update cards */
+.upd-card{padding:16px;margin:0 20px 12px;background:var(--sc);border:1px solid var(--ln);border-radius:16px}
+.upd-head{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.upd-av{width:36px;height:36px;border-radius:10px;background:var(--tb);color:var(--tbt);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:12px;flex-shrink:0}
+.upd-from{font-weight:600;font-size:13px;color:var(--i9)}.upd-time{font-size:11px;color:var(--i4);margin-top:1px}
+.upd-text{font-size:13px;line-height:20px;color:var(--i6)}
+.upd-img{width:100%;aspect-ratio:16/9;border-radius:12px;background-size:cover;background-position:center;margin-top:12px}
+</style>
+</head>
+<body>
+
+<div class="gh">
+  <div class="gh-e">ASSOCIATION MODULE · REDESIGNED</div>
+  <h1 class="gh-t">Inside the association, v2.</h1>
+  <p class="gh-s">Completely rebuilt with the v1.3 design system. Two dashboard options for you to choose. All 8 tiles kept. Every sub-screen redesigned from scratch.</p>
+</div>
+
+<!-- ======== SIGN-IN (REDESIGNED) ======== -->
+<div class="solo">
+  <div class="ph"><h2>01 · Sign-In</h2><span>· v1.3 style · Navy hero + cream form (not the old dark screen)</span></div>
+  <div class="fb">
+    <div class="fl"><span class="d"></span>LIGHT</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb" style="color:#fff"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg></span></div>
+      <div class="si-page">
+        <div class="si-hero">
+          <div class="si-logo"><div class="si-logo-t">TAAI</div></div>
+          <div class="si-org">TAAI</div>
+          <div class="si-org-sub">Travel Agents Association of India · Est. 1951</div>
+        </div>
+        <div class="si-form">
+          <label class="si-label">Email or Username</label>
+          <input class="si-input" placeholder="asharma@indiaah.in">
+          <label class="si-label">Password</label>
+          <input class="si-input" type="password" placeholder="Enter your password">
+          <div class="si-btn gold">Sign In</div>
+          <div class="si-btn green">Get Password</div>
+          <div class="si-note">Please ask your association if your email is not registered with TAAI</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ======== DASHBOARD — TWO OPTIONS ======== -->
+<div class="pair">
+  <div class="ph"><h2>02 · Dashboard</h2><span>· Pick one: Option A (content preview cards) or Option B (clean icon grid)</span></div>
+
+  <!-- OPTION A -->
+  <div class="fb">
+    <div class="fl"><span class="d"></span>OPTION A — CONTENT PREVIEWS</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">TAAI</div><div class="ab-badge live"><span class="ld" style="display:inline-block;width:5px;height:5px;border-radius:999px;background:#fff;margin-right:4px"></span>LIVE</div></div>
+      <div class="scrollarea"><div class="dash-c">
+        <div class="dash-live"><div class="dash-live-badge"><span class="ld"></span>LIVE</div><div class="dash-live-play"><svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><polygon points="5 3 19 12 5 21 5 3"/></svg></div></div>
+
+        <!-- Full-width cards for primary modules -->
+        <div class="da-full"><div class="da-icon c1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div><div class="da-text"><div class="da-name">Network Deals</div><div class="da-preview">Bali 6N/7D · Malaysia 5N/6D</div></div><div class="da-meta"><div class="da-count">12</div><div class="da-label">active</div></div></div>
+
+        <div class="da-full"><div class="da-icon c2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="da-text"><div class="da-name">Circulars</div><div class="da-preview">Schengen Visa Advisory · Convention</div></div><div class="da-meta"><div class="da-count">3</div><div class="da-label">new</div></div></div>
+
+        <!-- Side-by-side pairs for secondary modules -->
+        <div class="da-pair">
+          <div class="da-half"><div class="da-half-icon c3" style="background:var(--ok-bg);color:var(--ok)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="da-half-name">Updates</div><div class="da-half-preview">Convention registration open</div></div>
+          <div class="da-half"><div class="da-half-icon c4" style="background:rgba(201,168,76,.15);color:var(--gold)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="da-half-count">5</div><div class="da-half-name">Chat</div><div class="da-half-preview">Amrita: Bali rates?</div></div>
+        </div>
+
+        <div class="da-pair">
+          <div class="da-half"><div class="da-half-icon" style="background:var(--wn-bg);color:var(--wn)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="da-half-name">Jobs</div><div class="da-half-preview">No jobs posted</div></div>
+          <div class="da-half"><div class="da-half-icon" style="background:var(--tb);color:var(--tbt)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="da-half-name">Directory</div><div class="da-half-preview">2,400+ members</div></div>
+        </div>
+
+        <div class="da-pair">
+          <div class="da-half"><div class="da-half-icon" style="background:var(--ok-bg);color:var(--ok)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2"/></svg></div><div class="da-half-count">8</div><div class="da-half-name">Cab Network</div><div class="da-half-preview">Available drivers</div></div>
+          <div class="da-half"><div class="da-half-icon" style="background:var(--st);color:var(--i6)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82.33v.18a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82L4.2 7.12a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68 1.65 1.65 0 0 0 10 3.17V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.32 9c.26.6.85 1 1.51 1.08H21a2 2 0 0 1 0 4h-.09c-.66.08-1.25.47-1.51 1.08z"/></svg></div><div class="da-half-name">Admin Cab</div><div class="da-half-preview">Manage fleet</div></div>
+        </div>
+      </div></div>
+    </div></div>
+  </div>
+
+  <!-- OPTION B -->
+  <div class="fb">
+    <div class="fl"><span class="d"></span>OPTION B — CLEAN ICON GRID</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">TAAI</div><div class="ab-badge live"><span class="ld" style="display:inline-block;width:5px;height:5px;border-radius:999px;background:#fff;margin-right:4px"></span>LIVE</div></div>
+      <div class="scrollarea"><div class="dash-c">
+        <div class="dash-live"><div class="dash-live-badge"><span class="ld"></span>LIVE</div><div class="dash-live-play"><svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><polygon points="5 3 19 12 5 21 5 3"/></svg></div></div>
+
+        <div class="db-grid">
+          <div class="db-tile"><div class="db-badge-wrap"><div class="db-icon c1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div><div class="db-dot"></div></div><div class="db-label">Deals</div></div>
+          <div class="db-tile"><div class="db-badge-wrap"><div class="db-icon c2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="db-dot"></div></div><div class="db-label">Circulars</div></div>
+          <div class="db-tile"><div class="db-icon c3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="db-label">Updates</div></div>
+          <div class="db-tile"><div class="db-badge-wrap"><div class="db-icon c4"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="db-dot"></div></div><div class="db-label">Chat</div></div>
+          <div class="db-tile"><div class="db-icon" style="background:var(--wn-bg);color:var(--wn)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="db-label">Jobs</div></div>
+          <div class="db-tile"><div class="db-icon" style="background:var(--tb);color:var(--tbt)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="db-label">Directory</div></div>
+          <div class="db-tile"><div class="db-icon" style="background:var(--ok-bg);color:var(--ok)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2"/></svg></div><div class="db-label">Cabs</div></div>
+          <div class="db-tile"><div class="db-icon" style="background:var(--st);color:var(--i6)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82.33v.18a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82L4.2 7.12a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68 1.65 1.65 0 0 0 10 3.17V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.32 9c.26.6.85 1 1.51 1.08H21a2 2 0 0 1 0 4h-.09c-.66.08-1.25.47-1.51 1.08z"/></svg></div><div class="db-label">Admin<br>Cab</div></div>
+        </div>
+      </div></div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ======== DEALS (REDESIGNED) ======== -->
+<div class="solo">
+  <div class="ph"><h2>03 · Network Deals</h2><span>· Segmented controls replace the old pipe-separated tabs · 3 levels</span></div>
+  <div class="fb">
+    <div class="fl"><span class="d"></span>SELLERS > MY OFFERS</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Network Deals</div></div>
+      <div class="scrollarea"><div class="sub-c">
+        <div class="seg"><div class="seg-b">Buyers</div><div class="seg-b a">Sellers</div><div class="seg-b">Last Min.</div></div>
+        <div class="pills"><div class="pill">Offers</div><div class="pill">Create Offers</div><div class="pill a">My Offers</div></div>
+        <div class="seg" style="margin-bottom:14px"><div class="seg-b a">Packages</div><div class="seg-b">Hotels</div><div class="seg-b">Transport</div></div>
+        <div class="sbar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search title, details, organisation..."></div>
+
+        <div class="deal-card"><div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80')"><div class="deal-dest">BALI</div><div class="deal-actions"><div class="deal-act"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div><div class="deal-act"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></div></div><div class="deal-stars"><svg viewBox="0 0 24 24" fill="#C9A84C" width="12" height="12"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg><svg viewBox="0 0 24 24" fill="#C9A84C" width="12" height="12"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg><svg viewBox="0 0 24 24" fill="#C9A84C" width="12" height="12"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg><svg viewBox="0 0 24 24" fill="#C9A84C" width="12" height="12"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg></div><div class="deal-bottom"><div class="deal-nights">6 NIGHTS, 7 DAYS</div><div class="deal-price">₹82,000</div></div></div></div>
+
+        <div class="deal-card"><div class="deal-img" style="background-image:url('https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=800&q=80')"><div class="deal-dest">MALAYSIA</div><div class="deal-actions"><div class="deal-act"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div><div class="deal-act"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></div></div><div class="deal-stars"><svg viewBox="0 0 24 24" fill="#C9A84C" width="12" height="12"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg></div><div class="deal-bottom"><div class="deal-nights">5 NIGHTS, 6 DAYS</div><div class="deal-price">₹21,500</div></div></div></div>
+      </div></div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ======== CIRCULARS + UPDATES + CHAT + CAB + JOBS + DIRECTORY (3-up rows) ======== -->
+<div class="row3">
+  <div class="ph"><h2>04–06 · Circulars · Chat · Cab Network</h2><span>· All redesigned with v1.3 tokens — cream surfaces, card layouts, proper spacing</span></div>
+
+  <!-- Circulars -->
+  <div class="fb">
+    <div class="fl"><span class="d"></span>CIRCULARS</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Circulars</div></div>
+      <div class="scrollarea"><div class="sub-c">
+        <div class="sbar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search circulars..."></div>
+        <div class="circ-card"><div class="circ-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="circ-body"><div class="circ-title">TAAI Advisory on Schengen Visa<span class="circ-new">NEW</span></div><div class="circ-meta">20 May 2025 · PDF · 12 pages</div></div></div>
+        <div class="circ-card"><div class="circ-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="circ-body"><div class="circ-title">Convention 2025 — Registration</div><div class="circ-meta">18 May 2025 · PDF · 4 pages</div></div></div>
+        <div class="circ-card"><div class="circ-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="circ-body"><div class="circ-title">Updated GST Guidelines</div><div class="circ-meta">14 May 2025 · PDF · 8 pages</div></div></div>
+        <div class="circ-card"><div class="circ-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="circ-body"><div class="circ-title">Member Benefits Q1 2025</div><div class="circ-meta">2 Apr 2025 · PDF · 6 pages</div></div></div>
+      </div></div>
+    </div></div>
+  </div>
+
+  <!-- Chat -->
+  <div class="fb">
+    <div class="fl"><span class="d"></span>CHAT</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Chat</div></div>
+      <div class="scrollarea"><div class="sub-c">
+        <div class="sbar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search members..."></div>
+        <div class="chat-row"><div class="chat-av" style="background:linear-gradient(135deg,#6b4fa3,#9b7fc7)">AK</div><div class="chat-info"><div class="chat-name">Amrita Kumari</div><div class="chat-last">Can you share Bali rates for July?</div></div><div class="chat-meta"><div class="chat-time">2m</div><div class="chat-badge">2</div></div></div>
+        <div class="chat-row"><div class="chat-av" style="background:linear-gradient(135deg,#4fa36b,#7fc79b)">VK</div><div class="chat-info"><div class="chat-name">Vinay Kumar</div><div class="chat-last">Thanks for the convention update</div></div><div class="chat-meta"><div class="chat-time">15m</div></div></div>
+        <div class="chat-row"><div class="chat-av" style="background:linear-gradient(135deg,#a34f6b,#c77f9b)">AT</div><div class="chat-info"><div class="chat-name">Avinash Kumar Tiwari</div><div class="chat-last">Kerala packages ready</div></div><div class="chat-meta"><div class="chat-time">1h</div><div class="chat-badge">1</div></div></div>
+        <div class="chat-row"><div class="chat-av" style="background:linear-gradient(135deg,#4f6ba3,#7f9bc7)">TW</div><div class="chat-info"><div class="chat-name">Travel World Online</div><div class="chat-last">New circular in TAAI section</div></div><div class="chat-meta"><div class="chat-time">3h</div></div></div>
+        <div class="chat-row"><div class="chat-av" style="background:linear-gradient(135deg,#a3904f,#c7b77f)">G</div><div class="chat-info"><div class="chat-name">Ghanshayam</div><div class="chat-last">Meeting confirmed Thursday</div></div><div class="chat-meta"><div class="chat-time">5h</div></div></div>
+        <div class="chat-row"><div class="chat-av" style="background:linear-gradient(135deg,#6b4fa3,#9b7fc7)">RS</div><div class="chat-info"><div class="chat-name">Ravi Singh</div><div class="chat-last">Need cab from IGI to Aerocity</div></div><div class="chat-meta"><div class="chat-time">1d</div></div></div>
+      </div></div>
+    </div></div>
+  </div>
+
+  <!-- Cab Network -->
+  <div class="fb">
+    <div class="fl"><span class="d"></span>CAB NETWORK</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Cab Network</div></div>
+      <div class="scrollarea"><div class="sub-c">
+        <div class="pills"><div class="pill a">Available</div><div class="pill">Accepted</div><div class="pill">All</div></div>
+        <div class="cab-card"><div class="cab-av"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2"/></svg></div><div class="cab-info"><div class="cab-name">Salma Shaikh</div><div class="cab-loc">Mumbai, Maharashtra</div><span class="cab-type">Mini (Economical)</span></div><button class="cab-btn go">Accept</button></div>
+        <div class="cab-card"><div class="cab-av"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2"/></svg></div><div class="cab-info"><div class="cab-name">Anil Sharma</div><div class="cab-loc">Delhi</div><span class="cab-type">Compact SUV</span></div><button class="cab-btn go">Accept</button></div>
+        <div class="cab-card"><div class="cab-av"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2"/></svg></div><div class="cab-info"><div class="cab-name">Prajwal Verma</div><div class="cab-loc">Noida, Uttar Pradesh</div><span class="cab-type">Luxury</span></div><button class="cab-btn done">Accepted</button></div>
+        <div class="cab-card"><div class="cab-av"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2"/></svg></div><div class="cab-info"><div class="cab-name">Garry Singh</div><div class="cab-loc">Amritsar, Punjab</div><span class="cab-type">Prime Sedan</span></div><button class="cab-btn go">Accept</button></div>
+        <div class="cab-card"><div class="cab-av"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2"/></svg></div><div class="cab-info"><div class="cab-name">Uma Shankar Pathak</div><div class="cab-loc">Raipur, Chhattisgarh</div><span class="cab-type">Mini (Economical)</span></div><button class="cab-btn done">Accepted</button></div>
+      </div></div>
+    </div></div>
+  </div>
+</div>
+
+<div class="row3">
+  <div class="ph"><h2>07–09 · Updates · Jobs · Directory</h2><span>· Remaining sub-modules — all v1.3 design system</span></div>
+
+  <!-- Updates -->
+  <div class="fb">
+    <div class="fl"><span class="d"></span>UPDATES</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Updates</div></div>
+      <div class="scrollarea"><div class="sub-c">
+        <div class="upd-card"><div class="upd-head"><div class="upd-av">T</div><div><div class="upd-from">TAAI Head Office</div><div class="upd-time">2h ago</div></div></div><div class="upd-text">Convention 2025 registrations are now open. Early bird 15% discount available until 30 June.</div></div>
+        <div class="upd-card"><div class="upd-head"><div class="upd-av">T</div><div><div class="upd-from">TAAI Western Region</div><div class="upd-time">1d ago</div></div></div><div class="upd-text">Chapter meeting 15 June at Hotel Taj Lands End, Mumbai. All WR members please confirm.</div><div class="upd-img" style="background-image:url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80')"></div></div>
+        <div class="upd-card"><div class="upd-head"><div class="upd-av">T</div><div><div class="upd-from">TAAI Head Office</div><div class="upd-time">3d ago</div></div></div><div class="upd-text">VFS Global updated Schengen biometric rules effective 01 June. Please update SOPs. Circular attached.</div></div>
+      </div></div>
+    </div></div>
+  </div>
+
+  <!-- Jobs -->
+  <div class="fb">
+    <div class="fl"><span class="d"></span>JOBS</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">TAAI Jobs</div></div>
+      <div class="scrollarea"><div class="sub-c">
+        <div class="job-cta">Post A Job</div>
+        <div class="sbar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search by company, title, location..."></div>
+        <div class="empty"><div class="empty-ic"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="empty-t">No jobs posted yet</div><div class="empty-s">Post the first job for TAAI members.</div></div>
+      </div></div>
+    </div></div>
+  </div>
+
+  <!-- Directory -->
+  <div class="fb">
+    <div class="fl"><span class="d"></span>DIRECTORY</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">Member Directory</div></div>
+      <div class="scrollarea"><div class="sub-c">
+        <div class="sbar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search members..."></div>
+        <div class="pills"><div class="pill a">All</div><div class="pill">Mumbai</div><div class="pill">Delhi</div><div class="pill">Bangalore</div><div class="pill">Jaipur</div></div>
+        <div class="sec-label">6 Members</div>
+        <div class="mem-row"><div class="mem-av" style="background:#6b4fa3">AK</div><div class="mem-info"><div class="mem-name">Amrita Kumari</div><div class="mem-role">Travel Agent · Delhi</div></div><div class="mem-call"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div></div>
+        <div class="mem-row"><div class="mem-av" style="background:#4fa36b">VK</div><div class="mem-info"><div class="mem-name">Vinay Kumar</div><div class="mem-role">Tour Operator · Mumbai</div></div><div class="mem-call"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div></div>
+        <div class="mem-row"><div class="mem-av" style="background:#a34f6b">AT</div><div class="mem-info"><div class="mem-name">Avinash Kumar Tiwari</div><div class="mem-role">DMC · Lucknow</div></div><div class="mem-call"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div></div>
+        <div class="mem-row"><div class="mem-av" style="background:#a3904f">RS</div><div class="mem-info"><div class="mem-name">Ravi Singh</div><div class="mem-role">Travel Agent · Jaipur</div></div><div class="mem-call"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div></div>
+        <div class="mem-row"><div class="mem-av" style="background:#6b4fa3">MA</div><div class="mem-info"><div class="mem-name">Mr. Aijaz Ahmad Bhat</div><div class="mem-role">Travel Agent · Srinagar</div></div><div class="mem-call"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div></div>
+      </div></div>
+    </div></div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TWO — News: View All + Article Detail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+[data-theme="light"]{--sp:#FAF8F3;--sc:#FFFFFF;--st:#EFEDE6;--gold:#C9A84C;--ga:#E8D08A;--i9:#1A1A1A;--i6:#5E5E5E;--i4:#9E9E9E;--ln:#E8E5DC;--nv:#0D1B2A}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;background:#111;color:#fff;padding:48px 20px 80px;-webkit-font-smoothing:antialiased}
+.gh{text-align:center;margin-bottom:48px;max-width:760px;margin-left:auto;margin-right:auto}.gh-e{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#C9A84C;font-weight:500;margin-bottom:16px}.gh-t{font-family:'Playfair Display',serif;font-weight:700;font-size:38px;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}.gh-s{font-size:15px;line-height:24px;color:#9E9E9E;max-width:640px;margin:0 auto}
+.found{max-width:1000px;margin:0 auto 48px;padding:16px 22px;background:rgba(255,255,255,.04);border-radius:14px;border:1px solid rgba(255,255,255,.08);font-size:13px;color:#ccc;line-height:1.7}
+.found strong{color:#E8D08A}
+.row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:32px;max-width:1280px;margin:0 auto 56px;padding:32px 0;border-top:1px solid rgba(255,255,255,.06);justify-items:center}
+.ph{display:flex;align-items:baseline;gap:14px;margin-bottom:24px;grid-column:1/-1}
+.ph h2{font-family:'Playfair Display',serif;font-weight:700;font-size:22px}.ph span{font-size:12px;color:#9E9E9E;letter-spacing:.04em}
+.fb{display:flex;flex-direction:column;align-items:center}.fl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:#FAF8F3}.fl .d{width:8px;height:8px;border-radius:999px;background:#FAF8F3}
+.phone{width:380px;height:800px;background:#000;border-radius:44px;padding:8px;box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.06)}
+.scr{width:100%;height:100%;border-radius:36px;overflow:hidden;position:relative;background:var(--sp);color:var(--i9);font-family:'DM Sans',sans-serif}
+.notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:110px;height:28px;background:#000;border-radius:16px;z-index:100}
+.sb{position:absolute;top:0;left:0;right:0;height:44px;padding:14px 28px 0;display:flex;justify-content:space-between;align-items:center;z-index:50;font-size:14px;font-weight:600;color:var(--i9)}
+.si{display:flex;gap:5px;align-items:center}svg{display:block}
+
+.appbar{position:absolute;top:44px;left:0;right:0;padding:12px 20px;display:flex;align-items:center;gap:12px;background:var(--sp);z-index:10}
+.ab-bk{width:38px;height:38px;border-radius:999px;background:var(--sc);border:1px solid var(--ln);display:flex;align-items:center;justify-content:center;color:var(--i9);flex-shrink:0}
+.ab-t{flex:1;font-family:'Playfair Display',serif;font-weight:700;font-size:19px;color:var(--i9)}
+.ab-act{width:38px;height:38px;border-radius:999px;background:var(--sc);border:1px solid var(--ln);display:flex;align-items:center;justify-content:center;color:var(--i9);flex-shrink:0}
+.scrollarea{width:100%;height:100%;overflow-y:auto;position:relative}
+.bnav{position:absolute;bottom:0;left:0;right:0;background:var(--sc);border-top:1px solid var(--ln);padding:6px 4px 14px;display:grid;grid-template-columns:repeat(5,1fr);z-index:20}
+.bn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px;color:var(--i4);font-size:9px;font-weight:500}.bn.a{color:var(--gold);font-weight:600}
+
+/* ===== VIEW ALL (News list) ===== */
+.va-c{padding:104px 0 20px}
+.pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 20px;margin-bottom:16px}.pills::-webkit-scrollbar{display:none}
+.pill{padding:8px 16px;border-radius:999px;font-weight:500;font-size:12px;color:var(--i6);border:1px solid var(--ln);background:transparent;white-space:nowrap;flex-shrink:0}
+.pill.a{background:var(--i9);color:var(--sp);border-color:var(--i9);font-weight:600}
+.va-hero{margin:0 20px 18px;border-radius:18px;overflow:hidden;position:relative;aspect-ratio:4/3;background-size:cover;background-position:center;display:flex;flex-direction:column;justify-content:flex-end;padding:18px}
+.va-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,27,42,.05) 0%,rgba(13,27,42,.8) 100%)}
+.va-hero>*{position:relative;z-index:2}
+.va-hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--gold);color:#1A1A1A;padding:4px 12px;border-radius:999px;font-weight:600;font-size:10px;letter-spacing:.08em;width:max-content;margin-bottom:10px}
+.va-hero-title{font-family:'Playfair Display',serif;font-weight:700;font-size:21px;line-height:1.2;color:#fff;margin-bottom:6px}
+.va-hero-meta{font-size:11px;color:rgba(255,255,255,.8)}
+.va-card{display:flex;gap:14px;padding:14px;margin:0 20px 10px;background:var(--sc);border:1px solid var(--ln);border-radius:14px;align-items:center}
+.va-img{width:88px;height:74px;border-radius:12px;background-size:cover;background-position:center;flex-shrink:0;position:relative}
+.va-cat{position:absolute;top:6px;left:6px;font-weight:600;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);padding:2px 7px;border-radius:4px}
+.va-body{flex:1;min-width:0}
+.va-title{font-weight:600;font-size:13px;line-height:18px;color:var(--i9);margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.va-meta{display:flex;justify-content:space-between;align-items:center}
+.va-src{font-size:11px;color:var(--i4)}
+.va-listen{display:flex;align-items:center;gap:3px;font-size:9px;font-weight:600;color:var(--gold)}
+
+/* ===== ARTICLE DETAIL ===== */
+.ad-c{padding:104px 0 100px}
+.ad-hero{width:100%;aspect-ratio:16/10;background-size:cover;background-position:center}
+.ad-body{padding:20px}
+.ad-cat-tag{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.ad-title{font-family:'Playfair Display',serif;font-weight:700;font-size:23px;line-height:1.3;color:var(--i9);margin-bottom:14px}
+.ad-byline{font-size:11px;color:var(--i4);margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--ln)}
+.ad-text{font-size:14px;line-height:25px;color:var(--i6);margin-bottom:16px}
+.ad-text strong{color:var(--i9);font-weight:600}
+
+/* Floating listen button (idle state) */
+.listen-fab{position:absolute;bottom:24px;right:20px;width:56px;height:56px;border-radius:999px;background:var(--gold);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(201,168,76,.4);z-index:15}
+
+/* Now-reading bar (active/listening state) — mirrors the Radio mini-player language */
+.reading-bar{position:absolute;bottom:0;left:0;right:0;padding:14px 16px;background:#0D1B2A;display:flex;align-items:center;gap:12px;z-index:20;box-shadow:0 -8px 24px rgba(0,0,0,.2)}
+.reading-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#C9A84C,#8B6914);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.reading-text{flex:1;min-width:0}
+.reading-label{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:4px}
+.reading-title{font-size:12px;font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:6px}
+.reading-track{height:3px;background:rgba(255,255,255,.2);border-radius:999px;overflow:hidden}
+.reading-fill{height:100%;width:38%;background:#C9A84C;border-radius:999px}
+.reading-time{font-size:9px;color:rgba(255,255,255,.5);margin-top:4px}
+.reading-controls{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.reading-pause{width:36px;height:36px;border-radius:999px;background:#C9A84C;display:flex;align-items:center;justify-content:center}
+.reading-close{color:rgba(255,255,255,.5)}
+</style>
+</head>
+<body>
+
+<div class="gh">
+  <div class="gh-e">NEWS · VIEW ALL + ARTICLE DETAIL</div>
+  <h1 class="gh-t">From Home's "See All" to the full story.</h1>
+  <p class="gh-s">Two new screens, plus the read-aloud feature from the old app — rebuilt as a proper persistent listening bar instead of a floating button that fights the text.</p>
+</div>
+
+<div class="found">
+  <strong>Found in the old app:</strong> a circular play/pause button floats fixed at bottom-right of every article, letting the user listen to the story instead of reading it. It stayed in the same spot while scrolling, sitting on top of body text. I kept the feature — text-to-speech for articles is genuinely useful for agents reading on the move — but replaced the floating overlay with a dedicated bar at the bottom, matching the same visual language as the Radio mini-player already in the app. Same idea, doesn't sit on top of the words you're trying to read.
+</div>
+
+<!-- ============ VIEW ALL ============ -->
+<div class="row3">
+  <div class="ph"><h2>01 · View All — News</h2><span>· Destination of Home's "Top Stories → See All". Editor's Pick hero + full feed, every card shows a "Listen" tag</span></div>
+  <div class="fb">
+    <div class="fl"><span class="d"></span>LIGHT</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">News</div><div class="ab-act"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div></div>
+      <div class="scrollarea">
+        <div class="va-c">
+          <div class="va-hero" style="background-image:url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=900&q=80')">
+            <span class="va-hero-badge">✦ Editor's Pick</span>
+            <div class="va-hero-title">Air India Unveils Maharaja Lounge at San Francisco Airport</div>
+            <div class="va-hero-meta">GNN Bureau · 2h ago · 4 min read · 🔊 Listen available</div>
+          </div>
+
+          <div class="pills"><div class="pill a">All</div><div class="pill">Hotels</div><div class="pill">Associations</div><div class="pill">Airlines</div><div class="pill">Tourism Boards</div></div>
+
+          <div class="va-card"><div class="va-img" style="background-image:url('https://images.unsplash.com/photo-1556610961-d8c70e84e5b3?w=300&q=80')"><span class="va-cat">AVIATION</span></div><div class="va-body"><div class="va-title">SpiceJet Faces Fresh Financial Strain as Pilot Salary Delays Persist</div><div class="va-meta"><span class="va-src">GNN Bureau · 1h ago</span><span class="va-listen">🔊 4 min</span></div></div></div>
+
+          <div class="va-card"><div class="va-img" style="background-image:url('https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=300&q=80')"><span class="va-cat">INDUSTRY</span></div><div class="va-body"><div class="va-title">Ministry of Tourism Announces New Incredible India 2.0 Campaign</div><div class="va-meta"><span class="va-src">Travel World · 5h ago</span><span class="va-listen">🔊 3 min</span></div></div></div>
+
+          <div class="va-card"><div class="va-img" style="background-image:url('https://images.unsplash.com/photo-1542039940-04e2c4e2b14e?w=300&q=80')"><span class="va-cat">HOTELS</span></div><div class="va-body"><div class="va-title">Booking.com Rolls Out AI-Powered Car Rental Tools as Demand Surges</div><div class="va-meta"><span class="va-src">GNN Bureau · 1d ago</span><span class="va-listen">🔊 5 min</span></div></div></div>
+
+          <div class="va-card"><div class="va-img" style="background-image:url('https://images.unsplash.com/photo-1569154941061-e231b4725ef1?w=300&q=80')"><span class="va-cat">ASSOC.</span></div><div class="va-body"><div class="va-title">TAAI Hosts First NR Members Meet at Prime Minister's Museum</div><div class="va-meta"><span class="va-src">GNN · 7 Oct, 10:24 PM</span><span class="va-listen">🔊 2 min</span></div></div></div>
+
+          <div class="va-card"><div class="va-img" style="background-image:url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=300&q=80')"><span class="va-cat">EVENTS</span></div><div class="va-body"><div class="va-title">GBTA India Summit 2025 Sets New Benchmark for Business Travel</div><div class="va-meta"><span class="va-src">Travel World · 6 Dec</span><span class="va-listen">🔊 4 min</span></div></div></div>
+        </div>
+      </div>
+      <div class="bnav">
+        <div class="bn a"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</div>
+        <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Market</div>
+        <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Assoc.</div>
+        <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Services</div>
+        <div class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Account</div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ============ ARTICLE DETAIL — 2 states ============ -->
+<div class="row3">
+  <div class="ph"><h2>02 · Article Detail</h2><span>· Idle state (gold floating Listen button) and Active state (persistent reading bar, Radio-style)</span></div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>IDLE — BEFORE TAPPING LISTEN</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">News</div><div class="ab-act"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div></div>
+      <div class="scrollarea">
+        <div class="ad-c">
+          <div class="ad-hero" style="background-image:url('https://images.unsplash.com/photo-1556610961-d8c70e84e5b3?w=900&q=80')"></div>
+          <div class="ad-body">
+            <span class="ad-cat-tag">AVIATION</span>
+            <h1 class="ad-title">SpiceJet Faces Fresh Financial Strain as Pilot Salary Delays Persist, Seeks Government-Backed Loan</h1>
+            <div class="ad-byline">GNN Bureau · 9 June 2026, 1:32 PM · 4 min read</div>
+            <p class="ad-text"><strong>New Delhi, June 9:</strong> Budget carrier SpiceJet is facing renewed financial challenges, with salary payments to many pilots delayed for several months as the airline seeks emergency funding under a government-backed credit scheme to stabilise operations.</p>
+            <p class="ad-text">According to internal communications reviewed by Reuters, salary disbursements for a significant number of pilots have been delayed since March, highlighting the airline's ongoing cash flow difficulties.</p>
+            <p class="ad-text">The airline, once India's second-largest domestic carrier with a market share of nearly 15 percent in 2019, has seen its position weaken considerably. It currently holds around 3.4 percent of the domestic market, ranking fourth among Indian airlines.</p>
+          </div>
+        </div>
+      </div>
+      <div class="listen-fab"><svg width="22" height="22" viewBox="0 0 24 24" fill="#1A1A1A" stroke="#1A1A1A" stroke-width="1.5"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="#1A1A1A" fill="none" stroke-width="2" stroke-linecap="round"/></svg></div>
+    </div></div>
+  </div>
+
+  <div class="fb">
+    <div class="fl"><span class="d"></span>LISTENING — PERSISTENT READING BAR</div>
+    <div class="phone"><div class="scr" data-theme="light">
+      <div class="notch"></div>
+      <div class="sb"><span>9:41</span><span class="si"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg><svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".5" y=".5" width="21" height="10" rx="2.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="18" height="7" rx="1.5" fill="currentColor"/></svg></span></div>
+      <div class="appbar"><div class="ab-bk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div><div class="ab-t">News</div><div class="ab-act"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div></div>
+      <div class="scrollarea">
+        <div class="ad-c" style="padding-bottom:100px">
+          <div class="ad-hero" style="background-image:url('https://images.unsplash.com/photo-1556610961-d8c70e84e5b3?w=900&q=80')"></div>
+          <div class="ad-body">
+            <span class="ad-cat-tag">AVIATION</span>
+            <h1 class="ad-title">SpiceJet Faces Fresh Financial Strain as Pilot Salary Delays Persist, Seeks Government-Backed Loan</h1>
+            <div class="ad-byline">GNN Bureau · 9 June 2026, 1:32 PM · 4 min read</div>
+            <p class="ad-text"><strong>New Delhi, June 9:</strong> Budget carrier SpiceJet is facing renewed financial challenges, with salary payments to many pilots delayed for several months as the airline seeks emergency funding under a government-backed credit scheme to stabilise operations.</p>
+            <p class="ad-text">According to internal communications reviewed by Reuters, salary disbursements for a significant number of pilots have been delayed since March, highlighting the airline's ongoing cash flow difficulties.</p>
+            <p class="ad-text">The airline, once India's second-largest domestic carrier with a market share of nearly 15 percent in 2019, has seen its position weaken considerably. It currently holds around 3.4 percent of the domestic market, ranking fourth among Indian airlines.</p>
+          </div>
+        </div>
+      </div>
+      <div class="reading-bar">
+        <div class="reading-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="#1A1A1A" stroke="#1A1A1A" stroke-width="1.3"><path d="M11 5L6 9H2v6h4l5 4V5z"/></svg></div>
+        <div class="reading-text">
+          <div class="reading-label">Now Reading Aloud</div>
+          <div class="reading-title">SpiceJet Faces Fresh Financial Strain...</div>
+          <div class="reading-track"><div class="reading-fill"></div></div>
+          <div class="reading-time">1:32 of 4:05</div>
+        </div>
+        <div class="reading-controls">
+          <div class="reading-pause"><svg width="14" height="14" viewBox="0 0 24 24" fill="#1A1A1A"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></div>
+          <div class="reading-close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+</body>
+</html>

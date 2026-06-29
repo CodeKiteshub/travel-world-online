@@ -114,6 +114,67 @@ class PppImage {
       );
 }
 
+// ── Directory / Stakeholder models ────────────────────────────────────────────
+
+class PppStakeholder {
+  const PppStakeholder({
+    required this.id,
+    required this.pppId,
+    required this.type,
+    required this.fname,
+    required this.lname,
+    required this.cname,
+    required this.website,
+    required this.email,
+    required this.phone,
+    required this.address,
+    required this.city,
+    required this.pincode,
+    required this.description,
+    required this.document,
+  });
+
+  final String id;
+  final String pppId;
+  final String type;
+  final String fname;
+  final String lname;
+  final String cname;
+  final String website;
+  final String email;
+  final String phone;
+  final String address;
+  final String city;
+  final String pincode;
+  final String description;
+  final List<String> document;
+
+  String get fullName => '$fname $lname'.trim();
+  String get firstImage => document.isNotEmpty ? document.first : '';
+  String get initials {
+    final f = fname.isNotEmpty ? fname[0] : '';
+    final l = lname.isNotEmpty ? lname[0] : '';
+    return '$f$l'.toUpperCase();
+  }
+
+  factory PppStakeholder.fromJson(Map<String, dynamic> json) => PppStakeholder(
+        id: json['_id'] as String? ?? '',
+        pppId: json['pppId'] as String? ?? '',
+        type: json['type'] as String? ?? '',
+        fname: json['fname'] as String? ?? '',
+        lname: json['lname'] as String? ?? '',
+        cname: json['cname'] as String? ?? '',
+        website: json['website'] as String? ?? '',
+        email: json['email'] as String? ?? '',
+        phone: json['phone'] as String? ?? '',
+        address: json['address'] as String? ?? '',
+        city: json['City'] as String? ?? '',
+        pincode: json['pincode'] as String? ?? '',
+        description: json['description'] as String? ?? '',
+        document: (json['Document'] as List<dynamic>?)?.cast<String>() ?? [],
+      );
+}
+
 class PppPdf {
   const PppPdf({
     required this.id,

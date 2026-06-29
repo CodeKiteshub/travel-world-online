@@ -1,10 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../../core/router/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../data/models/association_model.dart';
+import '../providers/association_session_provider.dart';
 import '../providers/associations_providers.dart';
+
 
 class AssociationsScreen extends ConsumerStatefulWidget {
   const AssociationsScreen({super.key});
@@ -15,13 +19,43 @@ class AssociationsScreen extends ConsumerStatefulWidget {
 
 class _AssociationsScreenState extends ConsumerState<AssociationsScreen> {
   int _activeFilter = 0;
-  final Set<String> _signedIn = {};
 
   static const _filters = ['National', 'Regional', 'International', 'DMC'];
 
   List<AssociationModel> _applyFilter(List<AssociationModel> all) {
     final key = _filters[_activeFilter];
     return all.where((a) => a.atype == key).toList();
+  }
+
+  void _confirmLogout(BuildContext context, AssociationModel assoc, AppColorScheme colors) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: colors.surfaceCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Sign out of ${assoc.name}?',
+          style: AppTypography.body.copyWith(
+              color: colors.ink900, fontWeight: FontWeight.w700, fontSize: 15),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel',
+                style: AppTypography.label.copyWith(color: colors.ink600)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ref.read(associationSessionProvider.notifier).logout(assoc.id);
+            },
+            child: Text('Sign Out',
+                style: AppTypography.label.copyWith(
+                    color: colors.error, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -58,17 +92,26 @@ class _AssociationsScreenState extends ConsumerState<AssociationsScreen> {
                   else
                     ...visible.asMap().entries.map((e) {
                       final assoc = e.value;
+                      final sessions = ref.watch(associationSessionProvider);
+                      final isSignedIn = sessions.containsKey(assoc.id);
                       return _AssocRow(
                         assoc: assoc,
-                        isSignedIn: _signedIn.contains(assoc.id),
+                        isSignedIn: isSignedIn,
                         colors: colors,
-                        onToggle: () => setState(() {
-                          if (_signedIn.contains(assoc.id)) {
-                            _signedIn.remove(assoc.id);
-                          } else {
-                            _signedIn.add(assoc.id);
-                          }
-                        }),
+                        onRowTap: isSignedIn
+                            ? () => context.push(
+                                  RouteNames.associationDashboard
+                                      .replaceFirst(':id', assoc.id),
+                                  extra: assoc,
+                                )
+                            : null,
+                        onToggle: isSignedIn
+                            ? () => _confirmLogout(context, assoc, colors)
+                            : () => context.push(
+                                  RouteNames.associationLogin
+                                      .replaceFirst(':id', assoc.id),
+                                  extra: assoc,
+                                ),
                         isLast: e.key == visible.length - 1,
                       );
                     }),
@@ -293,16 +336,21 @@ class _AssocRow extends StatelessWidget {
     required this.colors,
     required this.onToggle,
     required this.isLast,
+    this.onRowTap,
   });
   final AssociationModel assoc;
   final bool isSignedIn;
   final AppColorScheme colors;
   final VoidCallback onToggle;
   final bool isLast;
+  final VoidCallback? onRowTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: onRowTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
       decoration: BoxDecoration(
         border: isLast
             ? null
@@ -391,7 +439,8 @@ class _AssocRow extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 }
 

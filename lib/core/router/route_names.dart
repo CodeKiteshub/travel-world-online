@@ -44,4 +44,10 @@ abstract final class RouteNames {
   static const villaSearch = '/marketplace/villa';
   static const villaDetail = '/marketplace/villa-detail';
   static const arosaResults = '/marketplace/arosa-results';
+
+  // — Insurance & Visa
+  static const insurance = '/services/insurance';
+  static const insuranceConfirmation = '/services/insurance/confirmation';
+  static const visa = '/services/visa';
+  static const visaConfirmation = '/services/visa/confirmation';
 }

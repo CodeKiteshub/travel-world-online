@@ -29,11 +29,15 @@ final dioProvider = Provider<Dio>((ref) {
 });
 
 // Unauthenticated Dio for travelworldonline.in content APIs (associations, etc.)
+// ResponseType.plain: the legacy PHP travelvideojson endpoints return text/html
+// content-type. Dio 5 throws when it tries to JSON-parse non-JSON bodies, so we
+// force plain-text and let each datasource decode manually.
 final twoDioProvider = Provider<Dio>((_) => Dio(
       BaseOptions(
         baseUrl: _twoContentBaseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
+        responseType: ResponseType.plain,
       ),
     ));
 

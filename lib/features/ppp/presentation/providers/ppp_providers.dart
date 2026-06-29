@@ -30,3 +30,8 @@ final pppImagesProvider = FutureProvider.family<List<PppImage>, String>((ref, id
 final pppPdfsProvider = FutureProvider.family<List<PppPdf>, String>((ref, id) {
   return ref.watch(_pppDatasourceProvider).fetchPdfs(id);
 });
+
+final pppDirectoryProvider =
+    FutureProvider.family<List<PppStakeholder>, String>((ref, pppId) {
+  return ref.watch(_pppDatasourceProvider).fetchDirectory(pppId);
+});
