@@ -1,7 +1,7 @@
 name: new_travel
 description: Travel World Online — B2B travel platform for Indian travel agents.
 publish_to: 'none'
-version: 1.0.0+1
+version: 2026.7.3+33
 
 environment:
   sdk: ^3.6.0
@@ -25,13 +25,13 @@ dependencies:
   dio: ^5.8.0+1
 
   # Firebase
-  firebase_core: ^4.8.0
+  firebase_core: ^4.11.0
   firebase_auth: ^6.5.0
   firebase_messaging: ^16.2.1
   firebase_analytics: ^12.4.0
   firebase_app_check: ^0.4.4
   firebase_crashlytics: ^5.2.1
-  cloud_firestore: ^6.4.0
+  cloud_firestore: ^6.6.0
 
   # Storage
   flutter_secure_storage: ^10.2.0
