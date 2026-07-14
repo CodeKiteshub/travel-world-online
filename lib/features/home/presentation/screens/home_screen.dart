@@ -9,7 +9,6 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../discover/data/models/deal_model.dart';
 import '../../../discover/presentation/providers/discover_providers.dart';
-import '../providers/home_providers.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -25,7 +24,6 @@ class HomeScreen extends ConsumerWidget {
 
     final user = FirebaseAuth.instance.currentUser;
     final firstName = (user?.displayName ?? '').split(' ').first;
-    final newsAsync = ref.watch(newsProvider);
 
     return Scaffold(
       backgroundColor: colors.surfacePrimary,
@@ -43,55 +41,10 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // TV LIVE widget
-                _TvLiveWidget(colors: colors),
-                const SizedBox(height: 20),
-
                 // Icon row — secondary modules
                 _IconRow(colors: colors),
                 const SizedBox(height: 24),
 
-                // Top Stories heading
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _SectionRow(
-                    heading: 'Top Stories',
-                    colors: colors,
-                    onViewAll: () => context.push(RouteNames.news),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // News cards
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: newsAsync.when(
-                    loading: () => const _NewsSkeletonList(),
-                    error: (e, _) => _NewsError(colors: colors),
-                    data: (articles) => articles.isEmpty
-                        ? _NewsError(colors: colors)
-                        : Column(
-                            children: articles
-                                .take(8)
-                                .map((a) => Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 10),
-                                      child: _NewsCard(
-                                        eyebrow:
-                                            a.category.name.toUpperCase(),
-                                        title: a.title,
-                                        meta: a.sourceMeta,
-                                        imageUrl: a.firstImage,
-                                        colors: colors,
-                                        onTap: () => context.push(
-                                            RouteNames.newsArticleDetail,
-                                            extra: a),
-                                      ),
-                                    ))
-                                .toList(),
-                          ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -134,7 +87,7 @@ class HomeScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  _BellButton(colors: colors),
+
                 ],
               ),
             ),
@@ -211,48 +164,6 @@ class _AvatarButton extends StatelessWidget {
           fontWeight: FontWeight.w700,
         ),
       ),
-    );
-  }
-}
-
-// ── Bell button ───────────────────────────────────────────────────────────────
-
-class _BellButton extends StatelessWidget {
-  const _BellButton({required this.colors});
-  final AppColorScheme colors;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: colors.surfaceCard,
-            border: Border.all(color: colors.lineSoft),
-          ),
-          child: Center(
-            child: Icon(Icons.notifications_outlined,
-                size: 20, color: colors.ink900),
-          ),
-        ),
-        Positioned(
-          top: 8,
-          right: 9,
-          child: Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(
-              color: colors.error,
-              shape: BoxShape.circle,
-              border: Border.all(color: colors.surfaceCard, width: 1.5),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -507,107 +418,6 @@ class _DealSlide extends StatelessWidget {
       );
 }
 
-// ── TV LIVE widget ────────────────────────────────────────────────────────────
-
-class _TvLiveWidget extends StatefulWidget {
-  const _TvLiveWidget({required this.colors});
-  final AppColorScheme colors;
-
-  @override
-  State<_TvLiveWidget> createState() => _TvLiveWidgetState();
-}
-
-class _TvLiveWidgetState extends State<_TvLiveWidget>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _pulseCtrl;
-  late final Animation<double> _pulseAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
-    _pulseAnim = Tween<double>(begin: 1.0, end: 0.3).animate(
-      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _pulseCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.navyDeep,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            AnimatedBuilder(
-              animation: _pulseAnim,
-              builder: (_, __) => Opacity(
-                opacity: _pulseAnim.value,
-                child: Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF85149),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 5),
-            Text(
-              'LIVE',
-              style: AppTypography.overline.copyWith(
-                color: const Color(0xFFF85149),
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.8,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Expanded(
-              child: Text(
-                'Breaking News · TWO TV',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Container(
-              width: 36,
-              height: 36,
-              decoration: const BoxDecoration(
-                color: AppColors.goldPrimary,
-                shape: BoxShape.circle,
-              ),
-              child: const Center(
-                child: Icon(Icons.play_arrow_rounded,
-                    size: 20, color: AppColors.navyDeep),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 // ── Icon row — secondary modules ──────────────────────────────────────────────
 
 class _IconRow extends StatelessWidget {
@@ -615,7 +425,6 @@ class _IconRow extends StatelessWidget {
   final AppColorScheme colors;
 
   static const _items = [
-    (icon: Icons.feed_outlined, label: 'News'),
     (icon: Icons.play_circle_outline_rounded, label: 'Video'),
     (icon: Icons.school_outlined, label: 'Campus'),
     (icon: Icons.apartment_outlined, label: 'PPP'),
@@ -656,9 +465,6 @@ class _IconTile extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         switch (label) {
-          case 'News':
-            context.push(RouteNames.news);
-            break;
           case 'Video':
             context.push(RouteNames.video);
             break;
@@ -702,227 +508,4 @@ class _IconTile extends StatelessWidget {
   }
 }
 
-// ── Section heading row ───────────────────────────────────────────────────────
 
-class _SectionRow extends StatelessWidget {
-  const _SectionRow(
-      {required this.heading, required this.colors, required this.onViewAll});
-  final String heading;
-  final AppColorScheme colors;
-  final VoidCallback onViewAll;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
-      children: [
-        Text(
-          heading,
-          style: AppTypography.displayMd.copyWith(
-            color: colors.ink900,
-            fontSize: 19,
-          ),
-        ),
-        GestureDetector(
-          onTap: onViewAll,
-          child: Text(
-            'See All →',
-            style: AppTypography.label
-                .copyWith(color: colors.goldPrimary, fontSize: 12),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ── News cards ────────────────────────────────────────────────────────────────
-
-class _NewsCard extends StatelessWidget {
-  const _NewsCard({
-    required this.eyebrow,
-    required this.title,
-    required this.meta,
-    required this.imageUrl,
-    required this.colors,
-    required this.onTap,
-  });
-  final String eyebrow;
-  final String title;
-  final String meta;
-  final String imageUrl;
-  final AppColorScheme colors;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: colors.surfaceCard,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: colors.lineSoft),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: imageUrl.isNotEmpty
-                ? Image.network(
-                    imageUrl,
-                    width: 76,
-                    height: 66,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _imagePlaceholder(colors),
-                  )
-                : _imagePlaceholder(colors),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  eyebrow,
-                  style: AppTypography.overline.copyWith(
-                    color: colors.goldPrimary,
-                    fontSize: 9,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.body.copyWith(
-                    color: colors.ink900,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  meta,
-                  style: AppTypography.caption
-                      .copyWith(color: colors.ink400, fontSize: 11),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ),
-    );
-  }
-
-  Widget _imagePlaceholder(AppColorScheme colors) => Container(
-        width: 76,
-        height: 66,
-        color: colors.surfaceTertiary,
-        child: Center(
-          child: Icon(Icons.image_outlined, size: 22, color: colors.ink400),
-        ),
-      );
-}
-
-// ── News skeleton + error ─────────────────────────────────────────────────────
-
-class _NewsSkeletonList extends StatelessWidget {
-  const _NewsSkeletonList();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: List.generate(
-        3,
-        (_) => const Padding(
-          padding: EdgeInsets.only(bottom: 10),
-          child: _NewsSkeleton(),
-        ),
-      ),
-    );
-  }
-}
-
-class _NewsSkeleton extends StatelessWidget {
-  const _NewsSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppColorScheme>()!;
-    return Container(
-      height: 90,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: colors.surfaceCard,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: colors.lineSoft),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 76,
-            height: 66,
-            decoration: BoxDecoration(
-              color: colors.surfaceTertiary,
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(height: 9, width: 56, color: colors.surfaceTertiary),
-                const SizedBox(height: 7),
-                Container(
-                    height: 12,
-                    width: double.infinity,
-                    color: colors.surfaceTertiary),
-                const SizedBox(height: 4),
-                Container(
-                    height: 12, width: 140, color: colors.surfaceTertiary),
-                const SizedBox(height: 7),
-                Container(height: 9, width: 72, color: colors.surfaceTertiary),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NewsError extends StatelessWidget {
-  const _NewsError({required this.colors});
-  final AppColorScheme colors;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: colors.surfaceCard,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: colors.lineSoft),
-      ),
-      child: Column(
-        children: [
-          Icon(Icons.wifi_off_rounded, size: 32, color: colors.ink400),
-          const SizedBox(height: 8),
-          Text(
-            'Could not load stories',
-            style: AppTypography.body.copyWith(color: colors.ink600),
-          ),
-        ],
-      ),
-    );
-  }
-}

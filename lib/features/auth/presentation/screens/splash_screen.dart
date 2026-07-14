@@ -28,7 +28,9 @@ class _SplashScreenState extends State<SplashScreen>
     )..forward();
     _progress.addStatusListener((status) {
       if (status == AnimationStatus.completed && mounted) {
-        context.go(RouteNames.onboarding);
+        // TODO: Re-enable onboarding later when needed.
+        // context.go(RouteNames.onboarding);
+        context.go(RouteNames.login);
       }
     });
   }

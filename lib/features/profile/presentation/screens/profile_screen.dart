@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/providers/theme_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../../core/router/route_names.dart';
@@ -35,13 +34,7 @@ class ProfileScreen extends ConsumerWidget {
 
     final name = user?.displayName ?? '';
     final email = user?.email ?? '';
-    final initials = name
-        .split(' ')
-        .take(2)
-        .map((w) => w.isNotEmpty ? w[0].toUpperCase() : '')
-        .join();
     final mobile = mobileAsync.valueOrNull ?? '';
-    final savedCount = member?.savedCount ?? 0;
     final memberships = member?.memberships ?? [];
 
     return Scaffold(
@@ -70,20 +63,13 @@ class ProfileScreen extends ConsumerWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(color: colors.goldPrimary, width: 2),
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [colors.goldPrimary, const Color(0xFF8B6914)],
-                          ),
+                          color: const Color(0xFFF1E3B7),
                         ),
-                        child: Center(
-                          child: Text(
-                            initials.isNotEmpty ? initials : '?',
-                            style: AppTypography.displayMd.copyWith(
-                              color: AppColors.navyDeep,
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                            ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.person_outline_rounded,
+                            size: 32,
+                            color: Color(0xFF8B6914),
                           ),
                         ),
                       ),
@@ -121,19 +107,7 @@ class ProfileScreen extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: colors.surfacePrimary,
-                          border: Border.all(color: colors.lineSoft),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Center(
-                          child: Icon(Icons.edit_outlined,
-                              size: 16, color: colors.ink900),
-                        ),
-                      ),
+
                     ],
                   ),
                 ),
@@ -142,86 +116,16 @@ class ProfileScreen extends ConsumerWidget {
                 if (memberships.isNotEmpty)
                   _MembershipSection(memberships: memberships),
 
-                // Account section
-                _MenuSection(
-                  label: 'ACCOUNT',
-                  colors: colors,
-                  children: [
-                    _MenuRow(
-                      icon: Icons.description_outlined,
-                      title: 'My Documents',
-                      subtitle: 'PAN, GST, vouchers',
-                      trailing: _Chevron(colors: colors),
-                      colors: colors,
-                      onTap: () {},
-                    ),
-                    _MenuRow(
-                      icon: Icons.favorite_border_rounded,
-                      title: 'Saved Deals',
-                      subtitle: savedCount > 0
-                          ? '$savedCount favourites'
-                          : 'No saved deals yet',
-                      trailing: _Chevron(colors: colors),
-                      colors: colors,
-                      onTap: () {},
-                      isLast: true,
-                    ),
-                  ],
-                ),
                 const SizedBox(height: 16),
-
-                // Preferences section
                 _MenuSection(
-                  label: 'PREFERENCES',
-                  colors: colors,
-                  children: [
-                    _MenuRow(
-                      icon: Icons.dark_mode_outlined,
-                      title: 'Dark Mode',
-                      subtitle: null,
-                      trailing: _Toggle(isOn: isDark, colors: colors),
-                      colors: colors,
-                      onTap: ref.read(themeNotifierProvider.notifier).toggle,
-                    ),
-                    _MenuRow(
-                      icon: Icons.notifications_outlined,
-                      title: 'Notifications',
-                      subtitle: 'Push & email',
-                      trailing: _Toggle(isOn: true, colors: colors),
-                      colors: colors,
-                      onTap: () {},
-                    ),
-                    _MenuRow(
-                      icon: Icons.language_outlined,
-                      title: 'Language',
-                      subtitle: 'English',
-                      trailing: _Chevron(colors: colors),
-                      colors: colors,
-                      onTap: () {},
-                      isLast: true,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                // Support section
-                _MenuSection(
-                  label: 'SUPPORT',
+                  label: 'MORE',
                   colors: colors,
                   children: [
                     _MenuRow(
                       icon: Icons.help_outline_rounded,
-                      title: 'Help & Support',
-                      subtitle: null,
-                      trailing: _Chevron(colors: colors),
-                      colors: colors,
-                      onTap: () {},
-                    ),
-                    _MenuRow(
-                      icon: Icons.info_outline_rounded,
                       title: 'About',
                       subtitle: 'v2026.2.24',
-                      trailing: _Chevron(colors: colors),
+                      trailing: null,
                       colors: colors,
                       onTap: () {},
                     ),
@@ -284,19 +188,7 @@ class ProfileScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: colors.surfaceCard,
-                      border: Border.all(color: colors.lineSoft),
-                    ),
-                    child: Center(
-                      child: Icon(Icons.settings_outlined,
-                          size: 18, color: colors.ink900),
-                    ),
-                  ),
+
                 ],
               ),
             ),
@@ -597,45 +489,3 @@ class _MenuRow extends StatelessWidget {
   }
 }
 
-class _Chevron extends StatelessWidget {
-  const _Chevron({required this.colors});
-  final AppColorScheme colors;
-
-  @override
-  Widget build(BuildContext context) {
-    return Icon(Icons.chevron_right_rounded, size: 18, color: colors.ink400);
-  }
-}
-
-class _Toggle extends StatelessWidget {
-  const _Toggle({required this.isOn, required this.colors});
-  final bool isOn;
-  final AppColorScheme colors;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      width: 42,
-      height: 24,
-      decoration: BoxDecoration(
-        color: isOn ? colors.goldPrimary : colors.lineSoft,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: AnimatedAlign(
-        duration: const Duration(milliseconds: 200),
-        alignment: isOn ? Alignment.centerRight : Alignment.centerLeft,
-        child: Container(
-          margin: const EdgeInsets.all(3),
-          width: 18,
-          height: 18,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: [BoxShadow(color: Color(0x33000000), blurRadius: 3)],
-          ),
-        ),
-      ),
-    );
-  }
-}
