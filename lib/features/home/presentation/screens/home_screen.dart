@@ -9,6 +9,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../discover/data/models/deal_model.dart';
 import '../../../discover/presentation/providers/discover_providers.dart';
+import '../widgets/home_sections.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -41,10 +42,30 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
 
+                // Associations — the app's flagship module, first section
+                AssociationsSection(colors: colors),
+                const SizedBox(height: 24),
+
                 // Icon row — secondary modules
                 _IconRow(colors: colors),
                 const SizedBox(height: 24),
 
+                QuickActionsRow(colors: colors),
+                const SizedBox(height: 28),
+
+                // Top Stories removed from home along with News tab
+                // TopStoriesSection(colors: colors),
+                // const SizedBox(height: 20),
+
+                LuxuryStaysSection(colors: colors),
+                const SizedBox(height: 28),
+
+                // Latest Videos removed from home — Video module stays reachable
+                // via the icon row.
+                // LatestVideosSection(colors: colors),
+                // const SizedBox(height: 28),
+
+                OpenJobsSection(colors: colors),
               ],
             ),
           ),
@@ -59,7 +80,7 @@ class HomeScreen extends ConsumerWidget {
               padding: EdgeInsets.fromLTRB(20, topPad + 10, 20, 10),
               child: Row(
                 children: [
-                  _AvatarButton(user: user, colors: colors),
+                  _AvatarButton(colors: colors),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -123,13 +144,12 @@ class HomeScreen extends ConsumerWidget {
 // ── Avatar button ─────────────────────────────────────────────────────────────
 
 class _AvatarButton extends StatelessWidget {
-  const _AvatarButton({required this.user, required this.colors});
-  final User? user;
+  const _AvatarButton({required this.colors});
   final AppColorScheme colors;
 
   @override
   Widget build(BuildContext context) {
-    final photoUrl = user?.photoURL;
+    // Same dummy avatar as the Account profile header card.
     return GestureDetector(
       onTap: () => context.go(RouteNames.account),
       child: Container(
@@ -138,30 +158,14 @@ class _AvatarButton extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(color: colors.goldPrimary, width: 2),
-          color: colors.surfaceTertiary,
+          color: const Color(0xFFF1E3B7),
         ),
-        child: ClipOval(
-          child: photoUrl != null && photoUrl.isNotEmpty
-              ? Image.network(photoUrl, fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _initials(colors))
-              : _initials(colors),
-        ),
-      ),
-    );
-  }
-
-  Widget _initials(AppColorScheme colors) {
-    final name = user?.displayName ?? '';
-    final initials = name.isNotEmpty
-        ? name.trim().split(' ').map((w) => w[0]).take(2).join()
-        : '?';
-    return Center(
-      child: Text(
-        initials.toUpperCase(),
-        style: AppTypography.label.copyWith(
-          color: colors.ink900,
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
+        child: const Center(
+          child: Icon(
+            Icons.person_outline_rounded,
+            size: 20,
+            color: Color(0xFF8B6914),
+          ),
         ),
       ),
     );
@@ -425,6 +429,7 @@ class _IconRow extends StatelessWidget {
   final AppColorScheme colors;
 
   static const _items = [
+    // (icon: Icons.newspaper_outlined, label: 'News'), // News removed from home
     (icon: Icons.play_circle_outline_rounded, label: 'Video'),
     (icon: Icons.school_outlined, label: 'Campus'),
     (icon: Icons.apartment_outlined, label: 'PPP'),
@@ -436,14 +441,18 @@ class _IconRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: _items
-            .map((item) => _IconTile(
-                  icon: item.icon,
-                  label: item.label,
-                  colors: colors,
-                ))
-            .toList(),
+        children: [
+          for (final (i, item) in _items.indexed) ...[
+            if (i > 0) const SizedBox(width: 10),
+            Expanded(
+              child: _IconTile(
+                icon: item.icon,
+                label: item.label,
+                colors: colors,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -465,6 +474,9 @@ class _IconTile extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         switch (label) {
+          // case 'News': // News removed from home
+          //   context.push(RouteNames.news);
+          //   break;
           case 'Video':
             context.push(RouteNames.video);
             break;
@@ -479,30 +491,31 @@ class _IconTile extends StatelessWidget {
             break;
         }
       },
-      child: Column(
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: colors.surfaceCard,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: colors.lineSoft),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: colors.surfaceCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: colors.lineSoft),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 22, color: colors.ink900),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: AppTypography.overline.copyWith(
+                color: colors.ink900,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
-            child: Center(child: Icon(icon, size: 22, color: colors.ink900)),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: AppTypography.overline.copyWith(
-              color: colors.ink900,
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

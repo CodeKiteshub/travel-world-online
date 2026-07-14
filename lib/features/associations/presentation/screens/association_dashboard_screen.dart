@@ -269,7 +269,11 @@ class _AssociationDashboardScreenState
               child: Row(
                 children: [
                   GestureDetector(
-                    onTap: () => context.pop(),
+                    // canPop guard: the dashboard can be the stack root
+                    // (deep link), where pop() throws.
+                    onTap: () => context.canPop()
+                        ? context.pop()
+                        : context.go(RouteNames.associations),
                     child: Container(
                       width: 38,
                       height: 38,

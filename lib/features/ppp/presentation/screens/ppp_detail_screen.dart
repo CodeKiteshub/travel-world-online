@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
@@ -469,23 +470,40 @@ class _VideoThumbnailCard extends StatelessWidget {
   final PppVideo video;
   final AppColorScheme colors;
 
-  Future<void> _launch() async {
-    final uri = Uri.parse(video.videoUrl);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+  Future<void> _launch(BuildContext context) async {
+    final url = video.youtubeUrl;
+    bool ok = false;
+    try {
+      // Attempt directly — canLaunchUrl false-negatives on restricted devices.
+      ok = url.isNotEmpty &&
+          await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    } on PlatformException {
+      ok = false;
+    }
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open video')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _launch,
+      onTap: () => _launch(context),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: Stack(
           fit: StackFit.expand,
           children: [
-            ColoredBox(color: colors.navyDeep),
+            video.thumbnailUrl.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: video.thumbnailUrl,
+                    fit: BoxFit.cover,
+                    errorWidget: (_, __, ___) =>
+                        ColoredBox(color: colors.navyDeep),
+                  )
+                : ColoredBox(color: colors.navyDeep),
             DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

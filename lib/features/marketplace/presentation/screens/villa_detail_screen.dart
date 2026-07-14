@@ -1,13 +1,18 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
+import '../../data/datasources/marketplace_remote_datasource.dart';
 import '../../data/models/villa_rate_model.dart';
 import '../../data/models/villa_rate_plan_model.dart';
 import '../providers/marketplace_providers.dart';
+
+// Same live key the old app ships for villa payments.
+const String _villaRazorpayKey = 'rzp_live_SJyy6qt0I2DKtU';
 
 class VillaDetailScreen extends ConsumerStatefulWidget {
   const VillaDetailScreen({super.key, required this.rate});
@@ -107,7 +112,7 @@ class _VillaDetailScreenState extends ConsumerState<VillaDetailScreen>
                       Icon(Icons.location_on_outlined,
                           size: 14, color: colors.ink400),
                       const SizedBox(width: 4),
-                      Text(rate.city,
+                      Text(rate.fullLocation,
                           style: AppTypography.body.copyWith(color: colors.ink400)),
                       if (rate.ratePlanCode.isNotEmpty) ...[
                         const SizedBox(width: 8),
@@ -164,28 +169,20 @@ class _VillaDetailScreenState extends ConsumerState<VillaDetailScreen>
                   const Divider(height: 1),
 
                   SizedBox(
-                    height: 220,
+                    height: 300,
                     child: TabBarView(
                       controller: _tabController,
                       children: [
-                        _TabContent(
-                          text: rate.description.isNotEmpty
-                              ? rate.description
-                              : 'Experience luxury villa living with premium amenities and personalised service in ${rate.city}.',
-                        ),
-                        const _TabContent(
-                          text:
-                              'Swimming pool · Private garden · Fully equipped kitchen · Air conditioning · Wi-Fi · Smart TV · BBQ area · Parking',
-                        ),
-                        const _TabContent(
-                          text:
-                              'Check-in from 3:00 PM · Check-out by 11:00 AM · No smoking · No pets · Quiet hours after 10:00 PM',
-                        ),
-                        _TabContent(
-                          text: rate.city.isNotEmpty
-                              ? 'Located in ${rate.city}. Contact our team for exact address and directions after booking confirmation.'
-                              : 'Contact our team for exact address and directions after booking confirmation.',
-                        ),
+                        // Overview — API description is HTML
+                        rate.description.isNotEmpty
+                            ? _HtmlTabContent(html: rate.description)
+                            : _TabContent(
+                                text:
+                                    'Experience luxury villa living with premium amenities and personalised service in ${rate.fullLocation}.',
+                              ),
+                        _AmenitiesTab(amenities: rate.topAmenities),
+                        const _RulesTab(),
+                        _LocationTab(rate: rate),
                       ],
                     ),
                   ),
@@ -226,17 +223,20 @@ class _VillaDetailScreenState extends ConsumerState<VillaDetailScreen>
             const SizedBox(width: 16),
             Expanded(
               child: FilledButton(
-                onPressed: _openBookingSheet,
+                onPressed: rate.soldOut ? null : _openBookingSheet,
                 style: FilledButton.styleFrom(
                   backgroundColor: colors.goldPrimary,
+                  disabledBackgroundColor: colors.lineSoft,
                   foregroundColor: Colors.white,
                   minimumSize: const Size.fromHeight(48),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: Text('Book Now',
-                    style: AppTypography.heading.copyWith(color: Colors.white)),
+                child: Text(rate.soldOut ? 'Sold Out' : 'Book Now',
+                    style: AppTypography.heading.copyWith(
+                        color:
+                            rate.soldOut ? colors.ink400 : Colors.white)),
               ),
             ),
           ],
@@ -263,6 +263,169 @@ class _TabContent extends StatelessWidget {
   }
 }
 
+class _HtmlTabContent extends StatelessWidget {
+  const _HtmlTabContent({required this.html});
+  final String html;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppColorScheme>()!;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: HtmlWidget(
+        html,
+        textStyle:
+            AppTypography.body.copyWith(color: colors.ink600, height: 1.6),
+      ),
+    );
+  }
+}
+
+class _AmenitiesTab extends StatelessWidget {
+  const _AmenitiesTab({required this.amenities});
+  final List<String> amenities;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppColorScheme>()!;
+    if (amenities.isEmpty) {
+      return const _TabContent(
+        text:
+            'Amenity details are shared by the villa host. Contact our team for the full list.',
+      );
+    }
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: amenities
+            .map(
+              (name) => Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: colors.surfaceCard,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: colors.lineSoft),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.check_rounded,
+                        size: 14, color: colors.goldPrimary),
+                    const SizedBox(width: 6),
+                    Text(
+                      name,
+                      style: AppTypography.body
+                          .copyWith(color: colors.ink900, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+}
+
+class _RulesTab extends StatelessWidget {
+  const _RulesTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        children: const [
+          _IconTextRow(
+            icon: Icons.assignment_outlined,
+            text:
+                'House rules and check-in details are shared by the villa host after booking confirmation.',
+          ),
+          SizedBox(height: 12),
+          _IconTextRow(
+            icon: Icons.support_agent_outlined,
+            text:
+                'Contact our team for specific requirements such as pets, events, or early check-in.',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LocationTab extends StatelessWidget {
+  const _LocationTab({required this.rate});
+  final VillaRateModel rate;
+
+  @override
+  Widget build(BuildContext context) {
+    final area = [rate.location, rate.city, rate.state]
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .join(', ');
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        children: [
+          if (rate.streetLine.isNotEmpty) ...[
+            _IconTextRow(
+                icon: Icons.location_on_outlined, text: rate.streetLine),
+            const SizedBox(height: 12),
+          ],
+          if (area.isNotEmpty) ...[
+            _IconTextRow(icon: Icons.map_outlined, text: area),
+            const SizedBox(height: 12),
+          ],
+          const _IconTextRow(
+            icon: Icons.directions_outlined,
+            text:
+                'Exact directions are shared by our team after booking confirmation.',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _IconTextRow extends StatelessWidget {
+  const _IconTextRow({required this.icon, required this.text});
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppColorScheme>()!;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: colors.goldPrimary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: colors.goldPrimary),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              text,
+              style: AppTypography.body
+                  .copyWith(color: colors.ink600, height: 1.5),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 // ── Booking Bottom Sheet ──────────────────────────────────────────────────────
 
 class _VillaBookingSheet extends ConsumerStatefulWidget {
@@ -281,6 +444,11 @@ class _VillaBookingSheetState extends ConsumerState<_VillaBookingSheet> {
 
   VillaRatePlanModel? _selectedPlan;
   bool _loading = false;
+
+  // Booking dates — editable so villas opened from the dateless "Suggested
+  // Villas" list can still be booked.
+  late String _checkin = widget.rate.checkin;
+  late String _checkout = widget.rate.checkout;
 
   late Razorpay _razorpay;
 
@@ -305,81 +473,133 @@ class _VillaBookingSheetState extends ConsumerState<_VillaBookingSheet> {
   VillaRatePlanParams get _ratePlanParams => (
         propertyId: widget.rate.propertyId,
         city: widget.rate.city,
-        checkin: widget.rate.checkin,
-        checkout: widget.rate.checkout,
+        checkin: _checkin,
+        checkout: _checkout,
         adults: widget.rate.adults,
         children: widget.rate.children,
       );
 
+  bool get _hasDates => _checkin.isNotEmpty && _checkout.isNotEmpty;
+
+  String _formatDate(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  Future<void> _pickDate({required bool isCheckin}) async {
+    final now = DateTime.now();
+    final current = DateTime.tryParse(isCheckin ? _checkin : _checkout);
+    final first = isCheckin
+        ? now
+        : (DateTime.tryParse(_checkin)?.add(const Duration(days: 1)) ?? now);
+    var initial = current ?? first;
+    if (initial.isBefore(first)) initial = first;
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: first,
+      lastDate: now.add(const Duration(days: 365)),
+    );
+    if (picked == null) return;
+    setState(() {
+      if (isCheckin) {
+        _checkin = _formatDate(picked);
+        final checkout = DateTime.tryParse(_checkout);
+        if (checkout == null || !checkout.isAfter(picked)) {
+          _checkout = _formatDate(picked.add(const Duration(days: 1)));
+        }
+      } else {
+        _checkout = _formatDate(picked);
+      }
+      // Plans are date-specific; force a fresh selection.
+      _selectedPlan = null;
+    });
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: AppColors.error),
+    );
+  }
+
   Future<void> _proceedToPayment() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedPlan == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a rate plan')),
-      );
+    if (_checkin.isEmpty || _checkout.isEmpty) {
+      _showError('Please select check-in and check-out dates');
+      return;
+    }
+    final plan = _selectedPlan;
+    if (plan == null || plan.id.trim().isEmpty) {
+      _showError('Please select a rate plan');
       return;
     }
     setState(() => _loading = true);
     try {
       final ds = ref.read(marketplaceDatasourceProvider);
-      final orderId = await ds.createVillaPaymentOrder(
-          _selectedPlan!.totalPayableInPaise);
+      final amountInPaise = plan.payableInPaise;
+      final orderId = await ds.createVillaPaymentOrder(amountInPaise);
+      if (orderId.isEmpty) {
+        throw Exception('Unable to create Razorpay order');
+      }
       final options = {
-        'key': 'rzp_live_SJyy6qt0I2DKtU',
-        'amount': _selectedPlan!.totalPayableInPaise,
+        'key': _villaRazorpayKey,
+        'amount': amountInPaise,
+        'currency': 'INR',
         'order_id': orderId,
         'name': 'Travel World Online',
-        'description': widget.rate.propertyName,
+        'description': '${widget.rate.propertyName} – ${plan.ratePlanCode}',
         'prefill': {
           'name': _nameCtrl.text.trim(),
           'email': _emailCtrl.text.trim(),
           'contact': _phoneCtrl.text.trim(),
+        },
+        'external': {
+          'wallets': ['paytm'],
         },
         'theme': {'color': '#C9A84C'},
       };
       _razorpay.open(options);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Payment setup failed: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        _showError('Payment setup failed: $e');
+        setState(() => _loading = false);
       }
-      setState(() => _loading = false);
     }
   }
 
   void _onPaymentSuccess(PaymentSuccessResponse response) async {
+    final paymentId = (response.paymentId ?? '').trim();
+    final plan = _selectedPlan;
+    if (plan == null || plan.id.trim().isEmpty || paymentId.isEmpty) {
+      if (mounted) {
+        setState(() => _loading = false);
+        _showError('Payment verification failed: booking reference missing. '
+            'Contact support with payment ID $paymentId.');
+      }
+      return;
+    }
     setState(() => _loading = true);
     try {
       final ds = ref.read(marketplaceDatasourceProvider);
-      await ds.submitVillaBooking({
-        'quoteId': widget.rate.quoteId,
-        'propertyId': widget.rate.propertyId,
-        'ratePlanCode': _selectedPlan?.ratePlanCode,
-        'bookingStatus': 'CONFIRMED',
-        'guest': {
-          'name': _nameCtrl.text.trim(),
-          'email': _emailCtrl.text.trim(),
-          'phone': _phoneCtrl.text.trim(),
-        },
-        'payment': {
-          'transactionId': response.paymentId,
-          'orderId': response.orderId,
-          'paidAmount': _selectedPlan?.totalPayable,
-          'provider': 'Razorpay',
-        },
-      });
+      await ds.submitVillaBooking(buildVillaBookingBody(
+        quoteId: plan.id,
+        guestName: _nameCtrl.text.trim(),
+        guestEmail: _emailCtrl.text.trim(),
+        guestPhone: _phoneCtrl.text.trim(),
+        transactionId: paymentId,
+        paidAmountRupees: plan.netAfterTax.round(),
+      ));
+      if (mounted) {
+        Navigator.of(context).pop(); // close sheet
+        _showSuccessDialog();
+      }
     } catch (_) {
-      // Even if booking API fails, payment was successful — still show success
+      // Payment went through but the booking API rejected it — never fake
+      // success here; the user needs the payment ID to follow up.
+      if (mounted) {
+        _showError('Payment received, but the booking could not be '
+            'confirmed. Contact support with payment ID $paymentId.');
+      }
     }
-    if (mounted) {
-      Navigator.of(context).pop(); // close sheet
-      _showSuccessDialog();
-    }
-    setState(() => _loading = false);
+    if (mounted) setState(() => _loading = false);
   }
 
   void _onPaymentError(PaymentFailureResponse response) {
@@ -480,12 +700,20 @@ class _VillaBookingSheetState extends ConsumerState<_VillaBookingSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Stay summary
-                        _InfoRow(colors: colors, icon: Icons.calendar_today_outlined,
-                            label: 'Check-in', value: widget.rate.checkin),
+                        // Stay summary — dates are editable
+                        _InfoRow(
+                            colors: colors,
+                            icon: Icons.calendar_today_outlined,
+                            label: 'Check-in',
+                            value: _checkin,
+                            onTap: () => _pickDate(isCheckin: true)),
                         const SizedBox(height: 8),
-                        _InfoRow(colors: colors, icon: Icons.calendar_today_outlined,
-                            label: 'Check-out', value: widget.rate.checkout),
+                        _InfoRow(
+                            colors: colors,
+                            icon: Icons.calendar_today_outlined,
+                            label: 'Check-out',
+                            value: _checkout,
+                            onTap: () => _pickDate(isCheckin: false)),
                         const SizedBox(height: 8),
                         _InfoRow(colors: colors, icon: Icons.people_outline_rounded,
                             label: 'Guests',
@@ -497,38 +725,48 @@ class _VillaBookingSheetState extends ConsumerState<_VillaBookingSheet> {
                             style: AppTypography.heading
                                 .copyWith(color: colors.ink900)),
                         const SizedBox(height: 12),
-                        plansAsync.when(
-                          loading: () => const Center(
-                              child: Padding(
-                            padding: EdgeInsets.all(24),
-                            child: CircularProgressIndicator(),
-                          )),
-                          error: (_, __) => Text(
-                            'Could not load rate plans. Showing base price.',
-                            style: AppTypography.caption
-                                .copyWith(color: AppColors.error),
-                          ),
-                          data: (plans) {
-                            if (plans.isEmpty) {
-                              return _RatePlanFallback(
-                                  rate: widget.rate, colors: colors);
-                            }
-                            return Column(
-                              children: plans.map((plan) {
-                                final selected = _selectedPlan?.id == plan.id;
-                                return GestureDetector(
-                                  onTap: () =>
-                                      setState(() => _selectedPlan = plan),
-                                  child: _RatePlanCard(
-                                    plan: plan,
-                                    selected: selected,
-                                    colors: colors,
-                                  ),
+                        if (!_hasDates)
+                          Text(
+                            'Select check-in and check-out dates to see rate plans.',
+                            style: AppTypography.body
+                                .copyWith(color: colors.ink600),
+                          )
+                        else
+                          plansAsync.when(
+                            loading: () => const Center(
+                                child: Padding(
+                              padding: EdgeInsets.all(24),
+                              child: CircularProgressIndicator(),
+                            )),
+                            error: (_, __) => Text(
+                              'Could not load rate plans. Please try again.',
+                              style: AppTypography.caption
+                                  .copyWith(color: AppColors.error),
+                            ),
+                            data: (plans) {
+                              if (plans.isEmpty) {
+                                return Text(
+                                  'No rate plans available for these dates. Try different dates.',
+                                  style: AppTypography.body
+                                      .copyWith(color: colors.ink600),
                                 );
-                              }).toList(),
-                            );
-                          },
-                        ),
+                              }
+                              return Column(
+                                children: plans.map((plan) {
+                                  final selected = _selectedPlan?.id == plan.id;
+                                  return GestureDetector(
+                                    onTap: () =>
+                                        setState(() => _selectedPlan = plan),
+                                    child: _RatePlanCard(
+                                      plan: plan,
+                                      selected: selected,
+                                      colors: colors,
+                                    ),
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          ),
 
                         const SizedBox(height: 20),
 
@@ -585,7 +823,7 @@ class _VillaBookingSheetState extends ConsumerState<_VillaBookingSheet> {
                                 )
                               : Text(
                                   _selectedPlan != null
-                                      ? 'Pay ${widget.rate.currency} ${_selectedPlan!.totalPayable.toStringAsFixed(0)} & Confirm'
+                                      ? 'Pay ${widget.rate.currency} ${_selectedPlan!.netAfterTax.toStringAsFixed(0)} & Confirm'
                                       : 'Select a Rate Plan to Continue',
                                   style: AppTypography.heading
                                       .copyWith(color: Colors.white),
@@ -679,12 +917,13 @@ class _RatePlanCard extends StatelessWidget {
                 value: plan.netBeforeTax, colors: colors),
             _PriceLine(label: 'GST',
                 value: plan.gstAmount, colors: colors),
-            _PriceLine(label: 'Security deposit',
-                value: plan.securityDeposit, colors: colors),
+            if (plan.securityDeposit > 0)
+              _PriceLine(label: 'Security deposit (at property)',
+                  value: plan.securityDeposit, colors: colors),
             const Divider(height: 16),
             _PriceLine(
               label: 'Total payable',
-              value: plan.totalPayable,
+              value: plan.netAfterTax,
               colors: colors,
               isBold: true,
             ),
@@ -724,61 +963,46 @@ class _PriceLine extends StatelessWidget {
   }
 }
 
-class _RatePlanFallback extends StatelessWidget {
-  const _RatePlanFallback({required this.rate, required this.colors});
-  final VillaRateModel rate;
-  final AppColorScheme colors;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: colors.surfacePrimary,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colors.lineSoft),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('Base Rate', style: AppTypography.body.copyWith(color: colors.ink600)),
-          Text(
-            '${rate.currency} ${rate.amount.toStringAsFixed(0)}',
-            style: AppTypography.heading.copyWith(color: colors.goldPrimary),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _InfoRow extends StatelessWidget {
   const _InfoRow(
       {required this.colors,
       required this.icon,
       required this.label,
-      required this.value});
+      required this.value,
+      this.onTap});
   final AppColorScheme colors;
   final IconData icon;
   final String label;
   final String value;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: colors.ink400),
-        const SizedBox(width: 8),
-        Text('$label: ',
-            style: AppTypography.caption.copyWith(color: colors.ink400)),
-        Expanded(
-          child: Text(
-            value.isNotEmpty ? value : '—',
-            style: AppTypography.body.copyWith(color: colors.ink900),
-            overflow: TextOverflow.ellipsis,
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: colors.ink400),
+          const SizedBox(width: 8),
+          Text('$label: ',
+              style: AppTypography.caption.copyWith(color: colors.ink400)),
+          Expanded(
+            child: Text(
+              value.isNotEmpty ? value : (onTap != null ? 'Select date' : '—'),
+              style: AppTypography.body.copyWith(
+                color: value.isNotEmpty ? colors.ink900 : colors.goldPrimary,
+                fontWeight:
+                    value.isEmpty && onTap != null ? FontWeight.w600 : null,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-        ),
-      ],
+          if (onTap != null)
+            Icon(Icons.edit_calendar_outlined,
+                size: 16, color: colors.goldPrimary),
+        ],
+      ),
     );
   }
 }

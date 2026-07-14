@@ -29,6 +29,21 @@ void main() {
       expect(v.id, 'v1');
       expect(v.videoUrl, 'https://youtu.be/abc');
       expect(v.title, 'Intro');
+      // Full URLs pass through untouched; no thumbnail derivable.
+      expect(v.youtubeUrl, 'https://youtu.be/abc');
+      expect(v.thumbnailUrl, '');
+    });
+
+    test('normalises bare YouTube IDs to launchable URLs', () {
+      final v = PppVideo.fromJson({'_id': 'v2', 'video': 'mwDQ_fxzD5E'});
+      expect(v.youtubeUrl, 'https://www.youtube.com/watch?v=mwDQ_fxzD5E');
+      expect(v.thumbnailUrl, 'https://img.youtube.com/vi/mwDQ_fxzD5E/0.jpg');
+    });
+
+    test('empty video field yields empty urls', () {
+      final v = PppVideo.fromJson({'_id': 'v3'});
+      expect(v.youtubeUrl, '');
+      expect(v.thumbnailUrl, '');
     });
   });
 

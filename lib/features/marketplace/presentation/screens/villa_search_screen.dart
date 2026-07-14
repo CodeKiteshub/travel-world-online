@@ -365,15 +365,42 @@ class _VillaCard extends StatelessWidget {
             ClipRRect(
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(14)),
-              child: rate.imageUrl.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: rate.imageUrl,
-                      height: 180,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorWidget: (_, __, ___) => _NavyFallback(colors: colors),
-                    )
-                  : _NavyFallback(colors: colors),
+              child: Stack(
+                children: [
+                  rate.imageUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: rate.imageUrl,
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, __, ___) =>
+                              _NavyFallback(colors: colors),
+                        )
+                      : _NavyFallback(colors: colors),
+                  if (rate.soldOut)
+                    Positioned(
+                      top: 10,
+                      left: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.error,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          'SOLD OUT',
+                          style: AppTypography.overline.copyWith(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
 
             Padding(
@@ -409,16 +436,20 @@ class _VillaCard extends StatelessWidget {
                         ),
                     ],
                   ),
-                  if (rate.city.isNotEmpty) ...[
+                  if (rate.fullLocation.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Row(
                       children: [
                         Icon(Icons.location_on_outlined,
                             size: 14, color: colors.ink400),
                         const SizedBox(width: 4),
-                        Text(rate.city,
-                            style: AppTypography.caption
-                                .copyWith(color: colors.ink400)),
+                        Expanded(
+                          child: Text(rate.fullLocation,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.caption
+                                  .copyWith(color: colors.ink400)),
+                        ),
                       ],
                     ),
                   ],

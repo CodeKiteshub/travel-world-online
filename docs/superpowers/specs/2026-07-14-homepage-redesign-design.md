@@ -12,19 +12,20 @@ only existing providers/models/routes — no new packages, no new endpoints.
 |---|---------|-------------|-------------|
 | 1 | App bar (avatar, date, greeting) | unchanged | avatar → Account |
 | 2 | Deals carousel | `featuredDealsProvider` | unchanged |
-| 3 | Icon row — **5 tiles**: News · Video · Campus · PPP · Jobs | static | each pushes its module route |
-| 4 | Quick Actions — Insurance + Visa cards | static | `/services/insurance`, `/services/visa` |
-| 5 | Top Stories — 1 hero + 2 compact cards, gold "See All" | `newsProvider` (home feature) | article → `/news/article`, See All → `/news` |
+| 3 | **Associations — flagship module, first section**: horizontal cards (logo, name, type) | `associationsProvider` | card/See All → Associations tab |
+| 4 | Icon row — 4 tiles: Video · Campus · PPP · Jobs | static | each pushes its module route |
+| 5 | Quick Actions — Insurance + Visa cards | static | `/services/insurance`, `/services/visa` |
 | 6 | Luxury Stays — horizontal image cards | `luxuryHotelsProvider` | card → hotel detail, See All → Marketplace tab |
-| 7 | Latest Videos — horizontal YouTube-thumb cards | `videoFeedProvider` | card/See All → `/video` |
-| 8 | Open Jobs — 2 compact rows | `jobsProvider` | See All → `/jobs` |
-| 9 | Your Associations — horizontal logo chips | `associationsProvider` | chip/See All → Associations tab |
+| 7 | Open Jobs — 2 compact rows | `jobsProvider` | See All → `/jobs` |
 
-## Deliberately skipped
+## Deliberately skipped (per user, 2026-07-14)
 
-- **Notification bell** — no notifications backend exists; dead button. Add when one does.
-- **TV LIVE widget** — no live-stream API anywhere in the codebase; spec says it hides
-  when nothing is live, and nothing can ever be live yet.
+- **News tile + Top Stories section** — user removed the News module from home;
+  code kept commented out in `home_screen.dart` / `home_sections.dart` for easy restore.
+- **Latest Videos section** — user removed it (Video stays reachable via icon row);
+  section widget kept in `home_sections.dart`, usage commented out.
+- **Notification bell** — removed by user; also no notifications backend exists.
+- **TV LIVE widget** — removed by user; no live-stream API anywhere in the codebase.
 - **Radio mini-player** — same; no radio backend.
 
 ## Behavior rules

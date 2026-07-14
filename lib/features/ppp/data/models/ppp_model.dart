@@ -94,7 +94,21 @@ class PppVideo {
   const PppVideo({required this.id, required this.title, required this.videoUrl});
   final String id;
   final String title;
-  final String videoUrl; // YouTube URL
+  final String videoUrl; // bare YouTube video ID or full URL
+
+  /// The API's `video` field usually holds a bare YouTube ID (e.g.
+  /// "mwDQ_fxzD5E"); occasionally a full URL. Normalise to a launchable URL.
+  String get youtubeUrl {
+    final v = videoUrl.trim();
+    if (v.isEmpty) return '';
+    return v.startsWith('http') ? v : 'https://www.youtube.com/watch?v=$v';
+  }
+
+  String get thumbnailUrl {
+    final v = videoUrl.trim();
+    if (v.isEmpty || v.startsWith('http')) return '';
+    return 'https://img.youtube.com/vi/$v/0.jpg';
+  }
 
   factory PppVideo.fromJson(Map<String, dynamic> json) => PppVideo(
         id: json['_id'] as String? ?? '',

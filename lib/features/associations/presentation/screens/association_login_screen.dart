@@ -54,7 +54,9 @@ class _AssociationLoginScreenState
             password: pass,
           );
       if (mounted) {
-        context.go(
+        // Replace only the login page — keeps the associations tab in the
+        // stack so the dashboard's back button can pop.
+        context.pushReplacement(
           RouteNames.associationDashboard.replaceFirst(':id', widget.assoc.id),
           extra: widget.assoc,
         );

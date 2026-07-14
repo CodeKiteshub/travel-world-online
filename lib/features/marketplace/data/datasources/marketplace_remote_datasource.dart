@@ -164,13 +164,18 @@ class MarketplaceRemoteDatasource {
     } else if (data is Map<String, dynamic>) {
       list = data['list'] as List<dynamic>? ??
           data['data'] as List<dynamic>? ??
-          data['ratePlans'] as List<dynamic>? ??
           [];
     } else {
       list = [];
     }
-    return list
-        .cast<Map<String, dynamic>>()
+    // The endpoint returns the property object; its rate plans are nested
+    // inside the 'quotes' array.
+    if (list.isEmpty || list.first is! Map<String, dynamic>) return [];
+    final quotes =
+        (list.first as Map<String, dynamic>)['quotes'] as List<dynamic>? ?? [];
+    return quotes
+        .whereType<Map<String, dynamic>>()
+        .where((q) => (q['id'] ?? '').toString().trim().isNotEmpty)
         .map(VillaRatePlanModel.fromJson)
         .toList();
   }
@@ -181,13 +186,49 @@ class MarketplaceRemoteDatasource {
       data: {'amount': amountInPaise},
     );
     final data = response.data as Map<String, dynamic>? ?? {};
-    return data['orderId'] as String? ??
-        data['order_id'] as String? ??
-        data['id'] as String? ??
-        '';
+    final order = data['order'];
+    return (data['id'] ??
+            data['orderId'] ??
+            data['order_id'] ??
+            (order is Map<String, dynamic> ? order['id'] : null) ??
+            '')
+        .toString();
   }
 
   Future<void> submitVillaBooking(Map<String, dynamic> payload) async {
     await _dio.post('/api/elivaas/booking', data: payload);
   }
+}
+
+/// Booking body for POST /api/elivaas/booking — must match the old app's
+/// shape exactly: guest split into firstName/lastName, payment amount in
+/// whole rupees.
+Map<String, dynamic> buildVillaBookingBody({
+  required String quoteId,
+  required String guestName,
+  required String guestEmail,
+  required String guestPhone,
+  required String transactionId,
+  required int paidAmountRupees,
+}) {
+  final nameParts =
+      guestName.trim().split(RegExp(r'\s+')).where((e) => e.isNotEmpty);
+  final firstName = nameParts.isEmpty ? guestName.trim() : nameParts.first;
+  final lastName =
+      nameParts.length > 1 ? nameParts.skip(1).join(' ') : guestName.trim();
+  return {
+    'quoteId': quoteId,
+    'bookingStatus': 'CONFIRMED',
+    'guest': {
+      'email': guestEmail,
+      'phone': guestPhone,
+      'firstName': firstName,
+      'lastName': lastName,
+    },
+    'payment': {
+      'provider': 'Razorpay',
+      'transactionId': transactionId,
+      'amount': paidAmountRupees,
+    },
+  };
 }
