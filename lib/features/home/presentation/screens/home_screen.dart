@@ -430,7 +430,7 @@ class _IconRow extends StatelessWidget {
 
   static const _items = [
     // (icon: Icons.newspaper_outlined, label: 'News'), // News removed from home
-    (icon: Icons.play_circle_outline_rounded, label: 'Video'),
+    // (icon: Icons.play_circle_outline_rounded, label: 'Video'), // Video removed from home
     (icon: Icons.school_outlined, label: 'Campus'),
     (icon: Icons.apartment_outlined, label: 'PPP'),
     (icon: Icons.work_outline, label: 'Jobs'),
@@ -477,9 +477,9 @@ class _IconTile extends StatelessWidget {
           // case 'News': // News removed from home
           //   context.push(RouteNames.news);
           //   break;
-          case 'Video':
-            context.push(RouteNames.video);
-            break;
+          // case 'Video': // Video removed from home
+          //   context.push(RouteNames.video);
+          //   break;
           case 'Campus':
             context.push(RouteNames.campus);
             break;

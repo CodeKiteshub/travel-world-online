@@ -31,6 +31,8 @@ abstract final class RouteNames {
   static const associationUpdates = '/association/:id/updates';
   static const associationDirectory = '/association/:id/directory';
   static const associationJobs = '/association/:id/jobs';
+  static const associationJobCreate = '/association/:id/jobs/post';
+  static const associationJobApplicants = '/association/:id/jobs/applicants';
   static const associationChat = '/association/:id/chat';
   static const associationChatThread = '/association/:id/chat/:chatId';
   static const associationCabs = '/association/:id/cabs';

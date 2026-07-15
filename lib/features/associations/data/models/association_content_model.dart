@@ -42,13 +42,15 @@ class AssociationUpdateModel {
     required this.text,
     required this.from,
     required this.postedAt,
+    this.content = '',
     this.imageUrl,
   });
 
   final String id;
-  final String text;
+  final String text; // title
   final String from;
   final String postedAt;
+  final String content; // description body
   final String? imageUrl;
 
   factory AssociationUpdateModel.fromJson(Map<String, dynamic> j) {
@@ -58,6 +60,7 @@ class AssociationUpdateModel {
       text: j['text'] as String? ?? j['message'] as String? ?? j['title'] as String? ?? '',
       from: j['from'] as String? ?? j['postedBy'] as String? ?? 'Association',
       postedAt: j['createdAt'] as String? ?? j['date'] as String? ?? '',
+      content: j['content'] as String? ?? j['description'] as String? ?? '',
       imageUrl: j['imageUrl'] as String? ?? j['image'] as String?,
     );
   }
@@ -104,6 +107,7 @@ class AssociationJobModel {
     required this.postedAt,
     this.description,
     this.salary,
+    this.website,
   });
 
   final String id;
@@ -113,6 +117,7 @@ class AssociationJobModel {
   final String postedAt;
   final String? description;
   final String? salary;
+  final String? website;
 
   factory AssociationJobModel.fromJson(Map<String, dynamic> j) {
     return AssociationJobModel(
@@ -121,8 +126,44 @@ class AssociationJobModel {
       company: j['company'] as String? ?? j['companyName'] as String? ?? '',
       location: j['location'] as String? ?? j['city'] as String? ?? '',
       postedAt: j['createdAt'] as String? ?? '',
-      description: j['description'] as String?,
+      description: j['description'] as String? ?? j['jobDescription'] as String?,
       salary: j['salary'] as String?,
+      website: j['companyWebsite'] as String?,
+    );
+  }
+}
+
+class AssociationJobApplicantModel {
+  const AssociationJobApplicantModel({
+    required this.id,
+    required this.fullname,
+    required this.email,
+    required this.mobile,
+    required this.currentCtc,
+    required this.expectedCtc,
+    required this.cvUrls,
+    required this.appliedAt,
+  });
+
+  final String id;
+  final String fullname;
+  final String email;
+  final String mobile;
+  final String currentCtc;
+  final String expectedCtc;
+  final List<String> cvUrls;
+  final String appliedAt;
+
+  factory AssociationJobApplicantModel.fromJson(Map<String, dynamic> j) {
+    return AssociationJobApplicantModel(
+      id: j['_id']?.toString() ?? j['id']?.toString() ?? '',
+      fullname: j['fullname'] as String? ?? '',
+      email: j['email'] as String? ?? '',
+      mobile: j['mobile'] as String? ?? '',
+      currentCtc: j['currentCTC']?.toString() ?? '',
+      expectedCtc: j['expectedCTC']?.toString() ?? '',
+      cvUrls: (j['cvFile'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      appliedAt: j['createdAt'] as String? ?? '',
     );
   }
 }

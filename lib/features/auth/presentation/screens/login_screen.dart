@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/network/api_result.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -10,14 +9,6 @@ import '../../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/router/route_names.dart';
 import '../providers/auth_providers.dart';
-
-const _globeSvg = '''
-<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1.5"/>
-  <path d="M4 24 Q24 14 44 24 Q24 34 4 24" stroke="currentColor" stroke-width="1.2" fill="none"/>
-  <path d="M24 4 Q14 24 24 44 Q34 24 24 4" stroke="currentColor" stroke-width="1.2" fill="none"/>
-</svg>
-''';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -121,22 +112,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               children: [
                 const SizedBox(height: AppSpacing.xl),
 
-                // — Globe logo
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: colors.goldPrimary, width: 2),
-                  ),
-                  child: Center(
-                    child: SvgPicture.string(
-                      _globeSvg,
-                      colorFilter: ColorFilter.mode(
-                          colors.goldPrimary, BlendMode.srcIn),
-                      width: 30,
-                      height: 30,
-                    ),
+                // — App logo (from the old app) — carries the brand name
+                // itself, so no wordmark text below.
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    'assets/images/app_logo.jpg',
+                    width: 132,
+                    height: 132,
+                    fit: BoxFit.cover,
                   ),
                 )
                     .animate()
@@ -148,57 +132,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       curve: Curves.easeOut,
                     ),
 
-                const SizedBox(height: 16),
-
-                // — App name
-                Column(
-                  children: [
-                    Text(
-                      'TRAVEL WORLD',
-                      style: AppTypography.displayMd.copyWith(
-                        color: colors.ink900,
-                        fontSize: 18,
-                        letterSpacing: 0.06 * 18,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'ONLINE',
-                      style: AppTypography.caption.copyWith(
-                        fontFamily: 'DMSans',
-                        fontSize: 9,
-                        letterSpacing: 0.32 * 9,
-                        color: colors.ink400,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                )
-                    .animate()
-                    .fadeIn(delay: 120.ms, duration: 400.ms)
-                    .slideY(
-                        begin: 0.08,
-                        end: 0,
-                        delay: 120.ms,
-                        duration: 400.ms,
-                        curve: Curves.easeOut),
-
                 const SizedBox(height: AppSpacing.lg),
 
                 // — Page heading
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       'Welcome back',
+                      textAlign: TextAlign.center,
                       style: AppTypography.displayLg.copyWith(
                           color: colors.ink900, fontSize: 28, height: 1.2),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'Sign in to continue to your travel business.',
+                      textAlign: TextAlign.center,
                       style: AppTypography.body
                           .copyWith(color: colors.ink600, height: 1.55),
                     ),
@@ -256,6 +205,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     controller: _passwordController,
                     focusNode: _passwordFocus,
                     obscureText: _obscurePassword,
+                    // Stops the keyboard's suggestion engine from injecting
+                    // a leading space on the first keystroke.
+                    keyboardType: TextInputType.visiblePassword,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    autofillHints: const [AutofillHints.password],
+                    inputFormatters: [
+                      // Passwords may contain inner spaces, never leading.
+                      FilteringTextInputFormatter.deny(RegExp(r'^\s+')),
+                    ],
                     textInputAction: TextInputAction.done,
                     onFieldSubmitted: (_) => _submit(),
                     style:

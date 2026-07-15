@@ -42,6 +42,8 @@ import '../../features/associations/presentation/screens/association_circulars_s
 import '../../features/associations/presentation/screens/association_updates_screen.dart';
 import '../../features/associations/presentation/screens/association_directory_screen.dart';
 import '../../features/associations/presentation/screens/association_jobs_screen.dart';
+import '../../features/associations/presentation/screens/association_job_create_screen.dart';
+import '../../features/associations/presentation/screens/association_job_applicants_screen.dart';
 import '../../features/associations/presentation/screens/association_chat_screen.dart';
 import '../../features/associations/presentation/screens/association_cabs_screen.dart';
 import '../../features/discover/data/models/deal_model.dart';
@@ -359,6 +361,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (_, state) {
           final assoc = state.extra as AssociationModel;
           return _slideLeftPage(AssociationJobsScreen(assoc: assoc));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.associationJobCreate,
+        pageBuilder: (_, state) {
+          final assoc = state.extra as AssociationModel;
+          return _slideLeftPage(AssociationJobCreateScreen(assoc: assoc));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.associationJobApplicants,
+        pageBuilder: (_, state) {
+          final job = state.extra as AssociationJobModel;
+          return _slideLeftPage(AssociationJobApplicantsScreen(
+            assocId: state.pathParameters['id']!,
+            job: job,
+          ));
         },
       ),
       GoRoute(

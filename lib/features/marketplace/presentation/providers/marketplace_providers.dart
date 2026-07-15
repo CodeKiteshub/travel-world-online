@@ -1,10 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../associations/data/models/association_session_model.dart';
+import '../../../associations/presentation/providers/association_session_provider.dart';
 import '../../../discover/data/models/deal_model.dart';
 import '../../data/datasources/arosa_remote_datasource.dart';
 import '../../data/datasources/marketplace_remote_datasource.dart';
 import '../../data/models/arosa_package_model.dart';
 import '../../data/models/luxury_hotel_model.dart';
+import '../../data/models/tailor_made_request_model.dart';
 import '../../data/models/villa_city_model.dart';
 import '../../data/models/villa_rate_model.dart';
 import '../../data/models/villa_rate_plan_model.dart';
@@ -25,8 +28,36 @@ final marketplaceDealsProvider = FutureProvider<List<Deal>>((ref) {
   return ref.watch(marketplaceDatasourceProvider).fetchDeals();
 });
 
+/// First active association session, or null when signed out of all of them.
+/// My Packages and Tailor Made are association-member features and use this
+/// session's token/memberId instead of the app-level login.
+// ponytail: uses the first session; per-association picker if multi-login matters
+final marketplaceSessionProvider = Provider<AssociationSessionModel?>((ref) {
+  final sessions = ref.watch(associationSessionProvider);
+  return sessions.values.isEmpty ? null : sessions.values.first;
+});
+
 final myPackagesProvider = FutureProvider<List<Deal>>((ref) {
-  return ref.watch(marketplaceDatasourceProvider).fetchMyPackages();
+  final session = ref.watch(marketplaceSessionProvider);
+  if (session == null) return [];
+  return ref
+      .watch(marketplaceDatasourceProvider)
+      .fetchMyPackages(token: session.token);
+});
+
+// ── Tailor Made providers ─────────────────────────────────────────────────────
+
+final tailorMadeDestinationsProvider = FutureProvider<List<String>>((ref) {
+  return ref.watch(marketplaceDatasourceProvider).fetchTailorMadeDestinations();
+});
+
+final tailorMadeRequestsProvider =
+    FutureProvider<List<TailorMadeRequest>>((ref) {
+  final session = ref.watch(marketplaceSessionProvider);
+  if (session == null || session.memberId.isEmpty) return Future.value([]);
+  return ref
+      .watch(marketplaceDatasourceProvider)
+      .fetchTailorMadeRequests(session.memberId, token: session.token);
 });
 
 // ── Hotel providers ───────────────────────────────────────────────────────────

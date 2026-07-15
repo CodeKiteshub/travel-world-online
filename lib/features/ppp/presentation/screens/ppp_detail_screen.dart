@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/models/ppp_model.dart';
 import '../providers/ppp_providers.dart';
+import 'pdf_viewer_screen.dart';
 
 class PPPDetailScreen extends ConsumerStatefulWidget {
   const PPPDetailScreen({super.key, required this.id, this.item});
@@ -661,18 +662,20 @@ class _PdfCard extends StatelessWidget {
   final PppPdf pdf;
   final AppColorScheme colors;
 
-  Future<void> _openPdf() async {
+  void _openPdf(BuildContext context) {
     if (pdf.pdfUrls.isEmpty) return;
-    final uri = Uri.parse(pdf.pdfUrls.first);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) =>
+            PdfViewerScreen(url: pdf.pdfUrls.first, title: pdf.name),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _openPdf,
+      onTap: () => _openPdf(context),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),

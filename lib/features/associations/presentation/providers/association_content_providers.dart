@@ -90,13 +90,26 @@ final associationMembersProvider =
 
 // ── Jobs ──────────────────────────────────────────────────────────────────────
 
+// Jobs posted by the signed-in member of this association
 final associationJobsProvider =
     FutureProvider.family<List<AssociationJobModel>, String>(
         (ref, assocId) async {
   final session = ref.watch(associationSessionProvider)[assocId];
   if (session == null) return [];
   return ref.watch(_contentDatasourceProvider).fetchJobs(
-        associationId: assocId,
+        memberId: session.memberId,
+        token: session.token,
+      );
+});
+
+typedef _ApplicantsParams = ({String assocId, String jobId});
+
+final associationJobApplicantsProvider = FutureProvider.family<
+    List<AssociationJobApplicantModel>, _ApplicantsParams>((ref, p) async {
+  final session = ref.watch(associationSessionProvider)[p.assocId];
+  if (session == null) return [];
+  return ref.watch(_contentDatasourceProvider).fetchJobApplicants(
+        jobPostId: p.jobId,
         token: session.token,
       );
 });

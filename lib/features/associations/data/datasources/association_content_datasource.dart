@@ -185,13 +185,51 @@ class AssociationContentDatasource {
 
   // ── Jobs ──────────────────────────────────────────────────────────────────
 
+  /// Jobs posted by the signed-in member (matches old app's association
+  /// Job Section — endpoint spelling 'ByMembrId' is the backend's).
   Future<List<AssociationJobModel>> fetchJobs({
-    required String associationId,
+    required String memberId,
     required String token,
   }) async {
-    // ponytail: backend has no per-association filter — returns all job posts
-    final res = await _dio.get('/api/jobposts', options: _auth(token));
+    final res =
+        await _dio.get('/api/jobposts/ByMembrId/$memberId', options: _auth(token));
     return _parseList(res.data, AssociationJobModel.fromJson);
+  }
+
+  Future<void> postJob({
+    required String associationId,
+    required String memberId,
+    required String token,
+    required String jobTitle,
+    required String companyName,
+    required String jobDescription,
+    required String location,
+    String companyWebsite = '',
+  }) async {
+    await _dio.post(
+      '/api/jobposts',
+      data: {
+        'associationId': associationId,
+        'memberId': memberId,
+        'jobTitle': jobTitle,
+        'companyName': companyName,
+        'jobDescription': jobDescription,
+        'location': location,
+        'companyWebsite': companyWebsite,
+      },
+      options: _auth(token),
+    );
+  }
+
+  Future<List<AssociationJobApplicantModel>> fetchJobApplicants({
+    required String jobPostId,
+    required String token,
+  }) async {
+    final res = await _dio.get(
+      '/api/jobapply/getApplyJobtByJobPostId/$jobPostId',
+      options: _auth(token),
+    );
+    return _parseList(res.data, AssociationJobApplicantModel.fromJson);
   }
 
   // ── Chat ──────────────────────────────────────────────────────────────────

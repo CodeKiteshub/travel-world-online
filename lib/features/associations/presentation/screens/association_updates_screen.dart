@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -7,9 +8,6 @@ import '../../../../../core/theme/app_typography.dart';
 import '../../data/models/association_content_model.dart';
 import '../../data/models/association_model.dart';
 import '../providers/association_content_providers.dart';
-
-const _tileBlue = Color(0xFFE8EEF5);
-const _tileBlueText = Color(0xFF2A4A6B);
 
 class AssociationUpdatesScreen extends ConsumerWidget {
   const AssociationUpdatesScreen({super.key, required this.assoc});
@@ -82,7 +80,7 @@ class _UpdateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initials = update.from.trim().split(' ').take(2).map((w) => w[0]).join().toUpperCase();
+    // Matches the website layout: title, date, description (image not shown)
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
       padding: const EdgeInsets.all(16),
@@ -94,30 +92,19 @@ class _UpdateCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 36, height: 36,
-                decoration: const BoxDecoration(shape: BoxShape.circle, color: _tileBlue),
-                child: Center(
-                  child: Text(initials,
-                      style: const TextStyle(color: _tileBlueText, fontSize: 12, fontWeight: FontWeight.w700)),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(update.from,
-                      style: AppTypography.body.copyWith(color: colors.ink900, fontSize: 13, fontWeight: FontWeight.w600)),
-                  Text(_formatDate(update.postedAt),
-                      style: AppTypography.caption.copyWith(color: colors.ink400, fontSize: 11)),
-                ]),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
           Text(update.text,
-              style: AppTypography.body.copyWith(color: colors.ink600, fontSize: 13, height: 1.5)),
+              style: AppTypography.body.copyWith(
+                  color: colors.ink900, fontSize: 14, fontWeight: FontWeight.w600, height: 1.4)),
+          const SizedBox(height: 4),
+          Text(_formatDate(update.postedAt),
+              style: AppTypography.caption.copyWith(color: colors.ink400, fontSize: 11)),
+          if (update.content.trim().isNotEmpty) ...[
+            const SizedBox(height: 10),
+            HtmlWidget(
+              update.content,
+              textStyle: AppTypography.body.copyWith(color: colors.ink600, fontSize: 13, height: 1.5),
+            ),
+          ],
         ],
       ),
     );

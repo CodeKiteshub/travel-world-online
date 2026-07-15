@@ -1,9 +1,37 @@
 import 'package:dio/dio.dart';
+import '../../../../core/network/api_endpoints.dart';
 import '../../../discover/data/models/deal_model.dart';
 import '../models/luxury_hotel_model.dart';
+import '../models/tailor_made_request_model.dart';
 import '../models/villa_city_model.dart';
 import '../models/villa_rate_model.dart';
 import '../models/villa_rate_plan_model.dart';
+
+/// GET /api/package/mypackages returns `[{"Packages": [...]}]` — a one-element
+/// array wrapping the actual package list under a capital-P "Packages" key
+/// (same shape the old app parsed via B2BModel). Flat lists and lowercase
+/// keys are handled too, in case the backend ever normalises.
+List<Deal> parseMyPackages(dynamic data) {
+  List<dynamic> list;
+  if (data is List) {
+    list = data;
+  } else if (data is Map<String, dynamic>) {
+    list = data['data'] as List<dynamic>? ??
+        data['packages'] as List<dynamic>? ??
+        data['Packages'] as List<dynamic>? ??
+        [];
+  } else {
+    list = [];
+  }
+  // Unwrap [{"Packages": [...]}]
+  if (list.isNotEmpty &&
+      list.first is Map<String, dynamic> &&
+      (list.first as Map<String, dynamic>).containsKey('Packages')) {
+    list = (list.first as Map<String, dynamic>)['Packages'] as List<dynamic>? ??
+        [];
+  }
+  return list.cast<Map<String, dynamic>>().map(Deal.fromJson).toList();
+}
 
 class MarketplaceRemoteDatasource {
   const MarketplaceRemoteDatasource(this._dio);
@@ -28,24 +56,51 @@ class MarketplaceRemoteDatasource {
     return list.cast<Map<String, dynamic>>().map(Deal.fromJson).toList();
   }
 
-  Future<List<Deal>> fetchMyPackages() async {
-    final response = await _dio.get('/api/package/mypackages');
-    final data = response.data;
-    final List<dynamic> list;
-    if (data is List) {
-      list = data;
-    } else if (data is Map<String, dynamic>) {
-      list = data['data'] as List<dynamic>? ??
-          data['packages'] as List<dynamic>? ??
-          [];
-    } else {
-      list = [];
-    }
-    return list.cast<Map<String, dynamic>>().map(Deal.fromJson).toList();
+  /// Requires an association-member token — packages posted by that account.
+  Future<List<Deal>> fetchMyPackages({required String token}) async {
+    final response =
+        await _dio.get('/api/package/mypackages', options: _auth(token));
+    return parseMyPackages(response.data);
   }
 
-  Future<void> submitTailorMade(Map<String, dynamic> data) async {
-    await _dio.post('/api/tailer-made/add', data: data);
+  // ── Tailor Made ─────────────────────────────────────────────────────────────
+
+  Options _auth(String token) =>
+      Options(headers: {'Authorization': 'Bearer $token'});
+
+  Future<List<String>> fetchTailorMadeDestinations() async {
+    final response = await _dio.get(ApiEndpoints.tailorMadeDestinations);
+    final data = response.data;
+    final list = data is Map<String, dynamic>
+        ? (data['data'] as List<dynamic>? ?? [])
+        : (data is List ? data : <dynamic>[]);
+    return list.map((e) => e.toString()).toList();
+  }
+
+  Future<List<TailorMadeRequest>> fetchTailorMadeRequests(
+    String memberId, {
+    required String token,
+  }) async {
+    final response = await _dio.get(
+      ApiEndpoints.tailorMadeByMember(memberId),
+      options: _auth(token),
+    );
+    final data = response.data;
+    final list = data is Map<String, dynamic>
+        ? (data['data'] as List<dynamic>? ?? [])
+        : (data is List ? data : <dynamic>[]);
+    return list
+        .cast<Map<String, dynamic>>()
+        .map(TailorMadeRequest.fromJson)
+        .toList();
+  }
+
+  Future<void> submitTailorMade(
+    Map<String, dynamic> data, {
+    required String token,
+  }) async {
+    await _dio.post(ApiEndpoints.tailorMadeAdd,
+        data: data, options: _auth(token));
   }
 
   // ── Luxury Hotels ───────────────────────────────────────────────────────────

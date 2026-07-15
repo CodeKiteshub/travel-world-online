@@ -5,10 +5,13 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
+import '../../../associations/presentation/providers/associations_providers.dart';
 import '../../../discover/data/models/deal_model.dart';
 import '../../data/models/luxury_hotel_model.dart';
 import '../providers/marketplace_providers.dart';
+import '../widgets/association_gate.dart';
 import '../widgets/cruise_section.dart';
+import '../widgets/tailor_made_tab.dart';
 import '../widgets/train_form.dart'; // also exports CabForm, FlightForm
 
 class MarketplaceScreen extends ConsumerStatefulWidget {
@@ -25,11 +28,11 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
   static const _filters = [
     'Package',
     'Hotel',
-    'Trains',
+    'Villa',
     'Cruise',
     'Cabs',
+    'Trains',
     'Flights',
-    'Villa',
   ];
 
   static const _packageSubTabs = ['All Packages', 'My Packages', 'Tailor Made'];
@@ -83,16 +86,38 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
             ),
           ),
 
-          // Post Deal FAB — Package tab only
-          if (_activeFilter == 0)
+          // Post Deal — Package tab, only when signed in to an association
+          // (posting requires an association session; Tailor Made has its own FAB)
+          if (_activeFilter == 0 &&
+              _packageSubTab != 2 &&
+              ref.watch(marketplaceSessionProvider) != null)
             Positioned(
               bottom: 16,
               right: 20,
-              child: _PostDealFab(colors: colors),
+              child: _PostDealFab(colors: colors, onTap: _openPostDeal),
             ),
         ],
       ),
     );
+  }
+
+  /// Opens the association module's deal-create screen for the signed-in
+  /// association (posting a deal always belongs to an association).
+  void _openPostDeal() {
+    final session = ref.read(marketplaceSessionProvider);
+    if (session == null) return;
+    final assocs = ref.read(associationsProvider).valueOrNull ?? [];
+    for (final assoc in assocs) {
+      if (assoc.id == session.associationId) {
+        context.push(
+          RouteNames.associationDealCreate.replaceFirst(':id', assoc.id),
+          extra: assoc,
+        );
+        return;
+      }
+    }
+    // Association list not loaded yet — fall back to the Associations tab.
+    context.go(RouteNames.associations);
   }
 
   Widget _buildContent({required AppColorScheme colors}) {
@@ -113,16 +138,24 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
           onRetry: () => ref.invalidate(luxuryHotelsProvider),
           builder: (hotels) => _hotelList(hotels, colors),
         );
-      case 2: // Trains — enquiry form
-        return const TrainForm();
+      case 2: // Villa — full booking flow
+        return _VillaEntryTab(colors: colors);
       case 3: // Cruise — static cards + A-ROSA
         return const CruiseSection();
       case 4: // Cabs — enquiry form
         return const CabForm();
-      case 5: // Flights — enquiry form
-        return const FlightForm();
-      case 6: // Villa — full booking flow
-        return _VillaEntryTab(colors: colors);
+      case 5: // Trains — coming soon (form exists but isn't working yet)
+        return _ComingSoonTab(
+          colors: colors,
+          icon: Icons.train_rounded,
+          label: 'Train bookings',
+        );
+      case 6: // Flights — coming soon (form exists but isn't working yet)
+        return _ComingSoonTab(
+          colors: colors,
+          icon: Icons.flight_rounded,
+          label: 'Flight bookings',
+        );
       default:
         return const SizedBox.shrink();
     }
@@ -233,9 +266,10 @@ class _PackageTab extends ConsumerWidget {
             );
           },
         );
-      case 1: // My Packages
+      case 1: // My Packages — association members only
         final myAsync = watchRef.watch(myPackagesProvider);
-        return _AsyncList<Deal>(
+        return AssociationGate(
+            child: _AsyncList<Deal>(
           asyncValue: myAsync,
           colors: colors,
           onRetry: () => watchRef.invalidate(myPackagesProvider),
@@ -254,9 +288,9 @@ class _PackageTab extends ConsumerWidget {
               ),
             );
           },
-        );
-      case 2: // Tailor Made
-        return const _TailorMadeForm();
+        ));
+      case 2: // Tailor Made — association members only
+        return const AssociationGate(child: TailorMadeTab());
       default:
         return const SizedBox.shrink();
     }
@@ -396,212 +430,6 @@ class _FeatureRow extends StatelessWidget {
   }
 }
 
-// ── Tailor Made form ─────────────────────────────────────────────────────────
-
-class _TailorMadeForm extends ConsumerStatefulWidget {
-  const _TailorMadeForm();
-
-  @override
-  ConsumerState<_TailorMadeForm> createState() => _TailorMadeFormState();
-}
-
-class _TailorMadeFormState extends ConsumerState<_TailorMadeForm> {
-  final _formKey = GlobalKey<FormState>();
-  final _destCtrl = TextEditingController();
-  final _durationCtrl = TextEditingController();
-  final _budgetCtrl = TextEditingController();
-  final _notesCtrl = TextEditingController();
-  final _nameCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController();
-  bool _loading = false;
-
-  @override
-  void dispose() {
-    _destCtrl.dispose();
-    _durationCtrl.dispose();
-    _budgetCtrl.dispose();
-    _notesCtrl.dispose();
-    _nameCtrl.dispose();
-    _phoneCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _loading = true);
-    try {
-      await ref.read(marketplaceDatasourceProvider).submitTailorMade({
-        'destination': _destCtrl.text.trim(),
-        'duration': _durationCtrl.text.trim(),
-        'budget': _budgetCtrl.text.trim(),
-        'notes': _notesCtrl.text.trim(),
-        'contactName': _nameCtrl.text.trim(),
-        'contactPhone': _phoneCtrl.text.trim(),
-      });
-      if (mounted) {
-        _formKey.currentState!.reset();
-        _destCtrl.clear();
-        _durationCtrl.clear();
-        _budgetCtrl.clear();
-        _notesCtrl.clear();
-        _nameCtrl.clear();
-        _phoneCtrl.clear();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tailor-made request submitted!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to submit. Please try again.'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppColorScheme>()!;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('Tailor-Made Package Request',
-                style: AppTypography.heading.copyWith(color: colors.ink900)),
-            const SizedBox(height: 4),
-            Text('Share your vision and we\'ll craft a perfect package',
-                style: AppTypography.caption.copyWith(color: colors.ink400)),
-            const SizedBox(height: 20),
-            _TmField(
-                ctrl: _destCtrl,
-                label: 'Destination',
-                colors: colors,
-                req: true),
-            const SizedBox(height: 12),
-            _TmField(
-                ctrl: _durationCtrl,
-                label: 'Duration (e.g. 7 nights)',
-                colors: colors,
-                req: true),
-            const SizedBox(height: 12),
-            _TmField(
-                ctrl: _budgetCtrl,
-                label: 'Budget per person (₹)',
-                colors: colors,
-                keyboard: TextInputType.number,
-                req: true),
-            const SizedBox(height: 12),
-            _TmField(
-                ctrl: _notesCtrl,
-                label: 'Additional requirements / notes',
-                colors: colors,
-                maxLines: 4),
-            const SizedBox(height: 16),
-            Divider(color: colors.lineSoft),
-            const SizedBox(height: 12),
-            Text('Contact Details',
-                style: AppTypography.heading.copyWith(color: colors.ink900)),
-            const SizedBox(height: 12),
-            _TmField(
-                ctrl: _nameCtrl,
-                label: 'Your Name',
-                colors: colors,
-                req: true),
-            const SizedBox(height: 12),
-            _TmField(
-                ctrl: _phoneCtrl,
-                label: 'Phone Number',
-                colors: colors,
-                keyboard: TextInputType.phone,
-                req: true),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _loading ? null : _submit,
-              style: FilledButton.styleFrom(
-                backgroundColor: colors.goldPrimary,
-                foregroundColor: Colors.white,
-                minimumSize: const Size.fromHeight(50),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-              ),
-              child: _loading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white))
-                  : Text('Submit Request',
-                      style: AppTypography.heading
-                          .copyWith(color: Colors.white)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TmField extends StatelessWidget {
-  const _TmField({
-    required this.ctrl,
-    required this.label,
-    required this.colors,
-    this.keyboard,
-    this.maxLines = 1,
-    this.req = false,
-  });
-  final TextEditingController ctrl;
-  final String label;
-  final AppColorScheme colors;
-  final TextInputType? keyboard;
-  final int maxLines;
-  final bool req;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: ctrl,
-      keyboardType: keyboard,
-      maxLines: maxLines,
-      validator: req
-          ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null
-          : null,
-      style: AppTypography.body.copyWith(color: colors.ink900),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: AppTypography.caption.copyWith(color: colors.ink400),
-        filled: true,
-        fillColor: colors.surfaceCard,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: colors.lineSoft),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: colors.lineSoft),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: colors.goldPrimary, width: 1.5),
-        ),
-      ),
-    );
-  }
-}
-
 // ── Generic async list wrapper ────────────────────────────────────────────────
 
 class _AsyncList<T> extends StatelessWidget {
@@ -684,6 +512,54 @@ class _ErrorState extends StatelessWidget {
 }
 
 // ── Empty state ───────────────────────────────────────────────────────────────
+
+// ── Coming soon (Trains / Flights) ───────────────────────────────────────────
+
+class _ComingSoonTab extends StatelessWidget {
+  const _ComingSoonTab({
+    required this.colors,
+    required this.icon,
+    required this.label,
+  });
+  final AppColorScheme colors;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colors.surfaceCard,
+                border: Border.all(color: colors.lineSoft),
+              ),
+              child: Icon(icon, size: 32, color: colors.ink400),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Coming Soon',
+              style: AppTypography.heading.copyWith(color: colors.ink900),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '$label are on their way. Stay tuned!',
+              textAlign: TextAlign.center,
+              style: AppTypography.body.copyWith(color: colors.ink600),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _EmptyState extends StatelessWidget {
   const _EmptyState({required this.colors, required this.label});
@@ -1062,13 +938,14 @@ class _NavyFallback extends StatelessWidget {
 // ── Post deal FAB ─────────────────────────────────────────────────────────────
 
 class _PostDealFab extends StatelessWidget {
-  const _PostDealFab({required this.colors});
+  const _PostDealFab({required this.colors, required this.onTap});
   final AppColorScheme colors;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
         decoration: BoxDecoration(
