@@ -228,3 +228,39 @@ class AssociationCabModel {
     );
   }
 }
+
+/// Admin Cab vehicle — matches old app's /api/vehicles document shape.
+class AssociationVehicleModel {
+  const AssociationVehicleModel({
+    required this.id,
+    required this.associationId,
+    required this.memberId,
+    required this.name,
+    required this.type,
+    required this.year,
+    this.images = const [],
+    this.isAvailable = false,
+  });
+
+  final String id;
+  final String associationId;
+  final String memberId;
+  final String name;
+  final String type;
+  final String year;
+  final List<String> images;
+  final bool isAvailable;
+
+  factory AssociationVehicleModel.fromJson(Map<String, dynamic> j) =>
+      AssociationVehicleModel(
+        id: j['_id']?.toString() ?? j['id']?.toString() ?? '',
+        associationId: j['associationId']?.toString() ?? '',
+        memberId: j['memberId']?.toString() ?? '',
+        name: j['name'] as String? ?? '',
+        type: j['type'] as String? ?? '',
+        year: j['year']?.toString() ?? '',
+        images:
+            (j['image'] as List?)?.map((e) => e.toString()).toList() ?? const [],
+        isAvailable: j['isAvailable'] as bool? ?? false,
+      );
+}

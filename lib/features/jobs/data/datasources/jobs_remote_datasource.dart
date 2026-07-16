@@ -22,4 +22,26 @@ class JobsRemoteDatasource {
         .map(JobPost.fromJson)
         .toList();
   }
+
+  Future<void> applyToJob({
+    required String jobPostId,
+    required String fullName,
+    required String email,
+    required String mobile,
+    required String currentCtc,
+    required String expectedCtc,
+    required String cvFilePath,
+    required String cvFileName,
+  }) async {
+    final form = FormData.fromMap({
+      'JobPostId': jobPostId,
+      'fullname': fullName,
+      'email': email,
+      'mobile': mobile,
+      'currentCTC': currentCtc,
+      'expectedCTC': expectedCtc,
+      'file': await MultipartFile.fromFile(cvFilePath, filename: cvFileName),
+    });
+    await _dio.post('/api/jobapply', data: form);
+  }
 }

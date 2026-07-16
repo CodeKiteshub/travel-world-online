@@ -34,7 +34,7 @@ class TravelWorldApp extends ConsumerWidget {
       title: 'Travel World Online',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
+     // darkTheme: AppTheme.dark,
       themeMode: themeMode,
       routerConfig: router,
     );

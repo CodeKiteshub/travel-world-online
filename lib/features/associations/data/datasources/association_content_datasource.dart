@@ -263,17 +263,86 @@ class AssociationContentDatasource {
     return _parseList(res.data, AssociationCabModel.fromJson);
   }
 
-  // Admin Cab — vehicles uploaded by this association (requires auth)
-  Future<List<AssociationCabModel>> fetchCabs({
+  // ── Admin Cab (vehicles) — endpoints match old app's RemoteApi ────────────
+
+  /// Vehicles uploaded by the signed-in member (old "Admin Cab" tab).
+  Future<List<AssociationVehicleModel>> fetchMyVehicles({
+    required String token,
+  }) async {
+    final res = await _dio.get('/api/vehicles/myVehicles', options: _auth(token));
+    return _parseList(res.data, AssociationVehicleModel.fromJson);
+  }
+
+  /// All vehicles in the association (old "All Cab" tab).
+  Future<List<AssociationVehicleModel>> fetchAssociationVehicles({
     required String associationId,
     required String token,
   }) async {
     final res = await _dio.get(
-      '/api/vehicles',
-      queryParameters: {'associationId': associationId},
+      '/api/vehicles/getVehicles/$associationId',
       options: _auth(token),
     );
-    return _parseList(res.data, AssociationCabModel.fromJson);
+    return _parseList(res.data, AssociationVehicleModel.fromJson);
+  }
+
+  Future<List<AssociationVehicleModel>> searchVehicles({
+    required String associationId,
+    required String query,
+    required String token,
+  }) async {
+    final res = await _dio.get(
+      '/api/vehicles/search',
+      queryParameters: {'query': query, 'associationId': associationId},
+      options: _auth(token),
+    );
+    return _parseList(res.data, AssociationVehicleModel.fromJson);
+  }
+
+  Future<void> addVehicle({
+    required String associationId,
+    required String token,
+    required String name,
+    required String type,
+    required String year,
+    String? imagePath,
+  }) async {
+    final formData = FormData.fromMap({
+      'associationId': associationId,
+      'name': name,
+      'type': type,
+      'year': year,
+      if (imagePath != null)
+        'image': await MultipartFile.fromFile(imagePath,
+            filename: 'vehicle_image.png'),
+    });
+    await _dio.post(
+      '/api/vehicles/addVehicle',
+      data: formData,
+      options: Options(headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'multipart/form-data',
+      }),
+    );
+  }
+
+  Future<void> deleteVehicle({
+    required String vehicleId,
+    required String token,
+  }) async {
+    await _dio.delete('/api/vehicles/deleteVehicle/$vehicleId',
+        options: _auth(token));
+  }
+
+  /// Backend toggles regardless of body — old app always sent true.
+  Future<void> toggleVehicleAvailability({
+    required String vehicleId,
+    required String token,
+  }) async {
+    await _dio.put(
+      '/api/vehicles/toggle-availability/$vehicleId',
+      data: {'isAvailable': true},
+      options: _auth(token),
+    );
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────

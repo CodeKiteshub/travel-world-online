@@ -15,9 +15,8 @@ const _tileBlueText = Color(0xFF2A4A6B);
 const _filterLabels = ['Available', 'Accepted', 'All'];
 
 class AssociationCabsScreen extends ConsumerStatefulWidget {
-  const AssociationCabsScreen({super.key, required this.assoc, this.isAdmin = false});
+  const AssociationCabsScreen({super.key, required this.assoc});
   final AssociationModel assoc;
-  final bool isAdmin;
 
   @override
   ConsumerState<AssociationCabsScreen> createState() => _AssociationCabsScreenState();
@@ -36,9 +35,7 @@ class _AssociationCabsScreenState extends ConsumerState<AssociationCabsScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColorScheme>()!;
     final topPad = MediaQuery.paddingOf(context).top;
-    final async = widget.isAdmin
-        ? ref.watch(associationCabsProvider(widget.assoc.id))
-        : ref.watch(associationCabNetworkProvider);
+    final async = ref.watch(associationCabNetworkProvider);
 
     return Scaffold(
       backgroundColor: colors.surfacePrimary,
@@ -52,9 +49,7 @@ class _AssociationCabsScreenState extends ConsumerState<AssociationCabsScreen> {
             ),
             error: (_, __) => Center(
               child: GestureDetector(
-                onTap: () => widget.isAdmin
-                    ? ref.invalidate(associationCabsProvider)
-                    : ref.invalidate(associationCabNetworkProvider),
+                onTap: () => ref.invalidate(associationCabNetworkProvider),
                 child: Text('Retry',
                     style: AppTypography.label.copyWith(
                         color: colors.goldPrimary, fontWeight: FontWeight.w600)),
@@ -97,7 +92,7 @@ class _AssociationCabsScreenState extends ConsumerState<AssociationCabsScreen> {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        widget.isAdmin ? 'Admin Cab' : 'Cab Network',
+                        'Cab Network',
                         style: AppTypography.displayMd.copyWith(
                           color: colors.ink900, fontSize: 18, fontWeight: FontWeight.w700,
                         ),

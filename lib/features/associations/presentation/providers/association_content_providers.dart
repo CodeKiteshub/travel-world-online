@@ -121,16 +121,31 @@ final associationCabNetworkProvider =
     FutureProvider<List<AssociationCabModel>>(
         (ref) => ref.watch(_contentDatasourceProvider).fetchCabNetwork());
 
-// Admin Cab — association's own fleet (requires session)
-final associationCabsProvider =
-    FutureProvider.family<List<AssociationCabModel>, String>(
+// Admin Cab — vehicles uploaded by the signed-in member (requires session)
+final associationMyVehiclesProvider =
+    FutureProvider.family<List<AssociationVehicleModel>, String>(
         (ref, assocId) async {
   final session = ref.watch(associationSessionProvider)[assocId];
   if (session == null) return [];
-  return ref.watch(_contentDatasourceProvider).fetchCabs(
-        associationId: assocId,
-        token: session.token,
-      );
+  return ref
+      .watch(_contentDatasourceProvider)
+      .fetchMyVehicles(token: session.token);
+});
+
+// All Cab — every vehicle in the association; non-empty query hits search API
+typedef _VehiclesParams = ({String assocId, String query});
+
+final associationAllVehiclesProvider =
+    FutureProvider.family<List<AssociationVehicleModel>, _VehiclesParams>(
+        (ref, p) async {
+  final session = ref.watch(associationSessionProvider)[p.assocId];
+  if (session == null) return [];
+  final ds = ref.watch(_contentDatasourceProvider);
+  return p.query.isEmpty
+      ? ds.fetchAssociationVehicles(
+          associationId: p.assocId, token: session.token)
+      : ds.searchVehicles(
+          associationId: p.assocId, query: p.query, token: session.token);
 });
 
 // ── Chat ──────────────────────────────────────────────────────────────────────
