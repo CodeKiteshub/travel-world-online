@@ -47,6 +47,7 @@ import '../../features/associations/presentation/screens/association_job_applica
 import '../../features/associations/presentation/screens/association_chat_screen.dart';
 import '../../features/associations/presentation/screens/association_cabs_screen.dart';
 import '../../features/associations/presentation/screens/association_admin_cab_screen.dart';
+import '../../features/associations/presentation/screens/association_dmc_register_screen.dart';
 import '../../features/discover/data/models/deal_model.dart';
 import '../../features/home/data/models/article_model.dart';
 import '../../features/marketplace/presentation/screens/villa_search_screen.dart';
@@ -415,6 +416,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final assoc = state.extra as AssociationModel;
           return _slideUpPage(AssociationCabUploadScreen(assoc: assoc));
         },
+      ),
+      GoRoute(
+        path: RouteNames.dmcRegister,
+        pageBuilder: (_, __) => _slideUpPage(const AssociationDmcRegisterScreen()),
       ),
 
       // — Campus sub-screens

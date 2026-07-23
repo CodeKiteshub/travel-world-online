@@ -38,6 +38,7 @@ abstract final class RouteNames {
   static const associationCabs = '/association/:id/cabs';
   static const associationAdminCabs = '/association/:id/admin-cabs';
   static const associationCabUpload = '/association/:id/admin-cabs/upload';
+  static const dmcRegister = '/associations/dmc/register';
   static const advisoryBoard = '/advisory-board';
   static const destinationSpecialist = '/destination-specialist';
   static const skillDevelopment = '/skill-development';

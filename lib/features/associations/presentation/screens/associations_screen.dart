@@ -8,6 +8,7 @@ import '../../../../../core/theme/app_typography.dart';
 import '../../data/models/association_model.dart';
 import '../providers/association_session_provider.dart';
 import '../providers/associations_providers.dart';
+import '../widgets/association_dmc_browse.dart';
 
 
 class AssociationsScreen extends ConsumerStatefulWidget {
@@ -68,7 +69,21 @@ class _AssociationsScreenState extends ConsumerState<AssociationsScreen> {
       backgroundColor: colors.surfacePrimary,
       body: Stack(
         children: [
-          assocAsync.when(
+          _activeFilter == 3
+              ? ListView(
+                  padding: EdgeInsets.fromLTRB(0, topPad + 72, 0, 24),
+                  children: [
+                    _FilterPills(
+                      filters: _filters,
+                      active: _activeFilter,
+                      colors: colors,
+                      onSelect: (i) => setState(() => _activeFilter = i),
+                    ),
+                    const SizedBox(height: 12),
+                    AssociationDmcBrowseSection(colors: colors),
+                  ],
+                )
+              : assocAsync.when(
             loading: () => _LoadingList(topPad: topPad, colors: colors),
             error: (_, __) => _ErrorBody(
               topPad: topPad,
