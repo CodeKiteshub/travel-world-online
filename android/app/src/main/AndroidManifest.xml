@@ -20,6 +20,11 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <!-- SurfaceControl/BLAST presents a black Flutter surface on several
+                 emulator GPU paths (gphone16k / API 35+). -->
+            <meta-data
+              android:name="io.flutter.embedding.android.DisableSurfaceControl"
+              android:value="true" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
@@ -8,16 +10,26 @@ import 'core/providers/theme_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await FirebaseAppCheck.instance.activate(
-    providerAndroid: kDebugMode
-        ? const AndroidDebugProvider()
-        : const AndroidPlayIntegrityProvider(),
-    providerApple: kDebugMode
-        ? const AppleDebugProvider()
-        : const AppleDeviceCheckProvider(),
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform)
+        .timeout(const Duration(seconds: 12));
+  } on TimeoutException catch (_) {
+    // Emulators can stall here; don't keep the native window black forever.
+  }
+  // Don't block the first frame — awaiting App Check can hang on emulators.
+  unawaited(
+    FirebaseAppCheck.instance
+        .activate(
+          providerAndroid: kDebugMode
+              ? const AndroidDebugProvider()
+              : const AndroidPlayIntegrityProvider(),
+          providerApple: kDebugMode
+              ? const AppleDebugProvider()
+              : const AppleDeviceCheckProvider(),
+        )
+        .catchError((Object _) {}),
   );
   runApp(const ProviderScope(child: TravelWorldApp()));
 }
@@ -34,7 +46,7 @@ class TravelWorldApp extends ConsumerWidget {
       title: 'Travel World Online',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-     // darkTheme: AppTheme.dark,
+      darkTheme: AppTheme.dark,
       themeMode: themeMode,
       routerConfig: router,
     );

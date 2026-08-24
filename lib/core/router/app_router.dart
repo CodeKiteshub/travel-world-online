@@ -117,6 +117,9 @@ class _RouterNotifier extends ChangeNotifier {
     _ref.listen<AuthState>(authNotifierProvider, (_, __) {
       notifyListeners();
     });
+    _ref.listen<bool>(splashCompletedProvider, (_, __) {
+      notifyListeners();
+    });
   }
   final Ref _ref;
 }
@@ -133,11 +136,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     refreshListenable: notifier,
     redirect: (context, state) {
       final asyncUser = ref.read(authStateChangesProvider);
+      final location = state.matchedLocation;
+      final splashDone = ref.read(splashCompletedProvider);
 
-      if (asyncUser.isLoading) return null;
+      if (location == RouteNames.splash && !splashDone) return null;
+
+      if (asyncUser.isLoading) {
+        if (location == RouteNames.splash && splashDone) {
+          return RouteNames.login;
+        }
+        return null;
+      }
 
       final user = asyncUser.valueOrNull;
-      final location = state.matchedLocation;
 
       final onAuthScreen = location == RouteNames.login ||
           location == RouteNames.register ||
@@ -146,7 +157,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final onVerifyScreen = location == RouteNames.verifyEmail;
 
       if (user == null) {
-        if (onAuthScreen) return null;
+        if (onAuthScreen && location != RouteNames.splash) return null;
         return RouteNames.login;
       }
 
@@ -161,7 +172,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: RouteNames.splash,
-        pageBuilder: (_, __) => _fadeScalePage(const SplashScreen()),
+        pageBuilder: (context, state) => const NoTransitionPage<void>(
+          key: ValueKey('splash'),
+          child: SplashScreen(),
+        ),
       ),
       GoRoute(
         path: RouteNames.onboarding,

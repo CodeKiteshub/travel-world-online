@@ -29,6 +29,9 @@ final authStateChangesProvider = StreamProvider<User?>((ref) {
   return FirebaseAuth.instance.authStateChanges();
 });
 
+/// Flip to true when splash video (or its fallback) finishes.
+final splashCompletedProvider = StateProvider<bool>((ref) => false);
+
 // ── Auth action state ─────────────────────────────────────────────────────────
 
 sealed class AuthState {

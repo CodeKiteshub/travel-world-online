@@ -2,119 +2,138 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
-import '../../../../core/router/route_names.dart';
+import '../providers/auth_providers.dart';
 
-/// Splash — plays the brand video from the old app (twoappsplash.mp4),
-/// then navigates. Falls through after 8s or on any playback error so the
-/// user is never stuck here.
-class SplashScreen extends StatefulWidget {
+/// Owned outside [SplashScreen] so GoRouter refreshes don't dispose the player
+/// and fall back to the old logo.
+final splashVideoProvider =
+    FutureProvider<VideoPlayerController>((ref) async {
+  final controller = VideoPlayerController.asset(
+    'assets/videos/twoappsplash.mp4',
+    videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+  );
+  ref.onDispose(controller.dispose);
+  await controller.initialize();
+  await controller.setLooping(false);
+  await controller.play();
+  return controller;
+});
+
+/// Plays [assets/videos/twoappsplash.mp4] as the loading screen.
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
-  late final VideoPlayerController _video;
-  Timer? _fallbackTimer;
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   bool _navigated = false;
+  Timer? _fallbackTimer;
 
   void _navigateOnce() {
-    if (_navigated || !mounted) return;
+    if (_navigated) return;
     _navigated = true;
-    // TODO: Re-enable onboarding later when needed.
-    // context.go(RouteNames.onboarding);
-    context.go(RouteNames.login);
+    _fallbackTimer?.cancel();
+    ref.read(splashCompletedProvider.notifier).state = true;
   }
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
-    _video = VideoPlayerController.asset('assets/videos/twoappsplash.mp4')
-      ..initialize().then((_) {
-        if (!mounted) return;
-        setState(() {});
-        _video.play();
-      }).catchError((_) {
-        _navigateOnce();
-      });
-    // Navigate when the video finishes.
-    _video.addListener(() {
-      final v = _video.value;
-      if (v.isInitialized &&
-          v.duration > Duration.zero &&
-          v.position >= v.duration) {
-        _navigateOnce();
-      }
-    });
-    // Same 8s safety net as the old app.
-    _fallbackTimer = Timer(const Duration(seconds: 8), _navigateOnce);
+    // Last-resort only — do not send the user to login (old logo) early.
+    _fallbackTimer = Timer(const Duration(seconds: 20), _navigateOnce);
   }
 
   @override
   void dispose() {
     _fallbackTimer?.cancel();
-    _video.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: _video.value.isInitialized
-          ? SizedBox.expand(
-              child: FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                  width: _video.value.size.width,
-                  height: _video.value.size.height,
-                  child: VideoPlayer(_video),
-                ),
-              ),
-            )
-          // Black frame while the video initialises (it's a local asset,
-          // so this is a few ms at most).
-          : const SizedBox.shrink(),
+    final video = ref.watch(splashVideoProvider);
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: video.when(
+          data: (controller) => _SplashVideoView(
+            controller: controller,
+            onFinished: _navigateOnce,
+          ),
+          loading: () => const SizedBox.expand(),
+          error: (_, __) => const SizedBox.expand(),
+        ),
+      ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Previous animated splash (globe + wordmark + progress bar), commented out
-// per request in favour of the brand video. Restore by reverting this file.
-//
-// class _SplashScreenState extends State<SplashScreen>
-//     with SingleTickerProviderStateMixin {
-//   late final AnimationController _progress;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
-//     _progress = AnimationController(
-//       vsync: this,
-//       duration: const Duration(milliseconds: 2800),
-//     )..forward();
-//     _progress.addStatusListener((status) {
-//       if (status == AnimationStatus.completed && mounted) {
-//         context.go(RouteNames.login);
-//       }
-//     });
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: AppColors.navyDeep,
-//       body: ... navy gradient + gold glows
-//         + 96px gold circle with Icons.language_outlined
-//         + 'TRAVEL WORLD ONLINE' (displayMd) + 'Travel Business. Elevated.'
-//         + gold LinearProgressIndicator bottom (48px inset),
-//     );
-//   }
-// }
-// ─────────────────────────────────────────────────────────────────────────────
+class _SplashVideoView extends StatefulWidget {
+  const _SplashVideoView({
+    required this.controller,
+    required this.onFinished,
+  });
+
+  final VideoPlayerController controller;
+  final VoidCallback onFinished;
+
+  @override
+  State<_SplashVideoView> createState() => _SplashVideoViewState();
+}
+
+class _SplashVideoViewState extends State<_SplashVideoView> {
+  bool _finished = false;
+
+  void _onUpdate() {
+    if (_finished) return;
+    final value = widget.controller.value;
+    if (!value.isInitialized) return;
+    if (value.hasError) return;
+    if (value.duration <= Duration.zero) return;
+    if (value.position >= value.duration - const Duration(milliseconds: 250)) {
+      _finished = true;
+      widget.onFinished();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onUpdate);
+    if (widget.controller.value.isInitialized &&
+        !widget.controller.value.isPlaying) {
+      widget.controller.play();
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onUpdate);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = widget.controller.value.size;
+    if (size.isEmpty) {
+      return const SizedBox.expand();
+    }
+    return SizedBox.expand(
+      child: FittedBox(
+        fit: BoxFit.contain,
+        child: SizedBox(
+          width: size.width,
+          height: size.height,
+          child: VideoPlayer(widget.controller),
+        ),
+      ),
+    );
+  }
+}

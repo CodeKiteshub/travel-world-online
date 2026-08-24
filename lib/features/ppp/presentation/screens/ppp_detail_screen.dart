@@ -1,14 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/models/ppp_model.dart';
 import '../providers/ppp_providers.dart';
 import 'pdf_viewer_screen.dart';
+import 'ppp_youtube_player_screen.dart';
 
 class PPPDetailScreen extends ConsumerStatefulWidget {
   const PPPDetailScreen({super.key, required this.id, this.item});
@@ -154,8 +154,17 @@ class _PPPDetailScreenState extends ConsumerState<PPPDetailScreen>
         body: TabBarView(
           controller: _tabController,
           children: [
-            _PolicyTab(id: widget.id, colors: colors),
-            _InvestmentTab(id: widget.id, colors: colors),
+            // Domestic boards return policy/investment payloads swapped.
+            if (item?.isDomestic == true) ...[
+              _InvestmentTab(id: widget.id, colors: colors),
+              _PolicyTab(
+                  id: widget.id,
+                  colors: colors,
+                  useInvestmentFallback: true),
+            ] else ...[
+              _PolicyTab(id: widget.id, colors: colors),
+              _InvestmentTab(id: widget.id, colors: colors),
+            ],
             _ResourcesTab(id: widget.id, colors: colors),
           ],
         ),
@@ -228,13 +237,26 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
 // ── Policy tab ────────────────────────────────────────────────────────────────
 
 class _PolicyTab extends ConsumerWidget {
-  const _PolicyTab({required this.id, required this.colors});
+  const _PolicyTab({
+    required this.id,
+    required this.colors,
+    this.useInvestmentFallback = false,
+  });
   final String id;
   final AppColorScheme colors;
+
+  /// Domestic boards ship some entries (e.g. "admin") with blank details.
+  /// The legacy app sourced the body from the investment feed at the same
+  /// index, so mirror that only where the policy body is empty.
+  final bool useInvestmentFallback;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(pppPoliciesProvider(id));
+    final fallback = useInvestmentFallback
+        ? ref.watch(pppInvestmentsProvider(id)).valueOrNull
+        : null;
+
     return async.when(
       loading: () => _ShimmerList(colors: colors),
       error: (_, __) => _RetryError(
@@ -249,12 +271,21 @@ class _PolicyTab extends ConsumerWidget {
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: policies.length,
-          itemBuilder: (_, i) =>
-              _ContentExpansionTile(
-                title: policies[i].policyName,
-                details: policies[i].policyDetails,
-                colors: colors,
-              ),
+          itemBuilder: (_, i) {
+            final paired = (fallback != null && i < fallback.length)
+                ? fallback[i].opportunityDetails
+                : null;
+            final details = pppPairedHtml(
+              title: policies[i].policyName,
+              primaryHtml: policies[i].policyDetails,
+              pairedHtml: paired,
+            );
+            return _ContentExpansionTile(
+              title: policies[i].policyName,
+              details: details,
+              colors: colors,
+            );
+          },
         );
       },
     );
@@ -306,9 +337,6 @@ class _ContentExpansionTile extends StatelessWidget {
   final String details;
   final AppColorScheme colors;
 
-  String _stripHtml(String html) =>
-      html.replaceAll(RegExp(r'<[^>]+>'), '').replaceAll('&nbsp;', ' ').trim();
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -338,14 +366,23 @@ class _ContentExpansionTile extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Text(
-              _stripHtml(details),
-              style: TextStyle(
-                  fontSize: 13,
-                  fontFamily: 'DMSans',
-                  color: colors.ink600,
-                  height: 1.6),
-            ),
+            child: stripPppHtml(details).isEmpty
+                ? Text(
+                    'No details available',
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontFamily: 'DMSans',
+                        color: colors.ink400),
+                  )
+                : HtmlWidget(
+                    details,
+                    textStyle: TextStyle(
+                      fontSize: 13,
+                      fontFamily: 'DMSans',
+                      color: colors.ink600,
+                      height: 1.6,
+                    ),
+                  ),
           ),
         ],
       ),
@@ -459,7 +496,7 @@ class _VideosGrid extends ConsumerWidget {
               childAspectRatio: 16 / 10),
           itemCount: videos.length,
           itemBuilder: (_, i) => _VideoThumbnailCard(
-              video: videos[i], colors: colors),
+              video: videos[i], playlist: videos, colors: colors),
         );
       },
     );
@@ -467,31 +504,37 @@ class _VideosGrid extends ConsumerWidget {
 }
 
 class _VideoThumbnailCard extends StatelessWidget {
-  const _VideoThumbnailCard({required this.video, required this.colors});
+  const _VideoThumbnailCard({
+    required this.video,
+    required this.playlist,
+    required this.colors,
+  });
   final PppVideo video;
+  final List<PppVideo> playlist;
   final AppColorScheme colors;
 
-  Future<void> _launch(BuildContext context) async {
-    final url = video.youtubeUrl;
-    bool ok = false;
-    try {
-      // Attempt directly — canLaunchUrl false-negatives on restricted devices.
-      ok = url.isNotEmpty &&
-          await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-    } on PlatformException {
-      ok = false;
-    }
-    if (!ok && context.mounted) {
+  void _openInApp(BuildContext context) {
+    final id = video.youtubeVideoId;
+    if (id.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Could not open video')),
       );
+      return;
     }
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => PppYoutubePlayerScreen(
+          videos: playlist,
+          initialVideo: video,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => _launch(context),
+      onTap: () => _openInApp(context),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: Stack(

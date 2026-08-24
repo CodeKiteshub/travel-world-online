@@ -22,6 +22,32 @@ void main() {
     });
   });
 
+  group('pppPairedHtml', () {
+    test('uses paired investment HTML when policy body is the title placeholder', () {
+      const filmTourism = '<p>Film tourism incentives...</p>';
+      expect(
+        pppPairedHtml(
+          title: 'admin',
+          primaryHtml: '<p>admin</p>',
+          pairedHtml: filmTourism,
+        ),
+        filmTourism,
+      );
+    });
+
+    test('keeps real policy HTML when it is not a placeholder', () {
+      const policy = '<p>The Chhattisgarh Tourism Policy places significant emphasis on investment.</p>';
+      expect(
+        pppPairedHtml(
+          title: 'Investment in Tourism projects',
+          primaryHtml: policy,
+          pairedHtml: '<p>Adventure Parks</p>',
+        ),
+        policy,
+      );
+    });
+  });
+
   group('PppVideo.fromJson', () {
     test('parses video url and title', () {
       final json = {'_id': 'v1', 'video': 'https://youtu.be/abc', 'title': 'Intro'};
@@ -29,19 +55,21 @@ void main() {
       expect(v.id, 'v1');
       expect(v.videoUrl, 'https://youtu.be/abc');
       expect(v.title, 'Intro');
-      // Full URLs pass through untouched; no thumbnail derivable.
-      expect(v.youtubeUrl, 'https://youtu.be/abc');
-      expect(v.thumbnailUrl, '');
+      expect(v.youtubeVideoId, 'abc');
+      expect(v.youtubeUrl, 'https://www.youtube.com/watch?v=abc');
+      expect(v.thumbnailUrl, 'https://img.youtube.com/vi/abc/0.jpg');
     });
 
     test('normalises bare YouTube IDs to launchable URLs', () {
       final v = PppVideo.fromJson({'_id': 'v2', 'video': 'mwDQ_fxzD5E'});
+      expect(v.youtubeVideoId, 'mwDQ_fxzD5E');
       expect(v.youtubeUrl, 'https://www.youtube.com/watch?v=mwDQ_fxzD5E');
       expect(v.thumbnailUrl, 'https://img.youtube.com/vi/mwDQ_fxzD5E/0.jpg');
     });
 
     test('empty video field yields empty urls', () {
       final v = PppVideo.fromJson({'_id': 'v3'});
+      expect(v.youtubeVideoId, '');
       expect(v.youtubeUrl, '');
       expect(v.thumbnailUrl, '');
     });

@@ -77,6 +77,27 @@ class PppPolicyFull {
       );
 }
 
+/// Plain text from PPP HTML bodies. Used to detect empty / placeholder CMS rows.
+String stripPppHtml(String html) => html
+    .replaceAll(RegExp(r'<[^>]+>'), '')
+    .replaceAll('&nbsp;', ' ')
+    .replaceAll('&amp;', '&')
+    .trim();
+
+/// Legacy Investment tab pairs policy *titles* with investment *bodies* by index.
+/// CMS placeholders like `<p>admin</p>` must not hide that body.
+String pppPairedHtml({
+  required String title,
+  required String primaryHtml,
+  String? pairedHtml,
+}) {
+  if (pairedHtml == null || pairedHtml.trim().isEmpty) return primaryHtml;
+  final text = stripPppHtml(primaryHtml);
+  final isPlaceholder =
+      text.isEmpty || text.toLowerCase() == title.trim().toLowerCase();
+  return isPlaceholder ? pairedHtml : primaryHtml;
+}
+
 class PppInvestFull {
   const PppInvestFull({required this.id, required this.opportunityName, required this.opportunityDetails});
   final String id;
@@ -96,18 +117,43 @@ class PppVideo {
   final String title;
   final String videoUrl; // bare YouTube video ID or full URL
 
+  /// Bare YouTube ID, or parsed from a watch / youtu.be / embed / shorts URL.
+  String get youtubeVideoId {
+    final v = videoUrl.trim();
+    if (v.isEmpty) return '';
+    if (!v.startsWith('http')) return v.split('?').first;
+
+    final uri = Uri.tryParse(v);
+    if (uri == null) return '';
+
+    final fromQuery = uri.queryParameters['v'];
+    if (fromQuery != null && fromQuery.isNotEmpty) return fromQuery;
+
+    if (uri.host.contains('youtu.be') && uri.pathSegments.isNotEmpty) {
+      return uri.pathSegments.first;
+    }
+
+    for (final marker in const ['embed', 'shorts', 'v']) {
+      final i = uri.pathSegments.indexOf(marker);
+      if (i >= 0 && i + 1 < uri.pathSegments.length) {
+        return uri.pathSegments[i + 1];
+      }
+    }
+    return '';
+  }
+
   /// The API's `video` field usually holds a bare YouTube ID (e.g.
   /// "mwDQ_fxzD5E"); occasionally a full URL. Normalise to a launchable URL.
   String get youtubeUrl {
-    final v = videoUrl.trim();
-    if (v.isEmpty) return '';
-    return v.startsWith('http') ? v : 'https://www.youtube.com/watch?v=$v';
+    final id = youtubeVideoId;
+    if (id.isEmpty) return '';
+    return 'https://www.youtube.com/watch?v=$id';
   }
 
   String get thumbnailUrl {
-    final v = videoUrl.trim();
-    if (v.isEmpty || v.startsWith('http')) return '';
-    return 'https://img.youtube.com/vi/$v/0.jpg';
+    final id = youtubeVideoId;
+    if (id.isEmpty) return '';
+    return 'https://img.youtube.com/vi/$id/0.jpg';
   }
 
   factory PppVideo.fromJson(Map<String, dynamic> json) => PppVideo(

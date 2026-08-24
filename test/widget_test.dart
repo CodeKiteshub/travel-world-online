@@ -10,9 +10,8 @@ void main() {
     // Splash screen is the entry point — verify it renders.
     await tester.pump(const Duration(milliseconds: 100));
     expect(find.byType(TravelWorldApp), findsOneWidget);
-    // Flush the splash video's 8s fallback timer and any entrance
-    // animations so no timers are pending at teardown.
-    await tester.pump(const Duration(seconds: 9));
-    await tester.pump(const Duration(seconds: 2));
+    // Flush splash video fallback (20s) so no timers remain at teardown.
+    await tester.pump(const Duration(seconds: 21));
+    await tester.pump(const Duration(seconds: 1));
   });
 }
