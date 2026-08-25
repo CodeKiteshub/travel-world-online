@@ -4,6 +4,7 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/router/app_router.dart';
 import 'core/providers/theme_provider.dart';
@@ -11,14 +12,19 @@ import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: binding);
+  unawaited(_initFirebase());
+  runApp(const ProviderScope(child: TravelWorldApp()));
+}
+
+Future<void> _initFirebase() async {
   try {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform)
         .timeout(const Duration(seconds: 12));
   } on TimeoutException catch (_) {
     // Emulators can stall here; don't keep the native window black forever.
   }
-  // Don't block the first frame — awaiting App Check can hang on emulators.
   unawaited(
     FirebaseAppCheck.instance
         .activate(
@@ -31,7 +37,6 @@ Future<void> main() async {
         )
         .catchError((Object _) {}),
   );
-  runApp(const ProviderScope(child: TravelWorldApp()));
 }
 
 class TravelWorldApp extends ConsumerWidget {

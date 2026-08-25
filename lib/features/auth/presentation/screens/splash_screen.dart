@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
 import '../providers/auth_providers.dart';
@@ -20,6 +21,9 @@ final splashVideoProvider =
   await controller.play();
   return controller;
 });
+
+/// How long the splash clip is shown before the app opens.
+const _kSplashPlayDuration = Duration(seconds: 2);
 
 /// Plays [assets/videos/twoappsplash.mp4] as the loading screen.
 class SplashScreen extends ConsumerStatefulWidget {
@@ -67,8 +71,21 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             controller: controller,
             onFinished: _navigateOnce,
           ),
-          loading: () => const SizedBox.expand(),
-          error: (_, __) => const SizedBox.expand(),
+          loading: () => Image.asset(
+            'assets/images/splash_first_frame.png',
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+          ),
+          error: (_, __) {
+            FlutterNativeSplash.remove();
+            return Image.asset(
+              'assets/images/splash_first_frame.png',
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            );
+          },
         ),
       ),
     );
@@ -90,16 +107,23 @@ class _SplashVideoView extends StatefulWidget {
 
 class _SplashVideoViewState extends State<_SplashVideoView> {
   bool _finished = false;
+  Timer? _playTimer;
+
+  void _finish() {
+    if (_finished) return;
+    _finished = true;
+    _playTimer?.cancel();
+    widget.controller.pause();
+    widget.onFinished();
+  }
 
   void _onUpdate() {
     if (_finished) return;
     final value = widget.controller.value;
     if (!value.isInitialized) return;
     if (value.hasError) return;
-    if (value.duration <= Duration.zero) return;
-    if (value.position >= value.duration - const Duration(milliseconds: 250)) {
-      _finished = true;
-      widget.onFinished();
+    if (value.position >= _kSplashPlayDuration) {
+      _finish();
     }
   }
 
@@ -111,10 +135,15 @@ class _SplashVideoViewState extends State<_SplashVideoView> {
         !widget.controller.value.isPlaying) {
       widget.controller.play();
     }
+    _playTimer = Timer(_kSplashPlayDuration, _finish);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FlutterNativeSplash.remove();
+    });
   }
 
   @override
   void dispose() {
+    _playTimer?.cancel();
     widget.controller.removeListener(_onUpdate);
     super.dispose();
   }
@@ -123,11 +152,16 @@ class _SplashVideoViewState extends State<_SplashVideoView> {
   Widget build(BuildContext context) {
     final size = widget.controller.value.size;
     if (size.isEmpty) {
-      return const SizedBox.expand();
+      return Image.asset(
+        'assets/images/splash_first_frame.png',
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      );
     }
     return SizedBox.expand(
       child: FittedBox(
-        fit: BoxFit.contain,
+        fit: BoxFit.cover,
         child: SizedBox(
           width: size.width,
           height: size.height,
