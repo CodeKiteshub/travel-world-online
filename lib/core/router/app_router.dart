@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -148,7 +149,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      final user = asyncUser.valueOrNull;
+      // Prefer currentUser: authStateChanges/userChanges can lag behind
+      // User.reload() (emailVerified), which would bounce verify → home → verify.
+      User? user;
+      if (Firebase.apps.isNotEmpty) {
+        user = FirebaseAuth.instance.currentUser;
+      }
+      user ??= asyncUser.valueOrNull;
 
       final onAuthScreen = location == RouteNames.login ||
           location == RouteNames.register ||

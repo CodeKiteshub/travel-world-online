@@ -41,6 +41,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     if (_navigated) return;
     _navigated = true;
     _fallbackTimer?.cancel();
+    FlutterNativeSplash.remove();
     ref.read(splashCompletedProvider.notifier).state = true;
   }
 

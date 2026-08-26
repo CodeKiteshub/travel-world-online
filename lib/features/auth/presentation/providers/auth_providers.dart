@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_result.dart';
 import '../../../../core/network/dio_client.dart';
@@ -26,7 +27,14 @@ final authRepositoryProvider = Provider<AuthRepository>(
 // ── Firebase auth state stream (drives router redirect) ───────────────────────
 
 final authStateChangesProvider = StreamProvider<User?>((ref) {
-  return FirebaseAuth.instance.authStateChanges();
+  // [main] awaits Firebase.initializeApp before runApp; guard anyway so a
+  // hot-restart race cannot leave this provider stuck in AsyncError forever.
+  if (Firebase.apps.isEmpty) {
+    return const Stream<User?>.empty();
+  }
+  // userChanges (not authStateChanges) also emits after User.reload(), which
+  // is required for the email-verification → home redirect to see emailVerified.
+  return FirebaseAuth.instance.userChanges();
 });
 
 /// Flip to true when splash video (or its fallback) finishes.
@@ -87,7 +95,12 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> sendEmailVerification() => _repo.sendEmailVerification();
 
-  Future<bool> reloadAndCheckVerified() => _repo.reloadAndCheckVerified();
+  Future<bool> reloadAndCheckVerified() async {
+    final verified = await _repo.reloadAndCheckVerified();
+    // Ensure GoRouter re-reads auth after reload (userChanges + refresh).
+    ref.invalidate(authStateChangesProvider);
+    return verified;
+  }
 
   bool _handleResult(ApiResult<UserProfile> result) {
     return result.fold(

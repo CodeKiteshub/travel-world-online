@@ -58,7 +58,10 @@ class AuthFirebaseDatasource {
   }
 
   Future<bool> reloadAndCheckVerified() async {
-    await _auth.currentUser?.reload();
+    final user = _auth.currentUser;
+    if (user == null) return false;
+    await user.reload();
+    // Reloaded profile lives on a new currentUser instance.
     return _auth.currentUser?.emailVerified ?? false;
   }
 

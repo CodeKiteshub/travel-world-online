@@ -13,8 +13,10 @@ import 'firebase_options.dart';
 
 Future<void> main() async {
   final binding = WidgetsFlutterBinding.ensureInitialized();
+  // Keep the native splash (video first frame) up while Firebase boots so the
+  // auth stream is never subscribed before [Firebase.initializeApp] finishes.
   FlutterNativeSplash.preserve(widgetsBinding: binding);
-  unawaited(_initFirebase());
+  await _initFirebase();
   runApp(const ProviderScope(child: TravelWorldApp()));
 }
 
@@ -23,8 +25,9 @@ Future<void> _initFirebase() async {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform)
         .timeout(const Duration(seconds: 12));
   } on TimeoutException catch (_) {
-    // Emulators can stall here; don't keep the native window black forever.
+    // Emulators can stall here; don't keep the native window forever.
   }
+  // App Check must not block first frame / login.
   unawaited(
     FirebaseAppCheck.instance
         .activate(
